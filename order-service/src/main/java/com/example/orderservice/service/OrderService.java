@@ -13,7 +13,7 @@ public interface OrderService {
     Page<OrderDTO> getAll(Pageable pageable);
     Page<OrderDTO> findAllAndSorting(SearchBody searchBody);
     OrderDTO findById(String id);
-    OrderDTO createOrder(OrderDTO order);
+    String createOrder(OrderDTO order);
     Object updateOrder(OrderDTO order);
     Object deleteOrder(String id);
     Page<OrderDTO> findByUserId(Long userId, SearchBody searchBody);

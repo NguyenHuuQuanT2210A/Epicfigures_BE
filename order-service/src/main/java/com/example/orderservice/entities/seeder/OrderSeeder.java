@@ -1,6 +1,8 @@
 package com.example.orderservice.entities.seeder;
 
 import com.example.common.dto.ProductDTO;
+import com.example.common.dto.UserDTO;
+import com.example.orderservice.dto.response.ApiResponse;
 import com.example.orderservice.entities.*;
 import com.example.orderservice.repositories.*;
 import com.example.common.enums.ERole;
@@ -54,7 +56,7 @@ public class OrderSeeder implements CommandLineRunner {
 
             System.out.println(order.getId());
             order.setStatus(OrderSimpleStatus.PENDING);
-            order.setUserId(userServiceClient.getUserById((long) userId).getId());
+            order.setUserId(userServiceClient.getUserById((long) userId).getData().getId());
             for (int j = 0; j < orderDetailNumber; j++) {
                 int productId = faker.number().numberBetween(1, 9);
                 for (OrderDetail od : orderDetails) {
@@ -69,12 +71,12 @@ public class OrderSeeder implements CommandLineRunner {
                     continue;
                 }
                 OrderDetail orderDetail = new OrderDetail();
-                ProductDTO product = productServiceClient.getProductById((long) productId);
-                orderDetail.setId(new OrderDetailId(order.getId(), product.getProductId()));
+                ApiResponse<ProductDTO> product = productServiceClient.getProductById((long) productId);
+                orderDetail.setId(new OrderDetailId(order.getId(), product.getData().getProductId()));
                 int quantity = faker.number().numberBetween(1, 5);
                 orderDetail.setOrder(order);
                 orderDetail.setQuantity(quantity);
-                long unitPrice = product.getPrice().longValue() * quantity;
+                long unitPrice = product.getData().getPrice().longValue() * quantity;
                 orderDetail.setUnitPrice(new BigDecimal(unitPrice));
                 total += unitPrice;
                 orderDetails.add(orderDetail);

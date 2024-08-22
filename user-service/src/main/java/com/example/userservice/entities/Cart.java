@@ -21,9 +21,6 @@ public class Cart {
     private Integer quantity;
     private BigDecimal unitPrice;
 
-    private String productName;
-    private BigDecimal productPrice;
-
     @Enumerated(EnumType.STRING)
     @Column(nullable = false)
     private CartStatus status = CartStatus.AVAILABLE;

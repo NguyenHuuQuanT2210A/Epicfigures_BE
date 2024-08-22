@@ -1,16 +1,16 @@
 package com.example.orderservice.dto.request;
 
-import lombok.AllArgsConstructor;
-import lombok.Getter;
-import lombok.NoArgsConstructor;
-import lombok.Setter;
+import lombok.*;
+
+import java.math.BigDecimal;
 
 @NoArgsConstructor
 @AllArgsConstructor
-@Getter
-@Setter
+@Data
+@Builder
 public class CartItemRequest {
-    private Integer productId;
+    private Long productId;
     private Integer userId; // to find shopping cart
     private Integer quantity;
+    private BigDecimal unitPrice;
 }

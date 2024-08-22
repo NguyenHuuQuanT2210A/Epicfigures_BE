@@ -1,11 +1,13 @@
 package com.example.orderservice.service;
 
+import com.example.common.dto.ProductDTO;
 import com.example.common.enums.OrderSimpleStatus;
 import com.example.orderservice.dto.OrderDTO;
 import com.example.orderservice.dto.OrderDetailDTO;
-import com.example.common.dto.ProductDTO;
 import com.example.common.dto.UserDTO;
 import com.example.orderservice.dto.request.FeedbackRequest;
+import com.example.orderservice.dto.request.PaymentRequest;
+import com.example.orderservice.dto.response.ApiResponse;
 import com.example.orderservice.entities.Order;
 import com.example.orderservice.entities.OrderDetailId;
 import com.example.orderservice.exception.CustomException;
@@ -43,9 +45,9 @@ public class OrderServiceImpl implements OrderService {
     private final ProductServiceClientImpl productService;
     private final OrderMapper orderMapper;
     private final OrderDetailMapper orderDetailMapper;
-    private final InventoryClient inventoryClient;
     private final FeedbackRepository feedbackRepository;
     private final FeedbackMapper feedbackMapper;
+    private final PaymentClient paymentClient;
 
     Specification<jakarta.persistence.criteria.Order> specification = Specification.where(null);
 
@@ -126,21 +128,21 @@ public class OrderServiceImpl implements OrderService {
     public OrderDTO findById(String id){
         return orderRepository.findById(id).map(orderMapper::orderToOrderDTO).orElse(null);
     }
-    public OrderDTO createOrder(OrderDTO order){
+
+    public String createOrder(OrderDTO orderDTO){
         try {
             Order newOrder;
-            Order existingOrder = orderRepository.findOrderByUserIdAndStatus(order.getUserId(), OrderSimpleStatus.CREATED);
-            UserDTO user = userService.getUserById(order.getUserId());
-            if (user == null) {
+            String paymentResponse;
+
+            ApiResponse<UserDTO> user = userService.getUserById(orderDTO.getUserId());
+            if (user.getData() == null) {
                 throw new CustomException("User not found", HttpStatus.BAD_REQUEST);
             }
             try {
-                if (existingOrder != null) {
-                    newOrder = existingOrder;
-                } else {
-                    newOrder = orderMapper.orderDTOToOrder(order);
-                }
+                newOrder = orderMapper.orderDTOToOrder(orderDTO);
                 newOrder.setTotalPrice(BigDecimal.ZERO);
+                newOrder.setStatus(OrderSimpleStatus.CREATED);
+
                 // Save the order first to get the order ID
                 newOrder = orderRepository.save(newOrder);
 
@@ -148,29 +150,20 @@ public class OrderServiceImpl implements OrderService {
                 Set<Long> productIds = new HashSet<>();
 
                 Order finalNewOrder = newOrder;
-                order.getOrderDetails().forEach(orderDetailDTOItem -> {
-                    orderDetailDTOItem.setId(new OrderDetailId(finalNewOrder.getId(), orderDetailDTOItem.getId().getProductId()));
+                orderDTO.getCartItems().forEach(cartItem -> {
+                    orderDetails.add(OrderDetailDTO.builder()
+                            .order(finalNewOrder)
+                            .id(new OrderDetailId(finalNewOrder.getId(), cartItem.getProductId()))
+                            .quantity(cartItem.getQuantity())
+                            .unitPrice(cartItem.getUnitPrice())
+                            .build());
 
-                    OrderDetailDTO orderDetailDTO = orderDetailService.findOrderDetailById(orderDetailDTOItem.getId());
-                    if (orderDetailDTO == null) {
-                        orderDetailDTO = new OrderDetailDTO();
-                        orderDetailDTO.setOrder(finalNewOrder);
-                        orderDetailDTO.getId().setOrderId(finalNewOrder.getId());
-                        orderDetailDTO.getId().setProductId(orderDetailDTOItem.getId().getProductId());
-                        orderDetailDTO.setQuantity(orderDetailDTOItem.getQuantity());
-                    }
-                    // Get all product IDs from order details
-                    assert orderDetailDTO != null;
-                    orderDetailDTO.setQuantity(orderDetailDTOItem.getQuantity());
-                    Long productId = orderDetailDTO.getId().getProductId();
-
-                    orderDetails.add(orderDetailDTO);
-                    productIds.add(productId);
+                    productIds.add(cartItem.getProductId());
                 });
 
-                List<ProductDTO> products = productService.getProductsByIds(productIds);
+                ApiResponse<List<ProductDTO>> products = productService.getProductsByIds(productIds);
 
-                Map<Long, BigDecimal> productPriceMap = products.stream()
+                Map<Long, BigDecimal> productPriceMap = products.getData().stream()
                         .collect(Collectors.toMap(ProductDTO::getProductId, ProductDTO::getPrice));
 
                 // Set unit price for each order detail
@@ -190,15 +183,17 @@ public class OrderServiceImpl implements OrderService {
                         .reduce(BigDecimal.ZERO, BigDecimal::add));
 
                 newOrder.setTotalPrice(totalPrice);
-
                 // Save the order again with the new order details and total price
                 newOrder = orderRepository.save(newOrder);
+
             } catch (Exception e) {
                 e.printStackTrace();
                 throw new CustomException("Error while creating order", HttpStatus.BAD_REQUEST);
             }
 
-            return orderMapper.orderToOrderDTO(newOrder);
+            paymentResponse = paymentClient.creatPayment(new PaymentRequest(newOrder.getId(), orderDTO.getPayment_method()));
+
+            return paymentResponse;
         } catch (Exception e) {
             e.printStackTrace();
             throw new CustomException("Error while creating order", HttpStatus.BAD_REQUEST);
@@ -216,6 +211,10 @@ public class OrderServiceImpl implements OrderService {
 
     public ResponseEntity<?> deleteOrder(String id) {
         orderRepository.deleteById(id);
+        List<OrderDetailDTO> orderDetailDTOs = orderDetailService.findOrderDetailByOrderId(id);
+        for (OrderDetailDTO orderDetailDTO : orderDetailDTOs) {
+            orderDetailService.deleteOrderDetail(orderDetailDTO.getId());
+        }
         return ResponseEntity.ok("Order deleted successfully");
     }
 

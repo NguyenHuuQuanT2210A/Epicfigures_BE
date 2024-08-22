@@ -1,7 +1,6 @@
 package com.example.productservice.entities;
 
 import com.example.productservice.entities.base.BaseEntity;
-import com.fasterxml.jackson.annotation.JsonBackReference;
 import jakarta.persistence.*;
 import lombok.*;
 

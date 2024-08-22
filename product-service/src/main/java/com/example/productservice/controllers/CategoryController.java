@@ -1,6 +1,7 @@
 package com.example.productservice.controllers;
 
 import com.example.productservice.dto.CategoryDTO;
+import com.example.productservice.dto.response.ApiResponse;
 import com.example.productservice.exception.CategoryNotFoundException;
 import com.example.productservice.services.CategoryService;
 import jakarta.validation.Valid;
@@ -21,69 +22,97 @@ import java.util.stream.Collectors;
 @RequestMapping("/api/v1/categories")
 @CrossOrigin()
 public class CategoryController {
-
     private final CategoryService categoryService;
 
     @GetMapping
-    public ResponseEntity<Page<CategoryDTO>> getAllCategory(@RequestParam(defaultValue = "1", name = "page") int page, @RequestParam(defaultValue = "10", name = "limit") int limit) {
+    ApiResponse<Page<CategoryDTO>> getAllCategory(@RequestParam(defaultValue = "1", name = "page") int page, @RequestParam(defaultValue = "10", name = "limit") int limit) {
         Page<CategoryDTO> categoryDTOS = categoryService.getAllCategory(PageRequest.of(page - 1, limit));
-        return ResponseEntity.ok(categoryDTOS);
+        return ApiResponse.<Page<CategoryDTO>>builder()
+                .message("Get all Category")
+                .data(categoryDTOS)
+                .build();
     }
 
     @GetMapping("/{id}")
-    public ResponseEntity<CategoryDTO> getCategoryById(@PathVariable Long id) {
+    ApiResponse<CategoryDTO> getCategoryById(@PathVariable Long id) {
         CategoryDTO category = categoryService.getCategoryById(id);
         if (category == null) {
             throw new CategoryNotFoundException("Category not found with id: " + id);
         }
-        return ResponseEntity.ok(category);
+        return ApiResponse.<CategoryDTO>builder()
+                .message("Get Category By Id")
+                .data(category)
+                .build();
     }
 
     @GetMapping("/name/{name}")
-    public List<CategoryDTO> getCategoryByName(@PathVariable String name) {
+    ApiResponse<List<CategoryDTO>> getCategoryByName(@PathVariable String name) {
         List<CategoryDTO> category = categoryService.getCategoryByName(name);
         if (category == null) {
             throw new CategoryNotFoundException("Category not found with name: " + name);
         }
-        return category;
+        return ApiResponse.<List<CategoryDTO>>builder()
+                .message("Get Category By Name")
+                .data(category)
+                .build();
     }
 
     @PostMapping
-    public ResponseEntity<?> addCategory(@Valid @RequestBody CategoryDTO categoryDTO, BindingResult result) {
+    ResponseEntity<?> addCategory(@Valid @RequestBody CategoryDTO categoryDTO, BindingResult result) {
         if (result.hasErrors()) {
             Map<String, String> errors = result.getFieldErrors().stream()
                     .collect(Collectors.toMap(fieldError -> fieldError.getField(), fieldError -> fieldError.getDefaultMessage()));
-            return new ResponseEntity<>(errors, HttpStatus.BAD_REQUEST);
+            return ResponseEntity.badRequest().body(ApiResponse.builder()
+                    .message("Error: " + errors.get("field"))
+                    .data(ResponseEntity.status(HttpStatus.BAD_REQUEST).body(errors))
+                    .build());
         }
-        categoryService.addCategory(categoryDTO);
-        return new ResponseEntity<>(HttpStatus.CREATED);
+        return ResponseEntity.ok(ApiResponse.builder()
+                .code(HttpStatus.CREATED.value())
+                .message("Created Category Successfully")
+                .data(categoryService.addCategory(categoryDTO))
+                .build());
     }
 
     @PutMapping("/{id}")
-    public ResponseEntity<?> updateCategory(@PathVariable Long id, @Valid @RequestBody CategoryDTO categoryDTO, BindingResult result) {
+    ResponseEntity<?> updateCategory(@PathVariable Long id, @Valid @RequestBody CategoryDTO categoryDTO, BindingResult result) {
         if (result.hasErrors()) {
             Map<String, String> errors = result.getFieldErrors().stream()
                     .collect(Collectors.toMap(fieldError -> fieldError.getField(), fieldError -> fieldError.getDefaultMessage()));
-            return new ResponseEntity<>(errors, HttpStatus.BAD_REQUEST);
+            return ResponseEntity.badRequest().body(ApiResponse.builder()
+                    .message("Error: " + errors.get("field"))
+                    .data(ResponseEntity.status(HttpStatus.BAD_REQUEST).body(errors))
+                    .build());
         }
         categoryService.updateCategory(id, categoryDTO);
-        return new ResponseEntity<>(HttpStatus.OK);
+        return ResponseEntity.ok(ApiResponse.builder()
+                .message("Update Category Successfully")
+                .build());
     }
 
     @DeleteMapping("/{id}")
-    public ResponseEntity<?> moveToTrash(@PathVariable Long id) {
+    ApiResponse<?> moveToTrash(@PathVariable Long id) {
         categoryService.moveToTrash(id);
-        return new ResponseEntity<>(HttpStatus.NO_CONTENT);
+        return ApiResponse.builder()
+                .code(HttpStatus.NO_CONTENT.value())
+                .message("Move to Trash Category Successfully")
+                .build();
     }
 
     @DeleteMapping("/in-trash/{id}")
-    public ResponseEntity<?> deleteCategory(@PathVariable Long id) {
+    ApiResponse<?> deleteCategory(@PathVariable Long id) {
         categoryService.deleteCategory(id);
-        return new ResponseEntity<>(HttpStatus.NO_CONTENT);
+        return ApiResponse.builder()
+                .code(HttpStatus.NO_CONTENT.value())
+                .message("Delete Category Successfully")
+                .build();
     }
 
     @GetMapping("/trash")
-    public ResponseEntity<?> getInTrashCategory(@RequestParam(defaultValue = "1", name = "page") int page, @RequestParam(defaultValue = "10", name = "limit") int limit) {
-        return ResponseEntity.ok(categoryService.getInTrash(PageRequest.of(page - 1, limit)));
+    ApiResponse<?> getInTrashCategory(@RequestParam(defaultValue = "1", name = "page") int page, @RequestParam(defaultValue = "10", name = "limit") int limit) {
+        return ApiResponse.builder()
+                .message("Get In Trash Category")
+                .data(categoryService.getInTrash(PageRequest.of(page - 1, limit)))
+                .build();
     }
 }

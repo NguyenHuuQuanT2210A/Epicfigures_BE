@@ -2,15 +2,17 @@ package com.example.paymentService.service;
 
 import com.example.common.dto.OrderDTO;
 import com.example.common.event.RequestUpdateStatusOrder;
-//import com.example.orderService.entity.Order;
 import com.example.paymentService.config.Config;
 import com.example.paymentService.config.KafkaProducer;
+import com.example.paymentService.dto.ApiResponse;
 import com.example.paymentService.dto.OrderInfoRequest;
+import com.example.paymentService.dto.PaymentRequest;
 import com.example.paymentService.entity.Payment;
 import com.example.paymentService.enums.PaymentStatus;
 import com.example.paymentService.event.PaymentCreatedEvent;
 
 import com.example.paymentService.repository.PaymentRepository;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.domain.Page;
@@ -32,7 +34,6 @@ import static java.time.LocalDateTime.now;
 @RequiredArgsConstructor
 @Slf4j
 public class PaymentService {
-
     private final PaymentRepository paymentRepository;
     private final RestTemplate restTemplate;
     KafkaTemplate<Long, PaymentCreatedEvent> kafkaTemplate;
@@ -40,9 +41,13 @@ public class PaymentService {
     private final OrderInfoClient orderInfoClient;
 
     public String creatPayment( String urlReturn, String orderId) throws UnsupportedEncodingException {
-        OrderDTO order = restTemplate.getForObject("http://localhost:8084/api/v1/orders/"+ orderId, OrderDTO.class);
+        ApiResponse<OrderDTO> order = restTemplate.getForObject("http://localhost:8084/api/v1/orders/"+ orderId, ApiResponse.class);
 //        Order order = restTemplate.getForObject("http://orderService/api/v1/order/"+ orderId, Order.class);
 //        Product product = restTemplate.getForObject("http://localhost:8083/api/v1/product/"+ order.getProductId(), Product.class);
+
+        assert order != null;
+        ObjectMapper objectMapper = new ObjectMapper();
+        OrderDTO orderDTO = objectMapper.convertValue(order.getData(), OrderDTO.class);
 
         String vnp_Version = "2.1.0";
         String vnp_Command = "pay";
@@ -54,7 +59,7 @@ public class PaymentService {
 
 
 //        String orderInfo = product.getName();
-        BigDecimal total = order.getTotalPrice();
+        BigDecimal total = orderDTO.getTotalPrice();
         Map<String, String> vnp_Params = new HashMap<>();
         vnp_Params.put("vnp_Version", vnp_Version);
         vnp_Params.put("vnp_Command", vnp_Command);
@@ -117,25 +122,17 @@ public class PaymentService {
         return paymentRepository.findByUserId(pageable,userId);
     }
 
-    public void savePayment(OrderInfoRequest request){
-        OrderDTO order = restTemplate.getForObject("http://localhost:8084/api/v1/orders/"+ request.getOrder().getId(), OrderDTO.class);
-        orderInfoClient.createOrderInfo(request);
+    public void savePayment(PaymentRequest request){
+        OrderDTO order = restTemplate.getForObject("http://localhost:8084/api/v1/orders/"+ request.getOrderId(), OrderDTO.class);
 
-//        Payment payment = new Payment();
         assert order != null;
-
-//        payment.setUserId(order.getUserId());
-//        payment.setPaidAt(now());
-//        payment.setTotal(order.getTotalPrice());
-//        payment.setOrderId(request.getOrder().getId());
-//        payment.setStatus(PaymentStatus.PENDING);
 
         paymentRepository.save(Payment.builder()
                         .userId(order.getUserId())
                         .payment_method(request.getPayment_method().toUpperCase())
                         .paidAt(now())
                         .total(order.getTotalPrice())
-                        .orderId(request.getOrder().getId())
+                        .orderId(request.getOrderId())
                         .status(PaymentStatus.PENDING)
                 .build());
 

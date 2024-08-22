@@ -5,6 +5,7 @@ import lombok.experimental.FieldDefaults;
 
 import java.io.Serializable;
 import java.math.BigDecimal;
+import java.util.Set;
 
 @Getter
 @Setter
@@ -21,4 +22,5 @@ public class ProductResponse implements Serializable {
     String manufacturer;
     String size;
     String weight;
+    Set<ProductImageResponse> images;
 }

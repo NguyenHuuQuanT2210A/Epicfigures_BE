@@ -1,13 +1,14 @@
 package com.example.userservice.controllers;
 
 import com.example.userservice.dtos.response.ApiResponse;
+import com.example.userservice.dtos.response.CartResponse;
 import com.example.userservice.entities.UserAndProductId;
 import com.example.userservice.entities.Cart;
 import com.example.userservice.services.CartService;
 import io.swagger.v3.oas.annotations.tags.Tag;
-import lombok.AccessLevel;
 import lombok.RequiredArgsConstructor;
-import lombok.experimental.FieldDefaults;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
@@ -16,16 +17,15 @@ import java.util.List;
 @CrossOrigin
 @RestController
 @RequiredArgsConstructor
-@FieldDefaults(level = AccessLevel.PRIVATE, makeFinal = true)
 @RequestMapping(path = "api/v1/cart")
 public class CartController {
-    CartService cartService;
+    private final CartService cartService;
 
     @GetMapping
     ApiResponse<List<Cart>> getAll() {
         return ApiResponse.<List<Cart>>builder()
-                .message("Get all cart data")
-                .result(cartService.getAllCart())
+                .message("Get all cart")
+                .data(cartService.getAllCart())
                 .build();
     }
 
@@ -33,56 +33,56 @@ public class CartController {
     ApiResponse<Cart> getById(@RequestBody UserAndProductId ids) {
         return ApiResponse.<Cart>builder()
                 .message("Get cart by Id")
-                .result(cartService.getCartById(ids))
+                .data(cartService.getCartById(ids))
                 .build();
     }
 
     @GetMapping("/user/{userId}")
-    ApiResponse<List<Cart>> getByUserId(@PathVariable Long userId) {
-        return ApiResponse.<List<Cart>>builder()
+    ApiResponse<List<CartResponse>> getByUserId(@PathVariable Long userId) {
+        return ApiResponse.<List<CartResponse>>builder()
                 .message("get cart by userId")
-                .result(cartService.getCartByUserId(userId))
+                .data(cartService.getCartByUserId(userId))
                 .build();
     }
 
     @GetMapping("/product/{productId}")
-    ApiResponse<List<Cart>> getByProductId(@PathVariable Long productId) {
-        return ApiResponse.<List<Cart>>builder()
+    ApiResponse<List<CartResponse>> getByProductId(@PathVariable Long productId) {
+        return ApiResponse.<List<CartResponse>>builder()
                 .message("get cart by productId")
-                .result(cartService.getCartByProductId(productId))
+                .data(cartService.getCartByProductId(productId))
                 .build();
     }
 
     @PostMapping
     ApiResponse<Cart> createCart(@RequestBody Cart cart) {
         return ApiResponse.<Cart>builder()
-                .code(201)
-                .message("Created!")
-                .result(cartService.addCart(cart))
+                .code(HttpStatus.CREATED.value())
+                .message("Create cart")
+                .data(cartService.addCart(cart))
                 .build();
     }
 
     @PutMapping("/updateQuantity")
-    ApiResponse<Cart> updateQuantity(@RequestBody UserAndProductId ids, @RequestParam int quantity) {
-        return ApiResponse.<Cart>builder()
+    ResponseEntity<ApiResponse<Cart>> updateQuantity(@RequestBody UserAndProductId ids, @RequestParam int quantity) {
+        return ResponseEntity.ok(ApiResponse.<Cart>builder()
                 .message("Updated Quantity Cart")
-                .result(cartService.updateQuantity(ids, quantity))
-                .build();
+                .data(cartService.updateQuantity(ids, quantity))
+                .build());
     }
 
     @DeleteMapping
-    ApiResponse<String> deleteById(@RequestBody UserAndProductId ids) {
+    ResponseEntity<ApiResponse<String>> deleteById(@RequestBody UserAndProductId ids) {
         cartService.deleteCart(ids);
-        return ApiResponse.<String>builder()
-                .message("Deleted Cart by Id")
-                .build();
+        return ResponseEntity.ok(ApiResponse.<String>builder()
+                .message("Deleted Cart Successfully")
+                .build());
     }
 
     @DeleteMapping("/user/{userId}")
-    ApiResponse<String> deleteByUserId(@PathVariable Long userId) {
+    ResponseEntity<ApiResponse<String>> deleteByUserId(@PathVariable Long userId) {
         cartService.deleteCartByUserId(userId);
-        return ApiResponse.<String>builder()
-                .message("Deleted Cart by userId")
-                .build();
+        return ResponseEntity.ok(ApiResponse.<String>builder()
+                .message("Deleted Cart by userId Successfully")
+                .build());
     }
 }

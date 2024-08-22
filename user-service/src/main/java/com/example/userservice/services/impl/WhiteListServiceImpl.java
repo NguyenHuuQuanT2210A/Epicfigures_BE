@@ -4,18 +4,15 @@ import com.example.userservice.entities.UserAndProductId;
 import com.example.userservice.entities.WhiteList;
 import com.example.userservice.repositories.WhiteListRepository;
 import com.example.userservice.services.WhiteListService;
-import lombok.AccessLevel;
 import lombok.RequiredArgsConstructor;
-import lombok.experimental.FieldDefaults;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
 
 @Service
 @RequiredArgsConstructor
-@FieldDefaults(level = AccessLevel.PRIVATE, makeFinal = true)
 public class WhiteListServiceImpl implements WhiteListService {
-    WhiteListRepository whiteListRepository;
+    private final WhiteListRepository whiteListRepository;
 
     @Override
     public List<WhiteList> getAllWhiteList() {

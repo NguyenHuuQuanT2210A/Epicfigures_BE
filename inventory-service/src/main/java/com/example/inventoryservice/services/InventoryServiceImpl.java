@@ -1,5 +1,6 @@
 package com.example.inventoryservice.services;
 
+import com.example.inventoryservice.dto.ApiResponse;
 import com.example.inventoryservice.dto.InventoryRequest;
 import com.example.inventoryservice.dto.InventoryResponse;
 import com.example.inventoryservice.dto.ProductDTO;
@@ -10,7 +11,6 @@ import com.example.inventoryservice.mapper.InventoryMapper;
 import com.example.inventoryservice.repository.InventoryRepository;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
@@ -19,7 +19,6 @@ import java.util.List;
 @Service
 @RequiredArgsConstructor
 public class InventoryServiceImpl implements InventoryService {
-    @Autowired
     private final InventoryRepository inventoryRepository;
     private final InventoryMapper inventoryMapper;
     private final ProductClients productClients;
@@ -36,8 +35,8 @@ public class InventoryServiceImpl implements InventoryService {
 
     @Override
     public List<InventoryResponse> getInventoryByProductId(long productId) {
-        ProductDTO product = productClients.getProductById(productId);
-        return inventoryRepository.findInventoryByProductId(product.getProductId()).stream().map(inventoryMapper::toInventoryResponse).toList();
+        ApiResponse<ProductDTO> product = productClients.getProductById(productId);
+        return inventoryRepository.findInventoryByProductId(product.getData().getProductId()).stream().map(inventoryMapper::toInventoryResponse).toList();
     }
 
     @Override

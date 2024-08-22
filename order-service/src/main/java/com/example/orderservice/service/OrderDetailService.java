@@ -2,6 +2,7 @@ package com.example.orderservice.service;
 
 import com.example.common.dto.ProductDTO;
 import com.example.orderservice.dto.OrderDetailDTO;
+import com.example.orderservice.dto.response.ApiResponse;
 import com.example.orderservice.entities.OrderDetail;
 import com.example.orderservice.entities.OrderDetailId;
 import com.example.orderservice.exception.CustomException;
@@ -9,7 +10,6 @@ import com.example.orderservice.mapper.OrderDetailMapper;
 
 import com.example.orderservice.repositories.OrderDetailRepository;
 import lombok.RequiredArgsConstructor;
-import org.hibernate.query.Order;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 
@@ -80,8 +80,8 @@ public class OrderDetailService {
     public OrderDetailDTO updateQuantity(OrderDetailId orderDetailId, Integer quantity) {
         OrderDetail orderDetail = orderDetailMapper.INSTANCE.orderDetailDTOToOrderDetail(findOrderDetailById(orderDetailId));
         orderDetail.setQuantity(quantity);
-        ProductDTO productDTO = productServiceClient.getProductById(orderDetailId.getProductId());
-        orderDetail.setUnitPrice(productDTO.getPrice().multiply(new BigDecimal(quantity)));
+        ApiResponse<ProductDTO> productDTO = productServiceClient.getProductById(orderDetailId.getProductId());
+        orderDetail.setUnitPrice(productDTO.getData().getPrice().multiply(new BigDecimal(quantity)));
         orderDetailRepository.save(orderDetail);
         return orderDetailMapper.INSTANCE.orderDetailToOrderDetailDTO(orderDetail);
     }

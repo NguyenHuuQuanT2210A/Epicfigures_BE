@@ -1,12 +1,12 @@
 package com.example.orderservice.controller;
 
 import com.example.orderservice.dto.OrderDetailDTO;
+import com.example.orderservice.dto.response.ApiResponse;
 import com.example.orderservice.entities.OrderDetailId;
 import com.example.orderservice.service.OrderDetailService;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.apache.kafka.common.protocol.types.Field;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
@@ -22,9 +22,12 @@ public class OrderDetailController {
     private final OrderDetailService orderDetailService;
 
     @GetMapping("/orderAndProduct")
-    public ResponseEntity<OrderDetailDTO> getOrderDetailByOrderIdAndProductId(@RequestBody OrderDetailId orderDetailId) {
+    public ApiResponse<OrderDetailDTO> getOrderDetailByOrderIdAndProductId(@RequestBody OrderDetailId orderDetailId) {
         OrderDetailDTO orderDetailDTO = orderDetailService.findOrderDetailById(orderDetailId);
-        return ResponseEntity.ok().body(orderDetailDTO);
+        return ApiResponse.<OrderDetailDTO>builder()
+                .message("Get Order Detail by OrderId And ProductId")
+                .data(orderDetailDTO)
+                .build();
     }
 
     @GetMapping("/isOrderDetailExist")
@@ -38,20 +41,28 @@ public class OrderDetailController {
     }
 
     @GetMapping("/order/{orderId}")
-    public ResponseEntity<List<OrderDetailDTO>> getOrderDetailsByOrderId(@PathVariable String orderId) {
+    public ApiResponse<List<OrderDetailDTO>> getOrderDetailsByOrderId(@PathVariable String orderId) {
         List<OrderDetailDTO> orderDetailDTOs = orderDetailService.findOrderDetailByOrderId(orderId);
-        return ResponseEntity.ok().body(orderDetailDTOs);
+        return ApiResponse.<List<OrderDetailDTO>>builder()
+                .message("Get Order Detail by OrderId")
+                .data(orderDetailDTOs)
+                .build();
     }
 
     @PutMapping("/updateQuantity")
-    public ResponseEntity<OrderDetailDTO> updateQuantity(@RequestBody OrderDetailId orderDetailId, @RequestParam Integer quantity) {
+    public ApiResponse<OrderDetailDTO> updateQuantity(@RequestBody OrderDetailId orderDetailId, @RequestParam Integer quantity) {
         OrderDetailDTO orderDetailDTO = orderDetailService.updateQuantity(orderDetailId, quantity);
-        return ResponseEntity.ok().body(orderDetailDTO);
+        return ApiResponse.<OrderDetailDTO>builder()
+                .message("Update quantity of Order Detail")
+                .data(orderDetailDTO)
+                .build();
     }
 
     @DeleteMapping("/orderAndProduct")
-    public ResponseEntity<String> deleteOrderDetailByOrderIdAndProductId(@RequestBody OrderDetailId orderDetailId) {
+    public ApiResponse<String> deleteOrderDetailByOrderIdAndProductId(@RequestBody OrderDetailId orderDetailId) {
         orderDetailService.deleteOrderDetail(orderDetailId);
-        return ResponseEntity.ok("Deleted Order Detail");
+        return ApiResponse.<String>builder()
+                .message("Delete Order Detail Successfully!")
+                .build();
     }
 }

@@ -11,10 +11,7 @@ import com.example.orderservice.mapper.OrderDetailMapper;
 import com.example.orderservice.repositories.FeedbackRepository;
 import com.example.orderservice.service.FeedbackService;
 import com.example.orderservice.service.OrderDetailService;
-import lombok.AccessLevel;
 import lombok.RequiredArgsConstructor;
-import lombok.experimental.FieldDefaults;
-import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -23,13 +20,11 @@ import java.util.List;
 
 @Service
 @RequiredArgsConstructor
-@Slf4j
-@FieldDefaults(level = AccessLevel.PRIVATE, makeFinal = true)
 public class FeedbackServiceImpl implements FeedbackService {
-    FeedbackRepository feedbackRepository;
-    FeedbackMapper feedbackMapper;
-    OrderDetailService orderDetailService;
-    OrderDetailMapper orderDetailMapper;
+    private final FeedbackRepository feedbackRepository;
+    private final FeedbackMapper feedbackMapper;
+    private final OrderDetailService orderDetailService;
+    private final OrderDetailMapper orderDetailMapper;
 
     @Override
     public FeedbackResponse findById(Long id) {
@@ -70,7 +65,6 @@ public class FeedbackServiceImpl implements FeedbackService {
     public void createFeedback(FeedbackRequest request) {
         try {
             Feedback feedback = feedbackMapper.toFeedback(request);
-            log.info("Feedback {}", feedback.toString());
             feedbackRepository.save(feedback);
         }catch (Exception e) {
             throw new RuntimeException("error while create feedback");

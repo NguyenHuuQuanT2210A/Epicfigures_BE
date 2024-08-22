@@ -3,6 +3,7 @@ package com.example.userservice.services;
 import com.example.userservice.entities.Role;
 import com.example.userservice.repositories.RoleRepository;
 import com.example.userservice.statics.enums.ERole;
+import lombok.RequiredArgsConstructor;
 import org.springframework.beans.BeanUtils;
 import org.springframework.stereotype.Service;
 
@@ -10,11 +11,9 @@ import java.util.List;
 import java.util.Optional;
 
 @Service
+@RequiredArgsConstructor
 public class RoleServiceImpl implements RoleService {
-    private RoleRepository roleRepository;
-    public RoleServiceImpl(RoleRepository roleRepository) {
-        this.roleRepository = roleRepository;
-    }
+    private final RoleRepository roleRepository;
 
     @Override
     public List<Role> getAllRoles() {

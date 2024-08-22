@@ -1,6 +1,7 @@
 package com.example.orderservice.service;
 
 import com.example.common.dto.ProductDTO;
+import com.example.orderservice.dto.response.ApiResponse;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 
@@ -12,11 +13,11 @@ import java.util.Set;
 public class ProductServiceClientImpl {
     private final ProductServiceClient productServiceClient;
 
-    public ProductDTO getProductById(Long id) {
+    public ApiResponse<ProductDTO> getProductById(Long id) {
         return productServiceClient.getProductById(id);
     }
 
-    public List<ProductDTO> getProductsByIds(Set<Long> productIds) {
+    public ApiResponse<List<ProductDTO>> getProductsByIds(Set<Long> productIds) {
         return productServiceClient.getProductsByIds(productIds);
     }
 }

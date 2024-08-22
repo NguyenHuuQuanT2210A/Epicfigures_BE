@@ -1,7 +1,6 @@
 package com.example.userservice.entities;
 
 import com.example.userservice.entities.base.BaseEntity;
-import com.fasterxml.jackson.annotation.JsonBackReference;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;

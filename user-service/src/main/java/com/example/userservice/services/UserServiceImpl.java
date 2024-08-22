@@ -9,6 +9,7 @@ import com.example.userservice.models.requests.UserRequest;
 import com.example.userservice.repositories.RoleRepository;
 import com.example.userservice.repositories.UserRepository;
 import com.example.userservice.statics.enums.ERole;
+import lombok.RequiredArgsConstructor;
 import org.springframework.beans.BeanUtils;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
@@ -17,25 +18,17 @@ import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
-import java.beans.Encoder;
-import java.text.SimpleDateFormat;
 import java.time.LocalDateTime;
-import java.util.concurrent.*;
 import java.util.HashSet;
 import java.util.Objects;
 import java.util.Set;
 
 @Service
+@RequiredArgsConstructor
 public class UserServiceImpl implements UserService {
     private final UserRepository userRepository;
     private final RoleRepository roleRepository;
     private final PasswordEncoder encoder;
-
-    public UserServiceImpl(UserRepository userRepository, RoleRepository roleRepository, PasswordEncoder encoder) {
-        this.userRepository = userRepository;
-        this.roleRepository = roleRepository;
-        this.encoder = encoder;
-    }
 
     public Page<UserDTO> getAll(Pageable pageable) {
         Page<User> userPage = userRepository.findByDeletedAtIsNull(pageable);

@@ -2,6 +2,7 @@ package com.example.productservice.controllers;
 
 import com.example.productservice.dto.CategoryDTO;
 import com.example.productservice.dto.ProductDTO;
+import com.example.productservice.dto.response.ApiResponse;
 import com.example.productservice.services.CategoryService;
 import com.example.productservice.services.ProductService;
 import lombok.NonNull;
@@ -34,78 +35,117 @@ public class ProductController {
     private final CategoryService categoryService;
 
     @GetMapping
-    public Page<ProductDTO> getAllProducts(
+    ApiResponse<Page<ProductDTO>> getAllProducts(
             @RequestParam(defaultValue = "1", name = "page") int page,
             @RequestParam(defaultValue = "10", name = "limit") int limit) {
-        return productService.getAllProducts(PageRequest.of(page -1, limit));
+        return ApiResponse.<Page<ProductDTO>>builder()
+                .message("Get all Products")
+                .data(productService.getAllProducts(PageRequest.of(page -1, limit)))
+                .build();
     }
 
     @GetMapping("/{id}")
-    public ResponseEntity<?> getProductById(@PathVariable Long id) {
+    ApiResponse<?> getProductById(@PathVariable Long id) {
         ProductDTO product = productService.getProductById(id);
         if (product == null) {
             throw new NotFoundException("Product not found with id: " + id);
         }
-        return ResponseEntity.ok(product);
+        return ApiResponse.builder()
+                .message("Get product by Id")
+                .data(product)
+                .build();
     }
 
     @PostMapping("/list")
-    public ResponseEntity<?> getProductsByIds(@RequestBody Set<Long> productIds) {
-        return ResponseEntity.ok(productService.getProductsByIds(productIds));
+    ApiResponse<?> getProductsByIds(@RequestBody Set<Long> productIds) {
+        return ApiResponse.builder()
+                .message("Get products by Ids")
+                .data(productService.getProductsByIds(productIds))
+                .build();
     }
 
     @GetMapping("/name/{name}")
-    public ResponseEntity<?> getProductByName(@PathVariable String name) {
+    ApiResponse<?> getProductByName(@PathVariable String name) {
         ProductDTO product = productService.getProductByName(name);
         if (product == null) {
             throw new NotFoundException("Product not found with name: " + name);
         }
-        return ResponseEntity.ok(product);
+        return ApiResponse.builder()
+                .message("Get product by Name")
+                .data(product)
+                .build();
     }
+
     @GetMapping("/category/{categoryId}")
-    public Page<ProductDTO> findByCategory( @RequestParam(defaultValue = "1") int page,
+    ApiResponse<Page<ProductDTO>> findByCategory( @RequestParam(defaultValue = "1") int page,
                                             @RequestParam(defaultValue = "10") int limit,
                                             @PathVariable Long categoryId) {
         CategoryDTO category = categoryService.getCategoryById(categoryId);
-        return productService.findByCategory(PageRequest.of(page -1, limit), category);
+        return ApiResponse.<Page<ProductDTO>>builder()
+                .message("Get products by Category")
+                .data(productService.findByCategory(PageRequest.of(page -1, limit), category))
+                .build();
     }
 
     @PostMapping(consumes = MediaType.MULTIPART_FORM_DATA_VALUE,
             produces = MediaType.APPLICATION_JSON_VALUE)
-    public ResponseEntity<?> addProduct(@Valid @RequestPart("productDTO") ProductDTO productDTO, @RequestPart("files") @NonNull List<MultipartFile> imageFiles, BindingResult result) {
+    ResponseEntity<?> addProduct(@Valid @RequestPart("productDTO") ProductDTO productDTO, @RequestPart("files") @NonNull List<MultipartFile> imageFiles, BindingResult result) {
         if (result.hasErrors()) {
             Map<String, String> errors = result.getFieldErrors().stream()
                     .collect(Collectors.toMap(fieldError -> fieldError.getField(), fieldError -> fieldError.getDefaultMessage()));
-            return new ResponseEntity<>(errors, HttpStatus.BAD_REQUEST);
+            return ResponseEntity.badRequest().body(ApiResponse.builder()
+                    .code(HttpStatus.BAD_REQUEST.value())
+                    .message("Error")
+                    .data(errors)
+                    .build());
         }
         productService.addProduct(productDTO, imageFiles);
-        return new ResponseEntity<>(HttpStatus.CREATED);
+        return ResponseEntity.ok(ApiResponse.builder()
+                .code(HttpStatus.CREATED.value())
+                .message("Create product successfully")
+                .build());
     }
     @PutMapping("/{id}")
-    public ResponseEntity<?> updateProduct(@PathVariable Long id, @RequestPart("productDTO") ProductDTO updatedProductDto, @RequestPart("files") @NonNull List<MultipartFile> imageFiles, BindingResult result) {
+    ResponseEntity<?> updateProduct(@PathVariable Long id, @RequestPart("productDTO") ProductDTO updatedProductDto, @RequestPart("files") @NonNull List<MultipartFile> imageFiles, BindingResult result) {
         if (result.hasErrors()) {
             Map<String, String> errors = result.getFieldErrors().stream()
                     .collect(Collectors.toMap(fieldError -> fieldError.getField(), fieldError -> fieldError.getDefaultMessage()));
-            return new ResponseEntity<>(errors, HttpStatus.BAD_REQUEST);
+            return ResponseEntity.badRequest().body(ApiResponse.builder()
+                    .code(HttpStatus.BAD_REQUEST.value())
+                    .message("Error")
+                    .data(errors)
+                    .build());
         }
         productService.updateProduct(id, updatedProductDto, imageFiles);
-        return new ResponseEntity<>(HttpStatus.NO_CONTENT);
-    }
-
-    @DeleteMapping("/{id}")
-    public ResponseEntity<?> moveToTrash(@PathVariable Long id) {
-        productService.moveToTrash(id);
-        return new ResponseEntity<>(HttpStatus.NO_CONTENT);
+        return ResponseEntity.ok(ApiResponse.builder()
+                .code(HttpStatus.NO_CONTENT.value())
+                .message("Update product successfully")
+                .build());
     }
 
     @DeleteMapping("/in-trash/{id}")
-    public ResponseEntity<?> deleteProduct(@PathVariable Long id) {
+    ApiResponse<?> moveToTrash(@PathVariable Long id) {
+        productService.moveToTrash(id);
+        return ApiResponse.builder()
+                .code(HttpStatus.NO_CONTENT.value())
+                .message("Move to trash product successfully")
+                .build();
+    }
+
+    @DeleteMapping("/{id}")
+    ApiResponse<?> deleteProduct(@PathVariable Long id) {
         productService.deleteProduct(id);
-        return new ResponseEntity<>(HttpStatus.NO_CONTENT);
+        return ApiResponse.builder()
+                .code(HttpStatus.NO_CONTENT.value())
+                .message("Delete Product Successfully")
+                .build();
     }
 
     @GetMapping("/trash")
-    public ResponseEntity<?> getInTrashCategory(@RequestParam(name = "page", defaultValue = "1") int page, @RequestParam(name = "limit", defaultValue = "10") int limit){
-        return ResponseEntity.ok(productService.getInTrash(PageRequest.of(page -1, limit)));
+    ApiResponse<?> getInTrashProduct(@RequestParam(name = "page", defaultValue = "1") int page, @RequestParam(name = "limit", defaultValue = "10") int limit){
+        return ApiResponse.builder()
+                .message("Get in trash Product")
+                .data(productService.getInTrash(PageRequest.of(page -1, limit)))
+                .build();
     }
 }

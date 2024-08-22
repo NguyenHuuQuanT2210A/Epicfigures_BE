@@ -2,7 +2,6 @@ package com.example.orderservice.entities;
 
 import com.example.orderservice.entities.base.BaseEntity;
 import com.example.common.enums.OrderSimpleStatus;
-import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonManagedReference;
 import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
@@ -26,6 +25,16 @@ public class Order extends BaseEntity {
     @GenericGenerator(name = "uuid", strategy = "uuid2")
     private String id;
     private Long userId;
+
+    private String firstName;
+    private String lastName;
+    private String email;
+    private String address;
+    private String phone;
+    private String country;
+    private String postalCode;
+    private String note;
+
     private BigDecimal totalPrice;
     @Enumerated(EnumType.ORDINAL)
     private OrderSimpleStatus status;
@@ -34,8 +43,8 @@ public class Order extends BaseEntity {
     @JsonManagedReference
     private Set<OrderDetail> orderDetails;
 
-    @OneToOne(mappedBy = "order")
-    private OrderInfo orderInfo;
+//    @OneToOne(mappedBy = "order")
+//    private OrderInfo orderInfo;
 
     @Override
     public String toString() {

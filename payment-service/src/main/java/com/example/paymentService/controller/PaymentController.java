@@ -1,6 +1,8 @@
 package com.example.paymentService.controller;
 
+import com.example.paymentService.dto.ApiResponse;
 import com.example.paymentService.dto.OrderInfoRequest;
+import com.example.paymentService.dto.PaymentRequest;
 import com.example.paymentService.entity.Payment;
 import com.example.paymentService.service.PaymentService;
 import lombok.RequiredArgsConstructor;
@@ -11,7 +13,6 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import java.io.UnsupportedEncodingException;
-import java.net.URI;
 import java.util.*;
 
 @RestController
@@ -20,24 +21,26 @@ import java.util.*;
 public class PaymentController {
     private final PaymentService paymentService;
 
-    @GetMapping("/create_payment")
-    public String creatPayment(@RequestBody OrderInfoRequest request) throws UnsupportedEncodingException {
+    @PostMapping("/create_payment")
+    String creatPayment(@RequestBody PaymentRequest request) throws UnsupportedEncodingException {
 //        String baseUrl = request.getScheme() + "://" + request.getServerName() + ":" + request.getServerPort()+"/api/v1/payment";
         String baseUrl = "http://localhost:8080";
 
         String url = "";
         if (request.getPayment_method().equalsIgnoreCase("VNPAY")){
-            url = paymentService.creatPayment( baseUrl, request.getOrder().getId());
+            url = paymentService.creatPayment( baseUrl, request.getOrderId());
             Map<String, String> response = new HashMap<>();
             response.put("paymentUrl", url);
+            paymentService.savePayment(request);
+        }if (request.getPayment_method().equalsIgnoreCase("COD")){
+            paymentService.savePayment(request);
+            url = "payment success";
         }
-
-        paymentService.savePayment(request);
         return url;
     }
 
     @GetMapping("/vnPayReturn/{orderId}")
-    public ResponseEntity<String> handleVnPayReturn(@RequestParam(name = "vnp_ResponseCode") String responseCode,
+    ResponseEntity<String> handleVnPayReturn(@RequestParam(name = "vnp_ResponseCode") String responseCode,
                                                     @PathVariable String orderId
                                                     ) {
             // Xử lý phản hồi từ VNPAY
@@ -57,18 +60,27 @@ public class PaymentController {
     }
 
     @GetMapping("/id/{userId}")
-    public ResponseEntity<Page<Payment>> getByUsername(@RequestParam(defaultValue = "1") int page,
-                                                       @RequestParam(defaultValue = "5") int limit,
-                                                       @PathVariable Long userId){
-        return ResponseEntity.ok(paymentService.getByUsername(PageRequest.of(page-1, limit),userId));
+    ApiResponse<Page<Payment>> getByUsername(@RequestParam(defaultValue = "1") int page,
+                                             @RequestParam(defaultValue = "5") int limit,
+                                             @PathVariable Long userId){
+        return ApiResponse.<Page<Payment>>builder()
+                .message("Get Payment by UserName")
+                .data(paymentService.getByUsername(PageRequest.of(page-1, limit),userId))
+                .build();
     }
      @GetMapping("/{id}")
-        public ResponseEntity<Payment> getById(@PathVariable Long id){
-            return ResponseEntity.ok(paymentService.getById(id));
-        }
+     ApiResponse<Payment> getById(@PathVariable Long id){
+         return ApiResponse.<Payment>builder()
+                 .message("Get Payment by Id")
+                 .data(paymentService.getById(id))
+                 .build();
+     }
     @GetMapping("/order/{id}")
-    public ResponseEntity<Payment> getByOrderId(@PathVariable String id){
-        return ResponseEntity.ok(paymentService.getByOrderId(id));
+    ApiResponse<Payment> getByOrderId(@PathVariable String id){
+        return ApiResponse.<Payment>builder()
+                .message("Get Payment by OrderId")
+                .data(paymentService.getByOrderId(id))
+                .build();
     }
 
 }

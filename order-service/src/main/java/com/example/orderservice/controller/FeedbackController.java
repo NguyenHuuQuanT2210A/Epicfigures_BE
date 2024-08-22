@@ -1,14 +1,12 @@
 package com.example.orderservice.controller;
 
 import com.example.orderservice.dto.request.FeedbackRequest;
-import com.example.common.dto.response.ApiResponse;
+import com.example.orderservice.dto.response.ApiResponse;
 import com.example.orderservice.dto.response.FeedbackResponse;
 import com.example.orderservice.entities.OrderDetailId;
 import com.example.orderservice.service.FeedbackService;
 import io.swagger.v3.oas.annotations.tags.Tag;
-import lombok.AccessLevel;
 import lombok.RequiredArgsConstructor;
-import lombok.experimental.FieldDefaults;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
@@ -18,15 +16,14 @@ import java.util.List;
 @RestController
 @RequiredArgsConstructor
 @RequestMapping("api/v1/feedback")
-@FieldDefaults(level = AccessLevel.PRIVATE, makeFinal = true)
 public class FeedbackController {
-    FeedbackService feedbackService;
+    private final FeedbackService feedbackService;
 
     @GetMapping("/{id}")
     ApiResponse<FeedbackResponse> getFeedbackById(@PathVariable Long id) {
         return ApiResponse.<FeedbackResponse>builder()
                 .message("Get Feedback by Id")
-                .result(feedbackService.findById(id))
+                .data(feedbackService.findById(id))
                 .build();
     }
 
@@ -34,7 +31,7 @@ public class FeedbackController {
     ApiResponse<FeedbackResponse> getFeedbackByOrderDetailId(@RequestBody OrderDetailId orderDetailId) {
         return ApiResponse.<FeedbackResponse>builder()
                 .message("Get Feedback by Order Detail Id")
-                .result(feedbackService.findByOrderDetailId(orderDetailId))
+                .data(feedbackService.findByOrderDetailId(orderDetailId))
                 .build();
     }
 
@@ -42,7 +39,7 @@ public class FeedbackController {
     ApiResponse<List<FeedbackResponse>> getFeedbackByUserId(@PathVariable Long userId) {
         return ApiResponse.<List<FeedbackResponse>>builder()
                 .message("Get Feedback by User Id")
-                .result(feedbackService.findByUserId(userId))
+                .data(feedbackService.findByUserId(userId))
                 .build();
     }
 
@@ -50,7 +47,7 @@ public class FeedbackController {
     ApiResponse<List<FeedbackResponse>> getFeedbackByProductId(@PathVariable Long productId) {
         return ApiResponse.<List<FeedbackResponse>>builder()
                 .message("Get Feedback by Product Id")
-                .result(feedbackService.findByProductId(productId))
+                .data(feedbackService.findByProductId(productId))
                 .build();
     }
 
@@ -65,8 +62,8 @@ public class FeedbackController {
     @PutMapping("/{id}")
     ApiResponse<FeedbackResponse> updateFeedback(@PathVariable Long id, @RequestBody FeedbackRequest request) {
         return ApiResponse.<FeedbackResponse>builder()
-                .message("Updated Feedback success")
-                .result(feedbackService.updateFeedback(id, request))
+                .message("Updated Feedback")
+                .data(feedbackService.updateFeedback(id, request))
                 .build();
     }
 
@@ -74,7 +71,7 @@ public class FeedbackController {
     ApiResponse<String> deleteFeedback(@PathVariable Long id) {
         feedbackService.deleteFeedback(id);
         return ApiResponse.<String>builder()
-                .message("Deleted Feedback Success!")
+                .message("Deleted Feedback Successfully!")
                 .build();
     }
 

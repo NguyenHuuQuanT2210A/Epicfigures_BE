@@ -1,6 +1,7 @@
 package com.example.orderservice.service;
 
 import com.example.common.dto.ProductDTO;
+import com.example.orderservice.dto.response.ApiResponse;
 import org.springframework.cloud.openfeign.FeignClient;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
@@ -14,8 +15,8 @@ import java.util.Set;
 public interface ProductServiceClient {
 
     @GetMapping("/{id}")
-    ProductDTO getProductById(@PathVariable("id") Long id);
+    ApiResponse<ProductDTO> getProductById(@PathVariable("id") Long id);
 
     @PostMapping("/list")
-    List<ProductDTO> getProductsByIds(@RequestBody Set<Long> productIds);
+    ApiResponse<List<ProductDTO>> getProductsByIds(@RequestBody Set<Long> productIds);
 }

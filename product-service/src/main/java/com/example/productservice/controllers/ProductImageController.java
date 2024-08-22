@@ -1,6 +1,7 @@
 package com.example.productservice.controllers;
 
 import com.example.productservice.dto.ProductImageDTO;
+import com.example.productservice.dto.response.ApiResponse;
 import com.example.productservice.exception.CustomException;
 import com.example.productservice.services.FileStorageService;
 import com.example.productservice.services.ProductImageService;
@@ -25,22 +26,25 @@ public class ProductImageController {
     private final FileStorageService fileStorageService;
 
     @GetMapping("/{productId}")
-    public List<ProductImageDTO> getProductImages(@PathVariable Long productId) {
-        return productImageSevice.getProductImages(productId);
+    ApiResponse<List<ProductImageDTO>> getProductImages(@PathVariable Long productId) {
+        return ApiResponse.<List<ProductImageDTO>>builder()
+                .message("Get all Product Images By Product ID")
+                .data(productImageSevice.getProductImages(productId))
+                .build();
     }
 
     @DeleteMapping("/{id}")
-    public void deleteProductImage(@PathVariable Long id) {
+    void deleteProductImage(@PathVariable Long id) {
         productImageSevice.deleteProductImage(id);
     }
 
     @DeleteMapping("/product/{productId}")
-    public void deleteProductImages(@PathVariable Long productId) {
+    void deleteProductImages(@PathVariable Long productId) {
         productImageSevice.deleteProductImages(productId);
     }
 
     @DeleteMapping("/products")
-    public void deleteProductImages(@RequestParam List<Long> productIds) {
+    void deleteProductImages(@RequestParam List<Long> productIds) {
         productImageSevice.deleteProductImages(productIds);
     }
 
@@ -48,17 +52,23 @@ public class ProductImageController {
             MediaType.APPLICATION_FORM_URLENCODED_VALUE,
             MediaType.APPLICATION_JSON_VALUE},
             produces = MediaType.APPLICATION_JSON_VALUE)
-    public List<ProductImageDTO> saveProductImage(@RequestParam Long productId, @RequestParam("files") List<MultipartFile> imageFiles){
-        return productImageSevice.saveProductImage(productId, imageFiles);
+    ApiResponse<List<ProductImageDTO>> saveProductImage(@RequestParam Long productId, @RequestParam("files") List<MultipartFile> imageFiles){
+        return ApiResponse.<List<ProductImageDTO>>builder()
+                .message("Create a new Product Image")
+                .data(productImageSevice.saveProductImage(productId, imageFiles))
+                .build();
     }
 
     @PutMapping
-    public List<ProductImageDTO> updateProductImage(@RequestParam Long productId, @RequestParam List<Long> productImageIds, @RequestParam("files") List<MultipartFile> imageFiles) {
-        return productImageSevice.updateProductImage(productId, productImageIds, imageFiles);
+    ApiResponse<List<ProductImageDTO>> updateProductImage(@RequestParam Long productId, @RequestParam List<Long> productImageIds, @RequestParam("files") List<MultipartFile> imageFiles) {
+        return ApiResponse.<List<ProductImageDTO>>builder()
+                .message("Update Product Image")
+                .data(productImageSevice.updateProductImage(productId, productImageIds, imageFiles))
+                .build();
     }
 
     @GetMapping("/images/{filename:.+}")
-    public ResponseEntity<?> downloadFile(@PathVariable String filename, HttpServletRequest request){
+    ResponseEntity<?> downloadFile(@PathVariable String filename, HttpServletRequest request){
         Resource resource = fileStorageService.loadProductImageFileAsResource(filename);
 
         String contentType;
@@ -79,8 +89,10 @@ public class ProductImageController {
 
     @PreAuthorize("hasRole('ROLE_ADMIN')")
     @DeleteMapping ("/images/{filename:.+}")
-    public ResponseEntity<?> deleteFile(@PathVariable String filename){
+    ResponseEntity<?> deleteFile(@PathVariable String filename){
         fileStorageService.deleteProductImageFile(filename);
-        return new ResponseEntity<>(HttpStatus.OK);
+        return ResponseEntity.ok(ApiResponse.builder()
+                .message("delete images successfully")
+                .build());
     }
 }
