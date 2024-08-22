@@ -44,8 +44,8 @@ public class WhiteListController {
     }
 
     @PostMapping
-    ApiResponse<WhiteList> createWhiteList(@RequestBody UserAndProductId ids) {
-        return ApiResponse.<WhiteList>builder()
+    ApiResponse<String> createWhiteList(@RequestBody UserAndProductId ids) {
+        return ApiResponse.<String>builder()
                 .code(HttpStatus.CREATED.value())
                 .message("Created white list")
                 .data(whiteListService.addWhiteList(ids))

@@ -71,10 +71,18 @@ public class CartController {
     }
 
     @DeleteMapping
-    ResponseEntity<ApiResponse<String>> deleteById(@RequestBody UserAndProductId ids) {
-        cartService.deleteCart(ids);
+    ResponseEntity<ApiResponse<String>> deleteById(@RequestBody UserAndProductId id) {
+        cartService.deleteCart(id);
         return ResponseEntity.ok(ApiResponse.<String>builder()
                 .message("Deleted Cart Successfully")
+                .build());
+    }
+
+    @DeleteMapping("/ids")
+    ResponseEntity<ApiResponse<String>> deleteByIds(@RequestBody List<UserAndProductId> ids) {
+        cartService.deleteCarts(ids);
+        return ResponseEntity.ok(ApiResponse.<String>builder()
+                .message("Deleted Carts Successfully")
                 .build());
     }
 

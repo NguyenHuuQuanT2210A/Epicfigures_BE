@@ -4,11 +4,13 @@ import com.example.userservice.entities.UserAndProductId;
 import com.example.userservice.entities.WhiteList;
 
 import java.util.List;
+import java.util.Optional;
 
 public interface WhiteListService {
     List<WhiteList> getAllWhiteList();
+    Optional<WhiteList> getWhiteListById(UserAndProductId ids);
     List<WhiteList> getWhiteListByUserId(Long userId);
     List<WhiteList> getWhiteListByProductId(Long productId);
-    WhiteList addWhiteList(UserAndProductId ids);
+    String addWhiteList(UserAndProductId ids);
     void deleteWhiteList(UserAndProductId ids);
 }

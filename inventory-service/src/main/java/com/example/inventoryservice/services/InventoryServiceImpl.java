@@ -13,6 +13,7 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 
+import java.time.LocalDateTime;
 import java.util.List;
 
 @Slf4j
@@ -49,9 +50,19 @@ public class InventoryServiceImpl implements InventoryService {
 
     @Override
     public InventoryResponse addInventory(InventoryRequest inventoryRequest) {
+        ApiResponse<ProductDTO> product = productClients.getProductById(inventoryRequest.getProductId());
+
         Inventory inventory = inventoryMapper.toInventory(inventoryRequest);
-        inventory.setDate(LocalDatetimeConverter.toLocalDateTime(inventoryRequest.getDate(), true));
-        return inventoryMapper.toInventoryResponse(inventoryRepository.save(inventory));
+        inventory.setType(inventoryRequest.getType().toUpperCase());
+//        inventory.setDate(LocalDatetimeConverter.toLocalDateTime(inventoryRequest.getDate(), true));
+        inventory.setDate(LocalDateTime.now());
+        inventoryRepository.save(inventory);
+
+        Integer stockQuantity = product.getData().getStockQuantity() + inventoryRequest.getQuantity();
+
+        productClients.updateStockQuantity(product.getData().getProductId(), stockQuantity);
+
+        return inventoryMapper.toInventoryResponse(inventory);
     }
 
     @Override

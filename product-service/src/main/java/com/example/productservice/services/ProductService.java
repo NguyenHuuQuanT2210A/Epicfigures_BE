@@ -19,6 +19,7 @@ public interface ProductService {
     Page<ProductDTO> findByCategory(Pageable pageable, CategoryDTO category);
     void addProduct(ProductDTO productDTO, List<MultipartFile> imageFiles);
     void updateProduct(long id, ProductDTO updatedProductDTO, List<MultipartFile> imageFiles);
+    void updateStockQuantity(long id, Integer stockQuantity);
     void deleteProduct(long id);
     void moveToTrash(Long id);
     Page<ProductDTO> getInTrash(Pageable pageable);

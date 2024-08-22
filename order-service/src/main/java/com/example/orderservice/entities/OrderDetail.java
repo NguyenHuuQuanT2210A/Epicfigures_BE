@@ -23,7 +23,6 @@ public class OrderDetail {
     private Order order;
     private Integer quantity;
     private BigDecimal unitPrice;
-    private Boolean isOrdered = false;
 
     @OneToOne(mappedBy = "orderDetail")
     private Feedback feedback;

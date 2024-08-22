@@ -32,21 +32,27 @@ public class OrderDetailService {
         if (orderDetailDTO == null) {
             throw new CustomException("OrderDetailDTO is null", HttpStatus.BAD_REQUEST);
         }
-        OrderDetail orderDetail = orderDetailRepository.findOrderDetailById(orderDetailDTO.getId());
-        if (orderDetail != null) {
-            if (orderDetail.getUnitPrice() == null) {
-                orderDetail.setUnitPrice(orderDetailDTO.getUnitPrice());
-            }
-            orderDetail.setQuantity(orderDetail.getQuantity() + orderDetailDTO.getQuantity());
-            return orderDetailMapper.INSTANCE.orderDetailToOrderDetailDTO(orderDetailRepository.save(orderDetail));
-        }
+//        OrderDetail orderDetail = orderDetailRepository.findOrderDetailById(orderDetailDTO.getId());
+//        if (orderDetail != null) {
+//            if (orderDetail.getUnitPrice() == null) {
+//                orderDetail.setUnitPrice(orderDetailDTO.getUnitPrice());
+//            }
+//            orderDetail.setQuantity(orderDetail.getQuantity() + orderDetailDTO.getQuantity());
+//            return orderDetailMapper.INSTANCE.orderDetailToOrderDetailDTO(orderDetailRepository.save(orderDetail));
+//        }
 
-        orderDetail = orderDetailMapper.INSTANCE.orderDetailDTOToOrderDetail(orderDetailDTO);
+        OrderDetail orderDetail = orderDetailMapper.INSTANCE.orderDetailDTOToOrderDetail(orderDetailDTO);
         orderDetail.setId(new OrderDetailId(orderDetailDTO.getId().getOrderId(), orderDetailDTO.getId().getProductId()));
         orderDetail.setUnitPrice(orderDetailDTO.getUnitPrice());
+        orderDetail.setQuantity(orderDetailDTO.getQuantity());
+        orderDetailRepository.save(orderDetail);
 
-        return orderDetailMapper.INSTANCE.orderDetailToOrderDetailDTO(
-                orderDetailRepository.save(orderDetail));
+        var product = productServiceClient.getProductById(orderDetail.getId().getProductId());
+        Integer stockQuantity = product.getData().getStockQuantity() - orderDetail.getQuantity();
+
+        productServiceClient.updateStockQuantity(product.getData().getProductId(), stockQuantity);
+
+        return orderDetailMapper.INSTANCE.orderDetailToOrderDetailDTO(orderDetail);
     }
 
     public OrderDetailDTO updateOrderDetail(OrderDetailDTO orderDetailDTO) {

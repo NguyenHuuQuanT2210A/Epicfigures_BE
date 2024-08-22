@@ -8,6 +8,7 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
+import java.util.Optional;
 
 @Service
 @RequiredArgsConstructor
@@ -17,6 +18,11 @@ public class WhiteListServiceImpl implements WhiteListService {
     @Override
     public List<WhiteList> getAllWhiteList() {
         return whiteListRepository.findAll().stream().toList();
+    }
+
+    @Override
+    public Optional<WhiteList> getWhiteListById(UserAndProductId ids) {
+        return whiteListRepository.findById(ids);
     }
 
     @Override
@@ -30,8 +36,14 @@ public class WhiteListServiceImpl implements WhiteListService {
     }
 
     @Override
-    public WhiteList addWhiteList(UserAndProductId ids) {
-        return whiteListRepository.save(WhiteList.builder().id(ids).build());
+    public String addWhiteList(UserAndProductId ids) {
+        var whiteList = getWhiteListById(ids);
+        if (whiteList.isPresent()) {
+            deleteWhiteList(ids);
+            return "Delete White List Successfully!";
+        }
+        whiteListRepository.save(WhiteList.builder().id(ids).build());
+        return "Add White List Successfully!";
     }
 
     @Override

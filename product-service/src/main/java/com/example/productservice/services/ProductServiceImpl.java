@@ -26,13 +26,9 @@ import java.util.Set;
 @Service
 @RequiredArgsConstructor
 public class ProductServiceImpl implements ProductService {
-
     private final ProductRepository productRepository;
-
     private final CategoryService categoryService;
-
     private final ProductMapper productMapper;
-
     private final CategoryMapper categoryMapper;
     private final ProductImageService productImageService;
 
@@ -58,8 +54,7 @@ public class ProductServiceImpl implements ProductService {
 
     @Override
     public ProductDTO getProductById(Long id) {
-        Product product = productRepository.findById(id)
-                .orElseThrow(() -> new NotFoundException("Product not found with id: " + id));
+        Product product = findProductById(id);
         return productMapper.INSTANCE.productToProductDTO(product);
     }
 
@@ -84,6 +79,7 @@ public class ProductServiceImpl implements ProductService {
         if (categoryDTO == null) {
             throw new RuntimeException("Can not find category with id " + productDTO.getCategoryId());
         }
+
 
         Product product = productMapper.INSTANCE.productDTOToProduct(productDTO);
 
@@ -165,9 +161,15 @@ public class ProductServiceImpl implements ProductService {
     }
 
     @Override
+    public void updateStockQuantity(long id, Integer stockQuantity) {
+        Product product = findProductById(id);
+        product.setStockQuantity(stockQuantity);
+        productRepository.save(product);
+    }
+
+    @Override
     public void deleteProduct(long id) {
-        productRepository.findById(id)
-                .orElseThrow(() -> new NotFoundException("Product not found with id: " + id));
+        findProductById(id);
 
         productRepository.deleteById(id);
     }
@@ -187,5 +189,9 @@ public class ProductServiceImpl implements ProductService {
     public Page<ProductDTO> getInTrash(Pageable pageable) {
         Page<Product> products = productRepository.findByDeletedAtIsNotNull(pageable);
         return products.map(productMapper.INSTANCE::productToProductDTO);
+    }
+
+    private Product findProductById(long id) {
+        return productRepository.findById(id).orElseThrow(() -> new NotFoundException("Product not found with id: " + id));
     }
 }

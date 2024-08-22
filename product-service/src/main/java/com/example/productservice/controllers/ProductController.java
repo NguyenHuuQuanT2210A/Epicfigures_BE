@@ -148,4 +148,13 @@ public class ProductController {
                 .data(productService.getInTrash(PageRequest.of(page -1, limit)))
                 .build();
     }
+
+    @PutMapping("/updateQuantity/{id}")
+    ApiResponse<?> updateStockQuantity(@PathVariable Long id, @RequestParam Integer quantity) {
+        productService.updateStockQuantity(id, quantity);
+        return ApiResponse.builder()
+                .code(HttpStatus.OK.value())
+                .message("Update stock quantity successfully")
+                .build();
+    }
 }

@@ -7,6 +7,7 @@ import com.example.orderservice.dto.OrderDetailDTO;
 import com.example.common.dto.UserDTO;
 import com.example.orderservice.dto.request.FeedbackRequest;
 import com.example.orderservice.dto.request.PaymentRequest;
+import com.example.orderservice.dto.request.UserAndProductId;
 import com.example.orderservice.dto.response.ApiResponse;
 import com.example.orderservice.entities.Order;
 import com.example.orderservice.entities.OrderDetailId;
@@ -48,6 +49,7 @@ public class OrderServiceImpl implements OrderService {
     private final FeedbackRepository feedbackRepository;
     private final FeedbackMapper feedbackMapper;
     private final PaymentClient paymentClient;
+    private final CartClient cartClient;
 
     Specification<jakarta.persistence.criteria.Order> specification = Specification.where(null);
 
@@ -140,14 +142,15 @@ public class OrderServiceImpl implements OrderService {
             }
             try {
                 newOrder = orderMapper.orderDTOToOrder(orderDTO);
-                newOrder.setTotalPrice(BigDecimal.ZERO);
+                newOrder.setTotalPrice(orderDTO.getTotalPrice());
                 newOrder.setStatus(OrderSimpleStatus.CREATED);
 
                 // Save the order first to get the order ID
                 newOrder = orderRepository.save(newOrder);
 
                 Set<OrderDetailDTO> orderDetails = new HashSet<>();
-                Set<Long> productIds = new HashSet<>();
+//                Set<Long> productIds = new HashSet<>();
+                List<UserAndProductId> ids = new ArrayList<>();
 
                 Order finalNewOrder = newOrder;
                 orderDTO.getCartItems().forEach(cartItem -> {
@@ -158,19 +161,20 @@ public class OrderServiceImpl implements OrderService {
                             .unitPrice(cartItem.getUnitPrice())
                             .build());
 
-                    productIds.add(cartItem.getProductId());
+                    ids.add(new UserAndProductId(cartItem.getUserId(), cartItem.getProductId()));
+//                    productIds.add(cartItem.getProductId());
                 });
 
-                ApiResponse<List<ProductDTO>> products = productService.getProductsByIds(productIds);
-
-                Map<Long, BigDecimal> productPriceMap = products.getData().stream()
-                        .collect(Collectors.toMap(ProductDTO::getProductId, ProductDTO::getPrice));
-
-                // Set unit price for each order detail
-                orderDetails.forEach(orderDetailDTO -> {
-                    BigDecimal price = productPriceMap.get(orderDetailDTO.getId().getProductId());
-                    orderDetailDTO.setUnitPrice(price);
-                });
+//                ApiResponse<List<ProductDTO>> products = productService.getProductsByIds(productIds);
+//
+//                Map<Long, BigDecimal> productPriceMap = products.getData().stream()
+//                        .collect(Collectors.toMap(ProductDTO::getProductId, ProductDTO::getPrice));
+//
+//                // Set unit price for each order detail
+//                orderDetails.forEach(orderDetailDTO -> {
+//                    BigDecimal price = productPriceMap.get(orderDetailDTO.getId().getProductId());
+//                    orderDetailDTO.setUnitPrice(price);
+//                });
 
                 // Convert OrderDetailDTO to OrderDetail and set them to newOrder
                 newOrder.setOrderDetails(orderDetails.stream()
@@ -178,14 +182,14 @@ public class OrderServiceImpl implements OrderService {
                         .map(orderDetailMapper::orderDetailDTOToOrderDetail)
                         .collect(Collectors.toSet()));
 
-                BigDecimal totalPrice = newOrder.getTotalPrice().add(orderDetails.stream()
-                        .map(orderDetail -> orderDetail.getUnitPrice().multiply(BigDecimal.valueOf(orderDetail.getQuantity())))
-                        .reduce(BigDecimal.ZERO, BigDecimal::add));
-
-                newOrder.setTotalPrice(totalPrice);
+//                BigDecimal totalPrice = newOrder.getTotalPrice().add(orderDetails.stream()
+//                        .map(orderDetail -> orderDetail.getUnitPrice().multiply(BigDecimal.valueOf(orderDetail.getQuantity())))
+//                        .reduce(BigDecimal.ZERO, BigDecimal::add));
+//
+//                newOrder.setTotalPrice(totalPrice);
                 // Save the order again with the new order details and total price
                 newOrder = orderRepository.save(newOrder);
-
+                cartClient.deleteByIds(ids);
             } catch (Exception e) {
                 e.printStackTrace();
                 throw new CustomException("Error while creating order", HttpStatus.BAD_REQUEST);

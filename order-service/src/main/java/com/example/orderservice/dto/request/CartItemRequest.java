@@ -10,7 +10,7 @@ import java.math.BigDecimal;
 @Builder
 public class CartItemRequest {
     private Long productId;
-    private Integer userId; // to find shopping cart
+    private Long userId; // to find shopping cart
     private Integer quantity;
     private BigDecimal unitPrice;
 }

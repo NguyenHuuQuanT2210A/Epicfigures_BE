@@ -86,9 +86,17 @@ public class CartServiceImpl implements CartService {
     }
 
     @Override
-    public void deleteCart(UserAndProductId ids) {
-        cartRepository.deleteById(ids);
+    public void deleteCart(UserAndProductId id) {
+        cartRepository.deleteById(id);
     }
+
+    @Override
+    public void deleteCarts(List<UserAndProductId> ids) {
+        for (UserAndProductId id : ids) {
+            deleteCart(id);
+        }
+    }
+
 
     @Override
     @Transactional
