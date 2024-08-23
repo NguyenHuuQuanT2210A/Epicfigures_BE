@@ -1,6 +1,5 @@
 package com.example.orderservice.service;
 
-import com.example.common.dto.ProductDTO;
 import com.example.common.enums.OrderSimpleStatus;
 import com.example.orderservice.dto.OrderDTO;
 import com.example.orderservice.dto.OrderDetailDTO;
@@ -32,7 +31,6 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 
-import java.math.BigDecimal;
 import java.time.LocalDateTime;
 import java.util.*;
 import java.util.stream.Collectors;
@@ -166,6 +164,7 @@ public class OrderServiceImpl implements OrderService {
                 });
 
 //                ApiResponse<List<ProductDTO>> products = productService.getProductsByIds(productIds);
+
 //
 //                Map<Long, BigDecimal> productPriceMap = products.getData().stream()
 //                        .collect(Collectors.toMap(ProductDTO::getProductId, ProductDTO::getPrice));
@@ -304,7 +303,7 @@ public class OrderServiceImpl implements OrderService {
         var order = orderMapper.orderDTOToOrder(findById(id));
 
         if (order.getStatus().ordinal() > status.ordinal()) {
-            throw new IllegalStateException("Cannot change status from " + order.getStatus() + " to " + status);
+            throw new CustomException("Cannot change status from " + order.getStatus() + " to " + status, HttpStatus.BAD_REQUEST);
         }
 
         order.setStatus(status);

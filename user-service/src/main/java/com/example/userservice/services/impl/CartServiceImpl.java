@@ -4,6 +4,8 @@ import com.example.userservice.dtos.response.CartResponse;
 import com.example.userservice.dtos.response.ProductImageResponse;
 import com.example.userservice.entities.UserAndProductId;
 import com.example.userservice.entities.Cart;
+import com.example.userservice.exceptions.AppException;
+import com.example.userservice.exceptions.ErrorCode;
 import com.example.userservice.repositories.CartRepository;
 import com.example.userservice.services.CartService;
 import com.example.userservice.services.ProductClient;
@@ -64,7 +66,7 @@ public class CartServiceImpl implements CartService {
         }else {
             if (product.getData().getStockQuantity() < cart.getQuantity() + cartExist.getQuantity())
             {
-                throw new RuntimeException("Exceeding the available product quantity, please adjust the product quantity!");
+                throw new AppException(ErrorCode.EXCEED_PRODUCT_QUANTITY);
             }
             cartExist.setQuantity(cart.getQuantity() + cartExist.getQuantity());
             cartExist.setUnitPrice(BigDecimal.valueOf(cart.getQuantity()).multiply(product.getData().getPrice()).add(cartExist.getUnitPrice()));
@@ -76,9 +78,9 @@ public class CartServiceImpl implements CartService {
     public Cart updateQuantity(UserAndProductId ids, Integer quantity) {
         Cart cart = getCartById(ids);
         var product = productClient.getProductById(cart.getId().getProductId());
-        if (product.getData().getStockQuantity() < cart.getQuantity() + quantity)
+        if (product.getData().getStockQuantity() < quantity)
         {
-            throw new RuntimeException("Exceeding the available product quantity, please adjust the product quantity!");
+            throw new AppException(ErrorCode.EXCEED_PRODUCT_QUANTITY);
         }
         cart.setQuantity(quantity);
         cart.setUnitPrice(BigDecimal.valueOf(quantity).multiply(product.getData().getPrice()));

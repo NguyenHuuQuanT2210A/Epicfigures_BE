@@ -33,7 +33,7 @@ public class CategoryServiceImpl implements CategoryService{
     public CategoryDTO getCategoryById(Long id) {
         Optional<Category> category = categoryRepository.findById(id);
         if(category.isEmpty()){
-            throw new RuntimeException("Can not find category with id " + id);
+            throw new CategoryNotFoundException("Can not find category with id " + id);
         }
         return CategoryMapper.INSTANCE.categoryToCategoryDTO(category.get());
     }

@@ -5,6 +5,7 @@ import com.example.productservice.dto.ProductDTO;
 import com.example.productservice.dto.ProductImageDTO;
 import com.example.productservice.entities.Category;
 import com.example.productservice.entities.Product;
+import com.example.productservice.exception.CategoryNotFoundException;
 import com.example.productservice.exception.CustomException;
 import com.example.productservice.exception.NotFoundException;
 import com.example.productservice.mapper.CategoryMapper;
@@ -63,7 +64,7 @@ public class ProductServiceImpl implements ProductService {
         List<Product> products = productRepository.findByProductIdIn(productIds);
         products.forEach(product -> {
             if (product.getProductId() == null) {
-                throw new CustomException("Product is not found", HttpStatus.BAD_REQUEST);
+                throw new CustomException("Product is not found", HttpStatus.NOT_FOUND);
             }
         });
         return productMapper.INSTANCE.productListToProductDTOList(products);
@@ -72,12 +73,12 @@ public class ProductServiceImpl implements ProductService {
     @Override
     public void addProduct(ProductDTO productDTO, List<MultipartFile> imageFiles) {
         if (productRepository.existsByName(productDTO.getName())) {
-            throw new RuntimeException("Product already exists with name: " + productDTO.getName());
+            throw new CustomException("Product already exists with name: " + productDTO.getName(), HttpStatus.CONFLICT);
         }
 
         CategoryDTO categoryDTO = categoryService.getCategoryById(productDTO.getCategoryId());
         if (categoryDTO == null) {
-            throw new RuntimeException("Can not find category with id " + productDTO.getCategoryId());
+            throw new CustomException("Can not find category with id " + productDTO.getCategoryId(), HttpStatus.NOT_FOUND);
         }
 
 
@@ -94,7 +95,7 @@ public class ProductServiceImpl implements ProductService {
     public Page<ProductDTO> findByCategory(Pageable pageable, CategoryDTO categoryDTO) {
         CategoryDTO category = categoryService.getCategoryById(categoryDTO.getCategoryId());
         if (category == null) {
-            throw new RuntimeException("Can not find category with id " + categoryDTO.getCategoryId());
+            throw new NotFoundException("Can not find category with id " + categoryDTO.getCategoryId());
         }
         return productRepository.findByCategoryAndDeletedAtIsNull(pageable, categoryMapper.INSTANCE.categoryDTOToCategory(category))
                 .map(productMapper.INSTANCE::productToProductDTO);
@@ -104,14 +105,14 @@ public class ProductServiceImpl implements ProductService {
     public void updateProduct(long id, ProductDTO updatedProductDTO, List<MultipartFile> imageFiles) {
         Optional<Product> existingProduct = productRepository.findById(id);
         if (existingProduct.isEmpty()) {
-            throw new RuntimeException("Can not find product with id" + id);
+            throw new NotFoundException("Can not find product with id" + id);
         }
         if (updatedProductDTO.getPrice() != null) {
             existingProduct.get().setPrice(updatedProductDTO.getPrice());
         }
         if (updatedProductDTO.getName() != null) {
             if (productRepository.existsByName(updatedProductDTO.getName()) && !updatedProductDTO.getProductId().equals(existingProduct.get().getProductId())) {
-                throw new RuntimeException("Product already exists with name: " + updatedProductDTO.getName());
+                throw new CustomException("Product already exists with name: " + updatedProductDTO.getName(), HttpStatus.BAD_REQUEST);
             }
             existingProduct.get().setName(updatedProductDTO.getName());
         }
@@ -143,7 +144,7 @@ public class ProductServiceImpl implements ProductService {
         if (updatedProductDTO.getCategoryId() != null) {
             CategoryDTO categoryDTO = categoryService.getCategoryById(updatedProductDTO.getCategoryId());
             if (categoryDTO == null) {
-                throw new RuntimeException("Can not find category with id " + updatedProductDTO.getCategoryId());
+                throw new CategoryNotFoundException("Can not find category with id " + updatedProductDTO.getCategoryId());
             }
 
             Category category = categoryMapper.INSTANCE.categoryDTOToCategory(categoryDTO);

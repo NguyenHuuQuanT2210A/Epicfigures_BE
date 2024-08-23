@@ -71,5 +71,14 @@ public class GlobalExceptionHandler {
 
         return ResponseEntity.status(errorCode.getStatusCode()).body(apiResponse);
     }
+
+    @ExceptionHandler(CustomException.class)
+    public ResponseEntity<?> handleCustomException(CustomException e) {
+        e.printStackTrace(); // In ra stack trace cho việc debug
+        return ResponseEntity.status(e.getStatus()).body(ApiResponse.builder()
+                .code(e.getStatus().value())
+                .message("Error : " + e.getMessage())
+                .build());
+    }
     
 }

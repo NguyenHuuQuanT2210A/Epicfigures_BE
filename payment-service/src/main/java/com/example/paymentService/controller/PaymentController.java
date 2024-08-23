@@ -1,7 +1,6 @@
 package com.example.paymentService.controller;
 
 import com.example.paymentService.dto.ApiResponse;
-import com.example.paymentService.dto.OrderInfoRequest;
 import com.example.paymentService.dto.PaymentRequest;
 import com.example.paymentService.entity.Payment;
 import com.example.paymentService.service.PaymentService;

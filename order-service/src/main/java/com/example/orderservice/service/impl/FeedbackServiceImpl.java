@@ -6,12 +6,14 @@ import com.example.orderservice.dto.response.FeedbackResponse;
 import com.example.orderservice.entities.Feedback;
 import com.example.orderservice.entities.OrderDetailId;
 import com.example.orderservice.exception.AppException;
+import com.example.orderservice.exception.CustomException;
 import com.example.orderservice.mapper.FeedbackMapper;
 import com.example.orderservice.mapper.OrderDetailMapper;
 import com.example.orderservice.repositories.FeedbackRepository;
 import com.example.orderservice.service.FeedbackService;
 import com.example.orderservice.service.OrderDetailService;
 import lombok.RequiredArgsConstructor;
+import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -67,7 +69,7 @@ public class FeedbackServiceImpl implements FeedbackService {
             Feedback feedback = feedbackMapper.toFeedback(request);
             feedbackRepository.save(feedback);
         }catch (Exception e) {
-            throw new RuntimeException("error while create feedback");
+            throw new CustomException("error while create feedback", HttpStatus.INTERNAL_SERVER_ERROR);
         }
     }
 
@@ -78,7 +80,7 @@ public class FeedbackServiceImpl implements FeedbackService {
         try {
             return feedbackMapper.toFeedbackResponse(feedbackRepository.save(feedbackUpdate));
         }catch (Exception e) {
-            throw new RuntimeException("error while updating feedback");
+            throw new CustomException("error while updating feedback", HttpStatus.INTERNAL_SERVER_ERROR);
         }
     }
 

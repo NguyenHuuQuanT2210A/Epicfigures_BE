@@ -1,5 +1,6 @@
 package com.example.userservice.exceptions;
 
+import com.example.userservice.dtos.response.ApiResponse;
 import com.example.userservice.securities.jwt.AccessDeniedHandler;
 import jakarta.validation.ConstraintViolationException;
 import jakarta.ws.rs.ForbiddenException;
@@ -71,9 +72,12 @@ public class GlobalExceptionHandler {
 //    }
 
     @ExceptionHandler(CustomException.class)
-    public ResponseEntity<String> handleCustomException(CustomException e) {
+    public ResponseEntity<?> handleCustomException(CustomException e) {
         e.printStackTrace(); // In ra stack trace cho việc debug
-        return ResponseEntity.status(e.getStatus()).body("Error: " + e.getMessage());
+        return ResponseEntity.status(e.getStatus()).body(ApiResponse.builder()
+                .code(e.getStatus().value())
+                .message("Error : " + e.getMessage())
+                .build());
     }
 
     @ExceptionHandler(ForbiddenException.class)
@@ -89,5 +93,16 @@ public class GlobalExceptionHandler {
     public ResponseEntity<String> handleServiceNotFoundException(ServiceNotFoundException e) {
         e.printStackTrace(); // In ra stack trace cho việc debug
         return ResponseEntity.status(HttpStatus.NOT_FOUND).body("Error: " + e.getMessage());
+    }
+
+    @ExceptionHandler(AppException.class)
+    ResponseEntity<ApiResponse> handlingAppException(AppException exception) {
+        ErrorCode errorCode = exception.getErrorCode();
+        ApiResponse apiResponse = new ApiResponse();
+
+        apiResponse.setCode(errorCode.getCode());
+        apiResponse.setMessage(errorCode.getMessage());
+
+        return ResponseEntity.status(errorCode.getStatusCode()).body(apiResponse);
     }
 }

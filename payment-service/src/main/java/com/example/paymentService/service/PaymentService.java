@@ -123,19 +123,19 @@ public class PaymentService {
     }
 
     public void savePayment(PaymentRequest request){
-        OrderDTO order = restTemplate.getForObject("http://localhost:8084/api/v1/orders/"+ request.getOrderId(), OrderDTO.class);
+        ApiResponse<OrderDTO> order = restTemplate.getForObject("http://localhost:8084/api/v1/orders/"+ request.getOrderId(), ApiResponse.class);
 
         assert order != null;
+        ObjectMapper objectMapper = new ObjectMapper();
+        OrderDTO orderDTO = objectMapper.convertValue(order.getData(), OrderDTO.class);
 
         paymentRepository.save(Payment.builder()
-                        .userId(order.getUserId())
-                        .payment_method(request.getPayment_method().toUpperCase())
-                        .paidAt(now())
-                        .total(order.getTotalPrice())
-                        .orderId(request.getOrderId())
-                        .status(PaymentStatus.PENDING)
-                .build());
-
+                .userId(orderDTO.getUserId())
+                .payment_method(request.getPayment_method().toUpperCase())
+                .paidAt(now())
+                .total(orderDTO.getTotalPrice())
+                .orderId(request.getOrderId())
+                .status(PaymentStatus.PENDING).build());
     }
     public void updateStatusPayment(Boolean isDone, String orderId){
         Payment payment = paymentRepository.findByOrderId(orderId);

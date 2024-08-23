@@ -51,7 +51,7 @@ public class UserServiceImpl implements UserService {
     public UserDTO findByUsername(String username) {
         User user = userRepository.findByUsername(username).orElse(null);
         if (user == null) {
-            throw new UsernameNotFoundException("Cannot find this username: " + username);
+            throw new CustomException("Cannot find this username: " + username, HttpStatus.NOT_FOUND);
         }
         return UserMapper.INSTANCE.userToUserDTO(user);
     }
@@ -84,24 +84,24 @@ public class UserServiceImpl implements UserService {
 
         if (strRoles == null) {
             Role userRole = roleRepository.findByName(ERole.ROLE_USER)
-                    .orElseThrow(() -> new RuntimeException("Error: Role is not found."));
+                    .orElseThrow(() -> new CustomException("Error: Role is not found.", HttpStatus.NOT_FOUND));
             roles.add(userRole);
         } else {
             strRoles.forEach(role -> {
                 switch (role) {
                     case "admin" -> {
                         Role adminRole = roleRepository.findByName(ERole.ROLE_ADMIN)
-                                .orElseThrow(() -> new RuntimeException("Error: Role is not found."));
+                                .orElseThrow(() -> new CustomException("Error: Role is not found.", HttpStatus.NOT_FOUND));
                         roles.add(adminRole);
                     }
                     case "mod" -> {
                         Role modRole = roleRepository.findByName(ERole.ROLE_MODERATOR)
-                                .orElseThrow(() -> new RuntimeException("Error: Role is not found."));
+                                .orElseThrow(() -> new CustomException("Error: Role is not found.", HttpStatus.NOT_FOUND));
                         roles.add(modRole);
                     }
                     default -> {
                         Role userRole = roleRepository.findByName(ERole.ROLE_USER)
-                                .orElseThrow(() -> new RuntimeException("Error: Role is not found."));
+                                .orElseThrow(() -> new CustomException("Error: Role is not found.", HttpStatus.NOT_FOUND));
                         roles.add(userRole);
                     }
                 }

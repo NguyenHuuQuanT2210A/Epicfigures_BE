@@ -1,5 +1,6 @@
 package com.example.inventoryservice.exception;
 
+import com.example.inventoryservice.dto.ApiResponse;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.HttpStatusCode;
@@ -28,10 +29,14 @@ public class CustomExceptionHandler extends ResponseEntityExceptionHandler {
         ErrorResponse error = new ErrorResponse("Validation Failed", details);
         return new ResponseEntity(error, status);
     }
+
     @ExceptionHandler(CustomException.class)
-    public ResponseEntity<String> handleCustomException(CustomException e) {
+    public ResponseEntity<?> handleCustomException(CustomException e) {
         e.printStackTrace(); // In ra stack trace cho việc debug
-        return ResponseEntity.status(e.getStatus()).body("Error: " + e.getMessage());
+        return ResponseEntity.status(e.getStatus()).body(ApiResponse.builder()
+                .code(e.getStatus().value())
+                .message("Error : " + e.getMessage())
+                .build());
     }
 
     @ExceptionHandler(ForbiddenException.class)

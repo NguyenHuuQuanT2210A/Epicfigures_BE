@@ -1,6 +1,7 @@
 package com.example.productservice.exception;
 
 //import jakarta.validation.ConstraintViolationException;
+import com.example.productservice.dto.response.ApiResponse;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.MethodArgumentNotValidException;
@@ -17,10 +18,11 @@ import java.util.Map;
 public class GlobalExceptionHandler {
     @ExceptionHandler(NotFoundException.class)
     @ResponseStatus(HttpStatus.NOT_FOUND)
-    public ResponseEntity<Map<String, String>> handleProductNotFoundException(NotFoundException ex) {
-        Map<String, String> errorResponse = new HashMap<>();
-        errorResponse.put("message", ex.getMessage());
-        return new ResponseEntity<>(errorResponse, HttpStatus.NOT_FOUND);
+    public ResponseEntity<?> handleProductNotFoundException(NotFoundException ex) {
+        return ResponseEntity.status(HttpStatus.NOT_FOUND).body(ApiResponse.builder()
+                .code(HttpStatus.NOT_FOUND.value())
+                .message("message : " + ex.getMessage())
+                .build());
     }
 
     @ExceptionHandler(MethodArgumentNotValidException.class)
@@ -61,10 +63,11 @@ public class GlobalExceptionHandler {
 
     @ExceptionHandler(CategoryNotFoundException.class)
     @ResponseStatus(HttpStatus.NOT_FOUND)
-    public Map<String, String> handleCategoryNotFoundException(CategoryNotFoundException ex) {
-        Map<String, String> errorResponse = new HashMap<>();
-        errorResponse.put("message", ex.getMessage());
-        return errorResponse;
+    public ResponseEntity<?> handleCategoryNotFoundException(CategoryNotFoundException ex) {
+        return ResponseEntity.status(HttpStatus.NOT_FOUND).body(ApiResponse.builder()
+                .code(HttpStatus.NOT_FOUND.value())
+                .message("message : " + ex.getMessage())
+                .build());
     }
 
     @ExceptionHandler(FeedbackNotFoundException.class)
