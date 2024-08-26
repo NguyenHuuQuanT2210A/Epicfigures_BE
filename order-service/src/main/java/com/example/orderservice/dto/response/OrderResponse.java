@@ -3,8 +3,6 @@ package com.example.orderservice.dto.response;
 import com.example.common.enums.OrderSimpleStatus;
 import com.example.orderservice.dto.OrderDetailDTO;
 import com.example.orderservice.dto.UserDTO;
-import com.example.orderservice.dto.request.CartItemRequest;
-import com.fasterxml.jackson.annotation.JsonInclude;
 import jakarta.persistence.EnumType;
 import jakarta.persistence.Enumerated;
 import lombok.AllArgsConstructor;
@@ -17,7 +15,6 @@ import java.util.Set;
 @Data
 @AllArgsConstructor
 @NoArgsConstructor
-@JsonInclude(JsonInclude.Include.NON_NULL)
 public class OrderResponse {
     private String id;
     private Long userId;
@@ -39,5 +36,5 @@ public class OrderResponse {
     private String createdAt;
     private String updatedAt;
     private UserDTO user;
-    private Set<OrderDetailDTO> orderDetails;
+    private Set<OrderDetailResponse> orderDetails;
 }

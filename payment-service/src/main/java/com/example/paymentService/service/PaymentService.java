@@ -5,7 +5,6 @@ import com.example.common.event.RequestUpdateStatusOrder;
 import com.example.paymentService.config.Config;
 import com.example.paymentService.config.KafkaProducer;
 import com.example.paymentService.dto.ApiResponse;
-import com.example.paymentService.dto.OrderInfoRequest;
 import com.example.paymentService.dto.PaymentRequest;
 import com.example.paymentService.entity.Payment;
 import com.example.paymentService.enums.PaymentStatus;

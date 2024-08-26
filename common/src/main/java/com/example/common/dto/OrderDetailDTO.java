@@ -1,6 +1,5 @@
 package com.example.common.dto;
 
-import com.example.common.dto.OrderDetailId;
 import jakarta.persistence.EmbeddedId;
 import lombok.AllArgsConstructor;
 import lombok.Data;

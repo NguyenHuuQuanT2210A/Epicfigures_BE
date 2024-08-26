@@ -8,6 +8,7 @@ import com.example.orderservice.dto.request.FeedbackRequest;
 import com.example.orderservice.dto.request.PaymentRequest;
 import com.example.orderservice.dto.request.UserAndProductId;
 import com.example.orderservice.dto.response.ApiResponse;
+import com.example.orderservice.dto.response.OrderDetailResponse;
 import com.example.orderservice.dto.response.OrderResponse;
 import com.example.orderservice.entities.Order;
 import com.example.orderservice.entities.OrderDetailId;
@@ -126,21 +127,16 @@ public class OrderServiceImpl implements OrderService {
         return ordersPage;
     }
 
-    public OrderResponse findById(String id){
-        var orderResponse = orderMapper.toOrderResponse(findOrderById(id));
-        for (OrderDetailDTO orderDetailDTO : orderResponse.getOrderDetails()) {
-            var data = productService.getProductById(orderDetailDTO.getId().getProductId());
-            orderDetailDTO.setProductDTO(data.getData());
-        }
-        return orderResponse;
+    public OrderDTO findById(String id){
+        return orderMapper.orderToOrderDTO(findOrderById(id));
     }
 
     @Override
     public OrderResponse findMyOrder(String orderId) {
         var orderResponse = orderMapper.toOrderResponse(findOrderById(orderId));
-        for (OrderDetailDTO orderDetailDTO : orderResponse.getOrderDetails()) {
-            var data = productService.getProductById(orderDetailDTO.getId().getProductId());
-            orderDetailDTO.setProductDTO(data.getData());
+        for (OrderDetailResponse orderDetailResponse : orderResponse.getOrderDetails()) {
+            var data = productService.getProductById(orderDetailResponse.getId().getProductId());
+            orderDetailResponse.setProductDTO(data.getData());
         }
         return orderResponse;
     }
@@ -220,7 +216,7 @@ public class OrderServiceImpl implements OrderService {
     }
 
     public Object updateOrder(OrderDTO order) {
-        OrderResponse existingOrder = findById(order.getId());
+        OrderResponse existingOrder = orderMapper.toOrderResponse(findOrderById(order.getId()));
         if (existingOrder == null) {
             return "Order not found";
         }
