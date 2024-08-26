@@ -36,7 +36,7 @@ public class OrderDTO {
     private String country;
     private String postalCode;
     private String note;
-    private String payment_method;
+    private String paymentMethod;
 
     private BigDecimal totalPrice;
     @Enumerated(EnumType.ORDINAL)

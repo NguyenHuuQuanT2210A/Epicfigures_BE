@@ -26,13 +26,13 @@ public class PaymentController {
         String baseUrl = "http://localhost:8080";
 
         String url = "";
-        if (request.getPayment_method().equalsIgnoreCase("VNPAY")){
+        if (request.getPaymentMethod().equalsIgnoreCase("VNPAY")){
             url = paymentService.creatPayment( baseUrl, request.getOrderId());
             Map<String, String> response = new HashMap<>();
             response.put("paymentUrl", url);
-            paymentService.savePayment(request);
-        }if (request.getPayment_method().equalsIgnoreCase("COD")){
-            paymentService.savePayment(request);
+            paymentService.savePayment(request.getOrderId());
+        }if (request.getPaymentMethod().equalsIgnoreCase("COD")){
+            paymentService.savePayment(request.getOrderId());
             url = "payment success";
         }
         return url;

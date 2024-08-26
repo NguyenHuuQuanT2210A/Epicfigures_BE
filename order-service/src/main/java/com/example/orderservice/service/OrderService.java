@@ -14,7 +14,6 @@ public interface OrderService {
     Page<OrderResponse> getAll(Pageable pageable);
     Page<OrderResponse> findAllAndSorting(SearchBody searchBody);
     OrderDTO findById(String id);
-    OrderResponse findMyOrder(String orderId);
     String createOrder(OrderDTO order);
     Object updateOrder(OrderDTO order);
     Object deleteOrder(String id);

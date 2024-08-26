@@ -131,16 +131,6 @@ public class OrderServiceImpl implements OrderService {
         return orderMapper.orderToOrderDTO(findOrderById(id));
     }
 
-    @Override
-    public OrderResponse findMyOrder(String orderId) {
-        var orderResponse = orderMapper.toOrderResponse(findOrderById(orderId));
-        for (OrderDetailResponse orderDetailResponse : orderResponse.getOrderDetails()) {
-            var data = productService.getProductById(orderDetailResponse.getId().getProductId());
-            orderDetailResponse.setProductDTO(data.getData());
-        }
-        return orderResponse;
-    }
-
     public String createOrder(OrderDTO orderDTO){
         try {
             Order newOrder;
@@ -154,6 +144,7 @@ public class OrderServiceImpl implements OrderService {
                 newOrder = orderMapper.orderDTOToOrder(orderDTO);
                 newOrder.setTotalPrice(orderDTO.getTotalPrice());
                 newOrder.setStatus(OrderSimpleStatus.CREATED);
+                newOrder.setPaymentMethod(orderDTO.getPaymentMethod().toUpperCase());
 
                 // Save the order first to get the order ID
                 newOrder = orderRepository.save(newOrder);
@@ -206,7 +197,7 @@ public class OrderServiceImpl implements OrderService {
                 throw new CustomException("Error while creating order", HttpStatus.BAD_REQUEST);
             }
 
-            paymentResponse = paymentClient.creatPayment(new PaymentRequest(newOrder.getId(), orderDTO.getPayment_method()));
+            paymentResponse = paymentClient.creatPayment(new PaymentRequest(newOrder.getId(), orderDTO.getPaymentMethod()));
 
             return paymentResponse;
         } catch (Exception e) {
@@ -292,7 +283,14 @@ public class OrderServiceImpl implements OrderService {
         Pageable sortedPage = PageRequest.of(searchBody.getPage()-1, searchBody.getLimit(), Sort.by(orders));
         Page<OrderResponse> ordersPage;
         try {
+
             ordersPage = orderRepository.findOrderByUserId(userId, specification, sortedPage).map(orderMapper.INSTANCE::toOrderResponse);
+            ordersPage.getContent().forEach(order -> {
+                order.getOrderDetails().forEach(orderDetailResponse -> {
+                    var data = productService.getProductById(orderDetailResponse.getId().getProductId());
+                    orderDetailResponse.setProductDTO(data.getData());
+                });
+            });
         } catch (Exception e) {
             e.printStackTrace();
             throw new CustomException("Error while fetching orders", HttpStatus.BAD_REQUEST);

@@ -50,14 +50,6 @@ public class OrderController {
                 .build();
     }
 
-    @GetMapping("/myOrder/{orderId}")
-    public ApiResponse<?> getProductByOrderId(@PathVariable String orderId) {
-        return ApiResponse.builder()
-                .message("Get Product By Order Id")
-                .data(orderService.findMyOrder(orderId))
-                .build();
-    }
-
     @PostMapping("user/{id}")
     public ApiResponse<?> getOrderByUserId(@PathVariable Long id, @RequestBody SearchBody search) {
         return ApiResponse.builder()

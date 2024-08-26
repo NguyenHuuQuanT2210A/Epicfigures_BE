@@ -9,5 +9,5 @@ import lombok.NoArgsConstructor;
 @AllArgsConstructor
 public class PaymentRequest {
     private String orderId;
-    private String payment_method;
+    private String paymentMethod;
 }

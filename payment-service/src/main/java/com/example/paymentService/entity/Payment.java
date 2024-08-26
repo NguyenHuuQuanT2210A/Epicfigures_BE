@@ -23,7 +23,6 @@ public class Payment {
     private Long id;
     private Long userId;
     private BigDecimal total;
-    private String payment_method;
     private String orderId;
     private LocalDateTime paidAt;
     private PaymentStatus status;

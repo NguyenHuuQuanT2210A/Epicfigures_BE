@@ -29,7 +29,8 @@ public class OrderDTO {
     private String country;
     private String postalCode;
     private String note;
-    private String payment_method;
+    private String paymentMethod;
+
     private String status;
     private String createdAt;
     private String updatedAt;

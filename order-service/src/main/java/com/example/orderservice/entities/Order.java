@@ -34,6 +34,7 @@ public class Order extends BaseEntity {
     private String country;
     private String postalCode;
     private String note;
+    private String paymentMethod;
 
     private BigDecimal totalPrice;
     @Enumerated(EnumType.ORDINAL)
