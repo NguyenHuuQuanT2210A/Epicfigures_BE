@@ -18,6 +18,7 @@ import org.springframework.web.multipart.MultipartFile;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Objects;
 import java.util.stream.Collectors;
 
 @Service
@@ -121,7 +122,15 @@ public class ProductImageServiceImpl implements ProductImageService {
         }
 
         // Add new product images
-        List<ProductImageDTO> updatedImages = new ArrayList<>();
+        //đoạn sửa
+        var productImages = productImageRepository.findByProductProductId(product.getProductId()).stream().map(productImageMapper::productImageToProductImageDTO).toList();
+        List<ProductImageDTO> updatedImages = new ArrayList<>(productImages);
+
+        if (imageFiles.size() == 1 && Objects.equals(imageFiles.get(0).getOriginalFilename(), "")){
+            return updatedImages;
+        }
+        //end
+
         for (MultipartFile imageFile : imageFiles) {
             ProductImage productImageEntity = new ProductImage();
             productImageEntity.setProduct(productMapper.INSTANCE.productDTOToProduct(product));

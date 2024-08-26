@@ -156,6 +156,11 @@ public class ProductServiceImpl implements ProductService {
         List<ProductImageDTO> productImageDTOs = productImageService.getProductImages(existingProduct.get().getProductId());
         for (ProductImageDTO productImageDTO : productImageDTOs) {
             productImageIds.add(productImageDTO.getImageId());
+            //đoạn sửa
+            if (!updatedProductDTO.getImages().contains(productImageDTO)) {
+                productImageIds.add(productImageDTO.getImageId());
+            }
+            //end
         }
         productImageService.updateProductImage(existingProduct.get().getProductId(), productImageIds , imageFiles);
 
