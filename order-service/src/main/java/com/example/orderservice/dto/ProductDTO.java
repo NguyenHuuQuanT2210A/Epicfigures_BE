@@ -44,4 +44,5 @@ public class ProductDTO {
     private LocalDateTime updatedAt;
 
     private LocalDateTime deletedAt;
+    private Set<ProductImageDTO> productImageDTOs;
 }

@@ -8,6 +8,7 @@ import com.example.orderservice.dto.request.FeedbackRequest;
 import com.example.orderservice.dto.request.PaymentRequest;
 import com.example.orderservice.dto.request.UserAndProductId;
 import com.example.orderservice.dto.response.ApiResponse;
+import com.example.orderservice.dto.response.OrderResponse;
 import com.example.orderservice.entities.Order;
 import com.example.orderservice.entities.OrderDetailId;
 import com.example.orderservice.exception.CustomException;
@@ -52,12 +53,12 @@ public class OrderServiceImpl implements OrderService {
     Specification<jakarta.persistence.criteria.Order> specification = Specification.where(null);
 
     @Override
-    public Page<OrderDTO> getAll(Pageable pageable) {
+    public Page<OrderResponse> getAll(Pageable pageable) {
         Page<Order> orderPage = orderRepository.findAll(pageable);
-        return orderPage.map(OrderMapper.INSTANCE::orderToOrderDTO);
+        return orderPage.map(OrderMapper.INSTANCE::toOrderResponse);
     }
 
-    public Page<OrderDTO> findAllAndSorting(SearchBody searchBody){
+    public Page<OrderResponse> findAllAndSorting(SearchBody searchBody){
 
         if (searchBody.getStatus() != null){
             specification = specification.and(new OrderSpecification(new SearchCriteria("status", SearchCriteriaOperator.EQUALS, searchBody.getStatus())));
@@ -114,9 +115,9 @@ public class OrderServiceImpl implements OrderService {
 
         orders.add(order1);
         Pageable sortedPage = PageRequest.of(searchBody.getPage()-1, searchBody.getLimit(), Sort.by(orders));
-        Page<OrderDTO> ordersPage;
+        Page<OrderResponse> ordersPage;
         try {
-           ordersPage = orderRepository.findAll(specification, sortedPage).map(orderMapper.INSTANCE::orderToOrderDTO);
+           ordersPage = orderRepository.findAll(specification, sortedPage).map(orderMapper.INSTANCE::toOrderResponse);
         } catch (Exception e) {
             e.printStackTrace();
             throw new CustomException("Error while fetching orders", HttpStatus.BAD_REQUEST);
@@ -125,8 +126,23 @@ public class OrderServiceImpl implements OrderService {
         return ordersPage;
     }
 
-    public OrderDTO findById(String id){
-        return orderRepository.findById(id).map(orderMapper::orderToOrderDTO).orElse(null);
+    public OrderResponse findById(String id){
+        var orderResponse = orderMapper.toOrderResponse(findOrderById(id));
+        for (OrderDetailDTO orderDetailDTO : orderResponse.getOrderDetails()) {
+            var data = productService.getProductById(orderDetailDTO.getId().getProductId());
+            orderDetailDTO.setProductDTO(data.getData());
+        }
+        return orderResponse;
+    }
+
+    @Override
+    public OrderResponse findMyOrder(String orderId) {
+        var orderResponse = orderMapper.toOrderResponse(findOrderById(orderId));
+        for (OrderDetailDTO orderDetailDTO : orderResponse.getOrderDetails()) {
+            var data = productService.getProductById(orderDetailDTO.getId().getProductId());
+            orderDetailDTO.setProductDTO(data.getData());
+        }
+        return orderResponse;
     }
 
     public String createOrder(OrderDTO orderDTO){
@@ -204,12 +220,12 @@ public class OrderServiceImpl implements OrderService {
     }
 
     public Object updateOrder(OrderDTO order) {
-        OrderDTO existingOrder = findById(order.getId());
+        OrderResponse existingOrder = findById(order.getId());
         if (existingOrder == null) {
             return "Order not found";
         }
         Order updatedOrder = orderMapper.orderDTOToOrder(order);
-        return orderMapper.orderToOrderDTO(orderRepository.save(updatedOrder));
+        return orderMapper.toOrderResponse(orderRepository.save(updatedOrder));
     }
 
     public ResponseEntity<?> deleteOrder(String id) {
@@ -221,7 +237,7 @@ public class OrderServiceImpl implements OrderService {
         return ResponseEntity.ok("Order deleted successfully");
     }
 
-    public Page<OrderDTO> findByUserId(Long userId, SearchBody searchBody) {
+    public Page<OrderResponse> findByUserId(Long userId, SearchBody searchBody) {
 
         if (searchBody.getStatus() != null){
             specification = specification.and(new OrderSpecification(new SearchCriteria("status", SearchCriteriaOperator.EQUALS, searchBody.getStatus())));
@@ -278,9 +294,9 @@ public class OrderServiceImpl implements OrderService {
 
         orders.add(order1);
         Pageable sortedPage = PageRequest.of(searchBody.getPage()-1, searchBody.getLimit(), Sort.by(orders));
-        Page<OrderDTO> ordersPage;
+        Page<OrderResponse> ordersPage;
         try {
-            ordersPage = orderRepository.findOrderByUserId(userId, specification, sortedPage).map(orderMapper.INSTANCE::orderToOrderDTO);
+            ordersPage = orderRepository.findOrderByUserId(userId, specification, sortedPage).map(orderMapper.INSTANCE::toOrderResponse);
         } catch (Exception e) {
             e.printStackTrace();
             throw new CustomException("Error while fetching orders", HttpStatus.BAD_REQUEST);
@@ -294,13 +310,17 @@ public class OrderServiceImpl implements OrderService {
         return orderRepository.findByUserId(userId);
     }
 
-    public OrderDTO findCartByUserId(Long id) {
-        return orderMapper.INSTANCE.orderToOrderDTO(orderRepository.findOrderByUserIdAndStatus(id, OrderSimpleStatus.CREATED));
+    public OrderResponse findCartByUserId(Long id) {
+        return orderMapper.INSTANCE.toOrderResponse(orderRepository.findOrderByUserIdAndStatus(id, OrderSimpleStatus.CREATED));
     }
 
     @Override
-    public OrderDTO changeStatus(String id, OrderSimpleStatus status) {
-        var order = orderMapper.orderDTOToOrder(findById(id));
+    public OrderResponse changeStatus(String id, OrderSimpleStatus status) {
+        var order = findOrderById(id);
+
+        if (order.getStatus().equals(OrderSimpleStatus.CANCEL)){
+            throw new CustomException("Cannot change status" + order.getStatus(), HttpStatus.BAD_REQUEST);
+        }
 
         if (order.getStatus().ordinal() > status.ordinal()) {
             throw new CustomException("Cannot change status from " + order.getStatus() + " to " + status, HttpStatus.BAD_REQUEST);
@@ -315,6 +335,10 @@ public class OrderServiceImpl implements OrderService {
             }
         }
         orderRepository.save(order);
-        return orderMapper.orderToOrderDTO(order);
+        return orderMapper.toOrderResponse(order);
+    }
+
+    private Order findOrderById(String id) {
+        return orderRepository.findById(id).orElseThrow(() -> new CustomException("Order not found", HttpStatus.NOT_FOUND));
     }
 }
