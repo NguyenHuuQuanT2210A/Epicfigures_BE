@@ -1,6 +1,6 @@
-package com.example.orderservice.dto.response;
+package com.example.common.dto.response;
 
-import com.example.orderservice.entities.OrderDetailId;
+import com.example.common.dto.OrderDetailId;
 import com.fasterxml.jackson.annotation.JsonInclude;
 import lombok.AllArgsConstructor;
 import lombok.Builder;

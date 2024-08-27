@@ -122,14 +122,12 @@ public class ProductImageServiceImpl implements ProductImageService {
         }
 
         // Add new product images
-        //đoạn sửa
         var productImages = productImageRepository.findByProductProductId(product.getProductId()).stream().map(productImageMapper::productImageToProductImageDTO).toList();
         List<ProductImageDTO> updatedImages = new ArrayList<>(productImages);
 
         if (imageFiles.size() == 1 && Objects.equals(imageFiles.get(0).getOriginalFilename(), "")){
             return updatedImages;
         }
-        //end
 
         for (MultipartFile imageFile : imageFiles) {
             ProductImage productImageEntity = new ProductImage();

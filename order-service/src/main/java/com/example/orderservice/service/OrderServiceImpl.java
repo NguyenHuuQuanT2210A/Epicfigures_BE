@@ -1,5 +1,6 @@
 package com.example.orderservice.service;
 
+import com.example.common.dto.ProductDTO;
 import com.example.common.enums.OrderSimpleStatus;
 import com.example.orderservice.dto.OrderDTO;
 import com.example.orderservice.dto.OrderDetailDTO;
@@ -127,8 +128,8 @@ public class OrderServiceImpl implements OrderService {
         return ordersPage;
     }
 
-    public OrderDTO findById(String id){
-        return orderMapper.orderToOrderDTO(findOrderById(id));
+    public OrderResponse findById(String id){
+        return orderMapper.toOrderResponse(findOrderById(id));
     }
 
     public String createOrder(OrderDTO orderDTO){
@@ -285,12 +286,12 @@ public class OrderServiceImpl implements OrderService {
         try {
 
             ordersPage = orderRepository.findOrderByUserId(userId, specification, sortedPage).map(orderMapper.INSTANCE::toOrderResponse);
-            ordersPage.getContent().forEach(order -> {
-                order.getOrderDetails().forEach(orderDetailResponse -> {
-                    var data = productService.getProductById(orderDetailResponse.getId().getProductId());
-                    orderDetailResponse.setProductDTO(data.getData());
-                });
-            });
+//            ordersPage.getContent().forEach(order -> {
+//                order.getOrderDetails().forEach(orderDetailResponse -> {
+//                    var data = productService.getProductById(orderDetailResponse.getId().getProductId());
+//                    orderDetailResponse.setProductDTO(data.getData());
+//                });
+//            });
         } catch (Exception e) {
             e.printStackTrace();
             throw new CustomException("Error while fetching orders", HttpStatus.BAD_REQUEST);
@@ -300,8 +301,8 @@ public class OrderServiceImpl implements OrderService {
     }
 
     @Override
-    public List<Order> findByUserId(Long userId) {
-        return orderRepository.findByUserId(userId);
+    public List<OrderResponse> findByUserId(Long userId) {
+        return orderRepository.findByUserId(userId).stream().map(orderMapper::toOrderResponse).collect(Collectors.toList());
     }
 
     public OrderResponse findCartByUserId(Long id) {
@@ -330,6 +331,17 @@ public class OrderServiceImpl implements OrderService {
         }
         orderRepository.save(order);
         return orderMapper.toOrderResponse(order);
+    }
+
+    @Override
+    public List<ProductDTO> findProductsByOrderId(String orderId) {
+        var order = findOrderById(orderId);
+        List<ProductDTO> products = new ArrayList<>();
+        for (var orderDetail : order.getOrderDetails()){
+            var product = productService.getProductById(orderDetail.getId().getProductId());
+            products.add(product.getData());
+        }
+        return products;
     }
 
     private Order findOrderById(String id) {

@@ -89,4 +89,12 @@ public class OrderController {
                 .message("Delete Order Successfully!")
                 .build();
     }
+
+    @GetMapping("products")
+    public ApiResponse<?> getProductByOrderId(@RequestParam String orderId) {
+        return ApiResponse.builder()
+                .message("Get Product By Order Id")
+                .data(orderService.findProductsByOrderId(orderId))
+                .build();
+    }
 }

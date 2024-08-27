@@ -24,4 +24,5 @@ public interface ProductService {
     void moveToTrash(Long id);
     Page<ProductDTO> getInTrash(Pageable pageable);
     List<ProductDTO> getProductsByIds(Set<Long> productIds);
+    List<ProductDTO> getProductsByOrderId(String orderId);
 }

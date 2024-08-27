@@ -3,6 +3,7 @@ package com.example.productservice.services;
 import com.example.productservice.dto.CategoryDTO;
 import com.example.productservice.dto.ProductDTO;
 import com.example.productservice.dto.ProductImageDTO;
+import com.example.productservice.dto.response.ApiResponse;
 import com.example.productservice.entities.Category;
 import com.example.productservice.entities.Product;
 import com.example.productservice.exception.CategoryNotFoundException;
@@ -16,6 +17,7 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
+import org.springframework.web.client.RestTemplate;
 import org.springframework.web.multipart.MultipartFile;
 
 import java.time.LocalDateTime;
@@ -32,6 +34,7 @@ public class ProductServiceImpl implements ProductService {
     private final ProductMapper productMapper;
     private final CategoryMapper categoryMapper;
     private final ProductImageService productImageService;
+    private final RestTemplate restTemplate;
 
     @Override
     public int countProducts() {
@@ -68,6 +71,18 @@ public class ProductServiceImpl implements ProductService {
             }
         });
         return productMapper.INSTANCE.productListToProductDTOList(products);
+    }
+
+    @Override
+    public List<ProductDTO> getProductsByOrderId(String orderId) {
+//        ApiResponse<OrderR> order = restTemplate.getForObject("http://localhost:8084/api/v1/orders/"+ orderId, ApiResponse.class);
+
+        List<ProductDTO> products = new ArrayList<>();
+//        for (var orderDetail : order.getOrderDetails()){
+//            var product = getProductById(orderDetail.getId().getProductId());
+//            products.add(product);
+//        }
+        return products;
     }
 
     @Override
@@ -155,11 +170,9 @@ public class ProductServiceImpl implements ProductService {
         List<Long> productImageIds = new ArrayList<>();
         List<ProductImageDTO> productImageDTOs = productImageService.getProductImages(existingProduct.get().getProductId());
         for (ProductImageDTO productImageDTO : productImageDTOs) {
-            //đoạn sửa
             if (!updatedProductDTO.getImages().contains(productImageDTO)) {
                 productImageIds.add(productImageDTO.getImageId());
             }
-            //end
         }
         productImageService.updateProductImage(existingProduct.get().getProductId(), productImageIds , imageFiles);
 
