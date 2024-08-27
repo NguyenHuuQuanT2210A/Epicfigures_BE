@@ -286,12 +286,12 @@ public class OrderServiceImpl implements OrderService {
         try {
 
             ordersPage = orderRepository.findOrderByUserId(userId, specification, sortedPage).map(orderMapper.INSTANCE::toOrderResponse);
-//            ordersPage.getContent().forEach(order -> {
-//                order.getOrderDetails().forEach(orderDetailResponse -> {
-//                    var data = productService.getProductById(orderDetailResponse.getId().getProductId());
-//                    orderDetailResponse.setProductDTO(data.getData());
-//                });
-//            });
+            ordersPage.getContent().forEach(order -> {
+                order.getOrderDetails().forEach(orderDetailResponse -> {
+                    var data = productService.getProductById(orderDetailResponse.getId().getProductId());
+                    orderDetailResponse.setProductName(data.getData().getName());
+                });
+            });
         } catch (Exception e) {
             e.printStackTrace();
             throw new CustomException("Error while fetching orders", HttpStatus.BAD_REQUEST);
