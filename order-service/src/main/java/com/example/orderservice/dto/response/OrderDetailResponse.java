@@ -1,5 +1,6 @@
 package com.example.orderservice.dto.response;
 
+import com.example.common.dto.ProductImageDTO;
 import com.example.orderservice.entities.OrderDetailId;
 import com.fasterxml.jackson.annotation.JsonInclude;
 import lombok.AllArgsConstructor;
@@ -8,6 +9,7 @@ import lombok.Data;
 import lombok.NoArgsConstructor;
 
 import java.math.BigDecimal;
+import java.util.Set;
 
 @Data
 @AllArgsConstructor
@@ -19,4 +21,5 @@ public class OrderDetailResponse {
     private Integer quantity;
     private BigDecimal unitPrice;
     private String productName;
+    private Set<ProductImageDTO> productImages;
 }

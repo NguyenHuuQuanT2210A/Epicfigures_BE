@@ -290,6 +290,7 @@ public class OrderServiceImpl implements OrderService {
                 order.getOrderDetails().forEach(orderDetailResponse -> {
                     var data = productService.getProductById(orderDetailResponse.getId().getProductId());
                     orderDetailResponse.setProductName(data.getData().getName());
+                    orderDetailResponse.setProductImages(data.getData().getImages());
                 });
             });
         } catch (Exception e) {
