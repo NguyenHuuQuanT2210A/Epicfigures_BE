@@ -1,6 +1,7 @@
 package com.example.notificationService.kafka;
 
 import com.example.common.event.CreateEventToNotification;
+import com.example.common.event.RequestUpdateStatusOrder;
 import com.example.notificationService.service.NotificationService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;

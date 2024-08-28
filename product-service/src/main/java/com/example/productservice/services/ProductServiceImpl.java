@@ -51,7 +51,7 @@ public class ProductServiceImpl implements ProductService {
     public ProductDTO getProductByName(String name) {
         Product product = productRepository.findByNameAndDeletedAtIsNull(name);
         if (product == null) {
-            throw new NotFoundException("Product not found with name: " + name);
+            throw new CustomException("Product not found with name: " + name, HttpStatus.BAD_REQUEST);
         }
         return productMapper.INSTANCE.productToProductDTO(product);
     }
@@ -71,18 +71,6 @@ public class ProductServiceImpl implements ProductService {
             }
         });
         return productMapper.INSTANCE.productListToProductDTOList(products);
-    }
-
-    @Override
-    public List<ProductDTO> getProductsByOrderId(String orderId) {
-//        ApiResponse<OrderR> order = restTemplate.getForObject("http://localhost:8084/api/v1/orders/"+ orderId, ApiResponse.class);
-
-        List<ProductDTO> products = new ArrayList<>();
-//        for (var orderDetail : order.getOrderDetails()){
-//            var product = getProductById(orderDetail.getId().getProductId());
-//            products.add(product);
-//        }
-        return products;
     }
 
     @Override
@@ -110,7 +98,7 @@ public class ProductServiceImpl implements ProductService {
     public Page<ProductDTO> findByCategory(Pageable pageable, CategoryDTO categoryDTO) {
         CategoryDTO category = categoryService.getCategoryById(categoryDTO.getCategoryId());
         if (category == null) {
-            throw new NotFoundException("Can not find category with id " + categoryDTO.getCategoryId());
+            throw new CustomException("Can not find category with id " + categoryDTO.getCategoryId(), HttpStatus.NOT_FOUND);
         }
         return productRepository.findByCategoryAndDeletedAtIsNull(pageable, categoryMapper.INSTANCE.categoryDTOToCategory(category))
                 .map(productMapper.INSTANCE::productToProductDTO);
@@ -120,13 +108,13 @@ public class ProductServiceImpl implements ProductService {
     public void updateProduct(long id, ProductDTO updatedProductDTO, List<MultipartFile> imageFiles) {
         Optional<Product> existingProduct = productRepository.findById(id);
         if (existingProduct.isEmpty()) {
-            throw new NotFoundException("Can not find product with id" + id);
+            throw new CustomException("Can not find product with id" + id, HttpStatus.NOT_FOUND);
         }
         if (updatedProductDTO.getPrice() != null) {
             existingProduct.get().setPrice(updatedProductDTO.getPrice());
         }
         if (updatedProductDTO.getName() != null) {
-            if (productRepository.existsByName(updatedProductDTO.getName()) && !updatedProductDTO.getProductId().equals(existingProduct.get().getProductId())) {
+            if (productRepository.existsByName(updatedProductDTO.getName()) && !updatedProductDTO.getName().equals(existingProduct.get().getName())) {
                 throw new CustomException("Product already exists with name: " + updatedProductDTO.getName(), HttpStatus.BAD_REQUEST);
             }
             existingProduct.get().setName(updatedProductDTO.getName());
@@ -196,7 +184,7 @@ public class ProductServiceImpl implements ProductService {
     public void moveToTrash(Long id) {
         Product product = productRepository.findById(id).orElse(null);
         if (product == null) {
-            throw new NotFoundException("Cannot find this product id: " + id);
+            throw new CustomException("Cannot find this product id: " + id, HttpStatus.NOT_FOUND);
         }
         LocalDateTime now = LocalDateTime.now();
         product.setDeletedAt(now);
@@ -210,6 +198,6 @@ public class ProductServiceImpl implements ProductService {
     }
 
     private Product findProductById(long id) {
-        return productRepository.findById(id).orElseThrow(() -> new NotFoundException("Product not found with id: " + id));
+        return productRepository.findById(id).orElseThrow(() -> new CustomException("Product not found with id: " + id, HttpStatus.BAD_REQUEST));
     }
 }

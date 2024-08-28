@@ -1,6 +1,7 @@
 package com.example.paymentService.service;
 
 import com.example.common.dto.response.OrderResponse;
+import com.example.common.event.CreateEventToNotification;
 import com.example.common.event.RequestUpdateStatusOrder;
 import com.example.paymentService.config.Config;
 import com.example.paymentService.config.KafkaProducer;
@@ -69,9 +70,10 @@ public class PaymentService {
         String locate = "vn";
         vnp_Params.put("vnp_Locale", locate);
         urlReturn += Config.urlReturn;
+        vnp_Params.put("vnp_ReturnUrl", urlReturn + "/"+orderId);
 
-        String thankYouPage = "http://localhost:3000/thankyou";
-        vnp_Params.put("vnp_ReturnUrl", thankYouPage);
+//        String thankYouPage = "http://localhost:3000/thankyou";
+//        vnp_Params.put("vnp_ReturnUrl", thankYouPage);
 
         vnp_Params.put("vnp_IpAddr", vnp_IpAddr);
 
@@ -147,6 +149,14 @@ public class PaymentService {
 
 
     public void UpdateStatusOrder(Boolean a, String orderId){
+        ApiResponse<OrderResponse> order = restTemplate.getForObject("http://localhost:8084/api/v1/orders/"+ orderId, ApiResponse.class);
+
+        assert order != null;
+        ObjectMapper objectMapper = new ObjectMapper();
+        OrderResponse orderDTO = objectMapper.convertValue(order.getData(), OrderResponse.class);
+        if (a == true){
+            kafkaProducer.sendEmail(new CreateEventToNotification(orderDTO.getUserId(), orderDTO.getEmail(), orderDTO.getTotalPrice().intValueExact()));
+        }
         RequestUpdateStatusOrder requestUpdateStatusOrder = new RequestUpdateStatusOrder();
         requestUpdateStatusOrder.setStatus(a);
         requestUpdateStatusOrder.setOrderId(orderId);

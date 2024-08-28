@@ -42,6 +42,12 @@ spring:
             - Path=/api/v1/inventory/**
 #          filters:
 #            - JwtAuthenticationFilter
+        - id: payment-service
+          uri: http://localhost:8086
+          predicates:
+            - Path=/api/v1/payment/**
+          filters:
+            - JwtAuthenticationFilter
       globals:
         corsConfigurations:
           '[/**]':

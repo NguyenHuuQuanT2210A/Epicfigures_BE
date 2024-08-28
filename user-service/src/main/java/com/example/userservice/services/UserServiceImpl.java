@@ -121,6 +121,10 @@ public class UserServiceImpl implements UserService {
         if (user == null) {
             throw new CustomException("Cannot find this user id: " + id, HttpStatus.NOT_FOUND);
         }
+        var userDTO = findByUsername(userRequest.getUsername());
+        if (userDTO != null && !user.getUsername().equals(userRequest.getUsername())) {
+            throw new CustomException("User name already exists", HttpStatus.BAD_REQUEST);
+        }
 
         String oldPassword = user.getPassword();
 

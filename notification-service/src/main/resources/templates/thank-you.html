@@ -1,0 +1,32 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <title>Thank You</title>
+</head>
+<body>
+<div class="container" style="font-family: Arial, sans-serif;
+    background-color: #f4f4f4;
+    margin: 0;
+    padding: 0;">
+    <div style="@media screen and (max-width: 600px) { max-width: 100%; border-radius: 0; }; max-width: 600px;
+    margin: 20px auto;
+    background-color: #fff;
+    padding: 20px;
+    border-radius: 8px;
+    box-shadow: 0 0 10px rgba(0,0,0,0.1); ">
+        <h2 style="color: #333;">Order Successfully</h2>
+        <div class="customer-info">
+            <h3>Customer Information</h3>
+            <p>User : <span th:text="${userName}"></span></p>
+        </div>
+        <div class="product-info">
+            <h3>Product Information</h3>
+            <p><span>Total:</span> <span th:text="${total}" VND></span></p>
+        </div>
+        <div class="total-wrapper" style="margin-top: 20px; text-align: right;">
+        </div>
+    </div>
+</div>
+</body>
+</html>

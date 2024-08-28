@@ -11,7 +11,7 @@ import org.springframework.kafka.support.KafkaHeaders;
 import org.springframework.messaging.Message;
 import org.springframework.messaging.support.MessageBuilder;
 
-//@Configuration
+@Configuration
 public class KafkaConfig {
 
     @Value("${spring.kafka.topic.name}")
@@ -19,7 +19,7 @@ public class KafkaConfig {
     @Bean
     public NewTopic createTopic(){
         return TopicBuilder.name(topicName)
-                .partitions(3)
+                .partitions(1)
                 .build();
     }
 

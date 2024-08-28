@@ -129,7 +129,14 @@ public class OrderServiceImpl implements OrderService {
     }
 
     public OrderResponse findById(String id){
-        return orderMapper.toOrderResponse(findOrderById(id));
+        var orderResponse = orderMapper.toOrderResponse(findOrderById(id));
+//        orderResponse.getOrderDetails().forEach(orderDetailResponse -> {
+//            var data = productService.getProductById(orderDetailResponse.getId().getProductId());
+//            orderDetailResponse.setProductName(data.getData().getName());
+//            orderDetailResponse.setProductImages(data.getData().getImages());
+//        });
+
+        return orderResponse;
     }
 
     public String createOrder(OrderDTO orderDTO){

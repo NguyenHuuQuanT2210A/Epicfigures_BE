@@ -23,7 +23,8 @@ public class PaymentController {
     @PostMapping("/create_payment")
     String creatPayment(@RequestBody PaymentRequest request) throws UnsupportedEncodingException {
 //        String baseUrl = request.getScheme() + "://" + request.getServerName() + ":" + request.getServerPort()+"/api/v1/payment";
-        String baseUrl = "http://localhost:3000/thankyou";
+//        String baseUrl = "http://localhost:3000/thankyou";
+        String baseUrl = "http://localhost:8080";
 
         String url = "";
         if (request.getPaymentMethod().equalsIgnoreCase("VNPAY")){
@@ -33,7 +34,9 @@ public class PaymentController {
             paymentService.savePayment(request.getOrderId());
         }if (request.getPaymentMethod().equalsIgnoreCase("COD")){
             paymentService.savePayment(request.getOrderId());
-            url = "payment success";
+            paymentService.updateStatusPayment(true, request.getOrderId());
+            paymentService.UpdateStatusOrder(true, request.getOrderId());
+            url = "Payment Successfully!";
         }
         return url;
     }
@@ -49,12 +52,12 @@ public class PaymentController {
                 paymentService.updateStatusPayment(true, orderId);
                 paymentService.UpdateStatusOrder(true, orderId);
 
-                return ResponseEntity.ok("Giao dịch thành công");
+                return ResponseEntity.ok("Payment Successfully!");
             } else {
                 // Giao dịch không thành công
                 paymentService.updateStatusPayment(false,orderId);
                 paymentService.UpdateStatusOrder(false,orderId);
-                return ResponseEntity.status(HttpStatus.BAD_REQUEST).body("Giao dịch không thành công");
+                return ResponseEntity.status(HttpStatus.BAD_REQUEST).body("Payment Failed!");
             }
     }
 

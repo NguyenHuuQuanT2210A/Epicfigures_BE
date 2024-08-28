@@ -1,5 +1,6 @@
 package com.example.common.dto;
 
+import com.example.common.dto.response.RoleResponse;
 import com.example.common.enums.ERole;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
@@ -7,6 +8,8 @@ import jakarta.persistence.Id;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
+
+import java.util.Set;
 
 @Data
 @AllArgsConstructor
@@ -22,5 +25,5 @@ public class UserDTO {
     private String dateOfBirth;
     private String gender;
     private String avatar;
-    private ERole role;
+    private Set<RoleResponse> roles;
 }

@@ -1,6 +1,8 @@
 package com.example.paymentService.config;
 
+import com.example.common.event.CreateEventToNotification;
 import com.example.common.event.RequestUpdateStatusOrder;
+import com.example.paymentService.event.PaymentCreatedEvent;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -27,6 +29,15 @@ public class KafkaProducer {
         Message<RequestUpdateStatusOrder> message = MessageBuilder
                 .withPayload(a)
                 .setHeader(KafkaHeaders.TOPIC, "order")
+                .build();
+        kafkaTemplate.send(message);
+    }
+
+    public void sendEmail(CreateEventToNotification event){
+        LOGGER.info(String.format("Send email to: ", event.getEmail()));
+        Message<CreateEventToNotification> message = MessageBuilder
+                .withPayload(event)
+                .setHeader(KafkaHeaders.TOPIC, "notification")
                 .build();
         kafkaTemplate.send(message);
     }
