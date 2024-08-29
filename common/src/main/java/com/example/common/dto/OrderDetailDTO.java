@@ -15,4 +15,5 @@ public class OrderDetailDTO {
     private OrderDetailId id = new OrderDetailId();
     private Integer quantity;
     private BigDecimal unitPrice;
+    private ProductDTO product;
 }

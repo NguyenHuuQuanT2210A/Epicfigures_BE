@@ -1,16 +1,15 @@
 package com.example.orderservice.service;
 
+import com.example.common.dto.OrderDTO;
 import com.example.common.dto.ProductDTO;
 import com.example.common.enums.OrderSimpleStatus;
-import com.example.orderservice.dto.OrderDTO;
 import com.example.orderservice.dto.OrderDetailDTO;
 import com.example.common.dto.UserDTO;
 import com.example.orderservice.dto.request.FeedbackRequest;
+import com.example.orderservice.dto.request.OrderRequest;
 import com.example.orderservice.dto.request.PaymentRequest;
 import com.example.orderservice.dto.request.UserAndProductId;
 import com.example.orderservice.dto.response.ApiResponse;
-import com.example.orderservice.dto.response.OrderDetailResponse;
-import com.example.orderservice.dto.response.OrderResponse;
 import com.example.orderservice.entities.Order;
 import com.example.orderservice.entities.OrderDetailId;
 import com.example.orderservice.exception.CustomException;
@@ -55,12 +54,12 @@ public class OrderServiceImpl implements OrderService {
     Specification<jakarta.persistence.criteria.Order> specification = Specification.where(null);
 
     @Override
-    public Page<OrderResponse> getAll(Pageable pageable) {
+    public Page<OrderDTO> getAll(Pageable pageable) {
         Page<Order> orderPage = orderRepository.findAll(pageable);
-        return orderPage.map(OrderMapper.INSTANCE::toOrderResponse);
+        return orderPage.map(OrderMapper.INSTANCE::toOrderDTO);
     }
 
-    public Page<OrderResponse> findAllAndSorting(SearchBody searchBody){
+    public Page<OrderDTO> findAllAndSorting(SearchBody searchBody){
 
         if (searchBody.getStatus() != null){
             specification = specification.and(new OrderSpecification(new SearchCriteria("status", SearchCriteriaOperator.EQUALS, searchBody.getStatus())));
@@ -117,9 +116,9 @@ public class OrderServiceImpl implements OrderService {
 
         orders.add(order1);
         Pageable sortedPage = PageRequest.of(searchBody.getPage()-1, searchBody.getLimit(), Sort.by(orders));
-        Page<OrderResponse> ordersPage;
+        Page<OrderDTO> ordersPage;
         try {
-           ordersPage = orderRepository.findAll(specification, sortedPage).map(orderMapper.INSTANCE::toOrderResponse);
+           ordersPage = orderRepository.findAll(specification, sortedPage).map(orderMapper.INSTANCE::toOrderDTO);
         } catch (Exception e) {
             e.printStackTrace();
             throw new CustomException("Error while fetching orders", HttpStatus.BAD_REQUEST);
@@ -128,31 +127,30 @@ public class OrderServiceImpl implements OrderService {
         return ordersPage;
     }
 
-    public OrderResponse findById(String id){
-        var orderResponse = orderMapper.toOrderResponse(findOrderById(id));
-//        orderResponse.getOrderDetails().forEach(orderDetailResponse -> {
-//            var data = productService.getProductById(orderDetailResponse.getId().getProductId());
-//            orderDetailResponse.setProductName(data.getData().getName());
-//            orderDetailResponse.setProductImages(data.getData().getImages());
-//        });
+    public OrderDTO findById(String id){
+        var orderResponse = orderMapper.toOrderDTO(findOrderById(id));
+        orderResponse.getOrderDetails().forEach(orderDetailResponse -> {
+            var data = productService.getProductById(orderDetailResponse.getId().getProductId());
+            orderDetailResponse.setProduct(data.getData());
+        });
 
         return orderResponse;
     }
 
-    public String createOrder(OrderDTO orderDTO){
+    public String createOrder(OrderRequest request){
         try {
             Order newOrder;
             String paymentResponse;
 
-            ApiResponse<UserDTO> user = userService.getUserById(orderDTO.getUserId());
+            ApiResponse<UserDTO> user = userService.getUserById(request.getUserId());
             if (user.getData() == null) {
                 throw new CustomException("User not found", HttpStatus.BAD_REQUEST);
             }
             try {
-                newOrder = orderMapper.orderDTOToOrder(orderDTO);
-                newOrder.setTotalPrice(orderDTO.getTotalPrice());
+                newOrder = orderMapper.orderDTOToOrder(request);
+                newOrder.setTotalPrice(request.getTotalPrice());
                 newOrder.setStatus(OrderSimpleStatus.CREATED);
-                newOrder.setPaymentMethod(orderDTO.getPaymentMethod().toUpperCase());
+                newOrder.setPaymentMethod(request.getPaymentMethod().toUpperCase());
 
                 // Save the order first to get the order ID
                 newOrder = orderRepository.save(newOrder);
@@ -162,7 +160,7 @@ public class OrderServiceImpl implements OrderService {
                 List<UserAndProductId> ids = new ArrayList<>();
 
                 Order finalNewOrder = newOrder;
-                orderDTO.getCartItems().forEach(cartItem -> {
+                request.getCartItems().forEach(cartItem -> {
                     orderDetails.add(OrderDetailDTO.builder()
                             .order(finalNewOrder)
                             .id(new OrderDetailId(finalNewOrder.getId(), cartItem.getProductId()))
@@ -205,7 +203,7 @@ public class OrderServiceImpl implements OrderService {
                 throw new CustomException("Error while creating order", HttpStatus.BAD_REQUEST);
             }
 
-            paymentResponse = paymentClient.creatPayment(new PaymentRequest(newOrder.getId(), orderDTO.getPaymentMethod()));
+            paymentResponse = paymentClient.creatPayment(new PaymentRequest(newOrder.getId(), request.getPaymentMethod()));
 
             return paymentResponse;
         } catch (Exception e) {
@@ -214,13 +212,13 @@ public class OrderServiceImpl implements OrderService {
         }
     }
 
-    public Object updateOrder(OrderDTO order) {
-        OrderResponse existingOrder = orderMapper.toOrderResponse(findOrderById(order.getId()));
+    public Object updateOrder(OrderRequest request) {
+        OrderDTO existingOrder = orderMapper.toOrderDTO(findOrderById(request.getId()));
         if (existingOrder == null) {
             return "Order not found";
         }
-        Order updatedOrder = orderMapper.orderDTOToOrder(order);
-        return orderMapper.toOrderResponse(orderRepository.save(updatedOrder));
+        Order updatedOrder = orderMapper.orderDTOToOrder(request);
+        return orderMapper.toOrderDTO(orderRepository.save(updatedOrder));
     }
 
     public ResponseEntity<?> deleteOrder(String id) {
@@ -232,7 +230,7 @@ public class OrderServiceImpl implements OrderService {
         return ResponseEntity.ok("Order deleted successfully");
     }
 
-    public Page<OrderResponse> findByUserId(Long userId, SearchBody searchBody) {
+    public Page<OrderDTO> findByUserId(Long userId, SearchBody searchBody) {
 
         if (searchBody.getStatus() != null){
             specification = specification.and(new OrderSpecification(new SearchCriteria("status", SearchCriteriaOperator.EQUALS, searchBody.getStatus())));
@@ -289,15 +287,14 @@ public class OrderServiceImpl implements OrderService {
 
         orders.add(order1);
         Pageable sortedPage = PageRequest.of(searchBody.getPage()-1, searchBody.getLimit(), Sort.by(orders));
-        Page<OrderResponse> ordersPage;
+        Page<OrderDTO> ordersPage;
         try {
 
-            ordersPage = orderRepository.findOrderByUserId(userId, specification, sortedPage).map(orderMapper.INSTANCE::toOrderResponse);
+            ordersPage = orderRepository.findOrderByUserId(userId, specification, sortedPage).map(orderMapper.INSTANCE::toOrderDTO);
             ordersPage.getContent().forEach(order -> {
                 order.getOrderDetails().forEach(orderDetailResponse -> {
                     var data = productService.getProductById(orderDetailResponse.getId().getProductId());
-                    orderDetailResponse.setProductName(data.getData().getName());
-                    orderDetailResponse.setProductImages(data.getData().getImages());
+                    orderDetailResponse.setProduct(data.getData());
                 });
             });
         } catch (Exception e) {
@@ -309,16 +306,16 @@ public class OrderServiceImpl implements OrderService {
     }
 
     @Override
-    public List<OrderResponse> findByUserId(Long userId) {
-        return orderRepository.findByUserId(userId).stream().map(orderMapper::toOrderResponse).collect(Collectors.toList());
+    public List<OrderDTO> findByUserId(Long userId) {
+        return orderRepository.findByUserId(userId).stream().map(orderMapper::toOrderDTO).collect(Collectors.toList());
     }
 
-    public OrderResponse findCartByUserId(Long id) {
-        return orderMapper.INSTANCE.toOrderResponse(orderRepository.findOrderByUserIdAndStatus(id, OrderSimpleStatus.CREATED));
+    public OrderDTO findCartByUserId(Long id) {
+        return orderMapper.INSTANCE.toOrderDTO(orderRepository.findOrderByUserIdAndStatus(id, OrderSimpleStatus.CREATED));
     }
 
     @Override
-    public OrderResponse changeStatus(String id, OrderSimpleStatus status) {
+    public OrderDTO changeStatus(String id, OrderSimpleStatus status) {
         var order = findOrderById(id);
 
         if (order.getStatus().equals(OrderSimpleStatus.CANCEL)){
@@ -338,7 +335,7 @@ public class OrderServiceImpl implements OrderService {
             }
         }
         orderRepository.save(order);
-        return orderMapper.toOrderResponse(order);
+        return orderMapper.toOrderDTO(order);
     }
 
     @Override

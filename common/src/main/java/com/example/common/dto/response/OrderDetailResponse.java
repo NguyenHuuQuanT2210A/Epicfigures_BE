@@ -1,6 +1,7 @@
 package com.example.common.dto.response;
 
 import com.example.common.dto.OrderDetailId;
+import com.example.common.dto.ProductDTO;
 import com.fasterxml.jackson.annotation.JsonInclude;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
@@ -18,5 +19,5 @@ public class OrderDetailResponse {
     private OrderDetailId id;
     private Integer quantity;
     private BigDecimal unitPrice;
-    private String productName;
+    private ProductDTO product;
 }

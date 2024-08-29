@@ -1,7 +1,7 @@
 package com.example.orderservice.controller;
 
 import com.example.common.enums.OrderSimpleStatus;
-import com.example.orderservice.dto.OrderDTO;
+import com.example.orderservice.dto.request.OrderRequest;
 import com.example.orderservice.dto.response.ApiResponse;
 import com.example.orderservice.service.OrderService;
 import com.example.orderservice.specification.SearchBody;
@@ -59,18 +59,18 @@ public class OrderController {
     }
 
     @PostMapping()
-    public ApiResponse<?> createOrder(@RequestBody OrderDTO order) {
+    public ApiResponse<?> createOrder(@RequestBody OrderRequest request) {
         return ApiResponse.builder()
                 .message("Create Order")
-                .data(orderService.createOrder(order))
+                .data(orderService.createOrder(request))
                 .build();
     }
 
     @PutMapping()
-    public ApiResponse<?> updateOrder(@RequestBody OrderDTO order) {
+    public ApiResponse<?> updateOrder(@RequestBody OrderRequest request) {
         return ApiResponse.builder()
                 .message("Update Order")
-                .data(orderService.updateOrder(order))
+                .data(orderService.updateOrder(request))
                 .build();
     }
 

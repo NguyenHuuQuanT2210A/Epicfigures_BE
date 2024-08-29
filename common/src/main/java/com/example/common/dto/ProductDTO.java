@@ -36,10 +36,4 @@ public class ProductDTO {
     private String size;
 
     private String weight;
-
-    private LocalDateTime createdAt;
-
-    private LocalDateTime updatedAt;
-
-    private LocalDateTime deletedAt;
 }

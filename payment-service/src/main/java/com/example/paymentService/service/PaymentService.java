@@ -1,5 +1,6 @@
 package com.example.paymentService.service;
 
+import com.example.common.dto.OrderDTO;
 import com.example.common.dto.response.OrderResponse;
 import com.example.common.event.CreateEventToNotification;
 import com.example.common.event.RequestUpdateStatusOrder;
@@ -39,13 +40,13 @@ public class PaymentService {
     private final KafkaProducer kafkaProducer;
 
     public String creatPayment( String urlReturn, String orderId) throws UnsupportedEncodingException {
-        ApiResponse<OrderResponse> order = restTemplate.getForObject("http://localhost:8084/api/v1/orders/"+ orderId, ApiResponse.class);
+        ApiResponse<?> order = restTemplate.getForObject("http://localhost:8084/api/v1/orders/"+ orderId, ApiResponse.class);
 //        Order order = restTemplate.getForObject("http://orderService/api/v1/order/"+ orderId, Order.class);
 //        Product product = restTemplate.getForObject("http://localhost:8083/api/v1/product/"+ order.getProductId(), Product.class);
 
         assert order != null;
         ObjectMapper objectMapper = new ObjectMapper();
-        OrderResponse orderDTO = objectMapper.convertValue(order.getData(), OrderResponse.class);
+        OrderDTO orderDTO = objectMapper.convertValue(order.getData(), OrderDTO.class);
 
         String vnp_Version = "2.1.0";
         String vnp_Command = "pay";
@@ -70,10 +71,10 @@ public class PaymentService {
         String locate = "vn";
         vnp_Params.put("vnp_Locale", locate);
         urlReturn += Config.urlReturn;
-        vnp_Params.put("vnp_ReturnUrl", urlReturn + "/"+orderId);
+//        vnp_Params.put("vnp_ReturnUrl", urlReturn + "/"+orderId);
 
-//        String thankYouPage = "http://localhost:3000/thankyou";
-//        vnp_Params.put("vnp_ReturnUrl", thankYouPage);
+        String resultPage = "http://localhost:3000/payment";
+        vnp_Params.put("vnp_ReturnUrl", resultPage);
 
         vnp_Params.put("vnp_IpAddr", vnp_IpAddr);
 
@@ -126,7 +127,7 @@ public class PaymentService {
 
         assert order != null;
         ObjectMapper objectMapper = new ObjectMapper();
-        OrderResponse orderDTO = objectMapper.convertValue(order.getData(), OrderResponse.class);
+        OrderDTO orderDTO = objectMapper.convertValue(order.getData(), OrderDTO.class);
 
         paymentRepository.save(Payment.builder()
                 .userId(orderDTO.getUserId())
@@ -153,7 +154,8 @@ public class PaymentService {
 
         assert order != null;
         ObjectMapper objectMapper = new ObjectMapper();
-        OrderResponse orderDTO = objectMapper.convertValue(order.getData(), OrderResponse.class);
+        OrderDTO orderDTO = objectMapper.convertValue(order.getData(), OrderDTO.class);
+
         if (a == true){
             kafkaProducer.sendEmail(new CreateEventToNotification(orderDTO.getUserId(), orderDTO.getEmail(), orderDTO.getTotalPrice().intValueExact()));
         }

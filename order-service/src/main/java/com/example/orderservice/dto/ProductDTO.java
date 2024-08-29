@@ -29,7 +29,7 @@ public class ProductDTO {
 
     private CategoryDTO category;
 
-    private Set<ProductImageDTO> images;
+//    private Set<ProductImageDTO> images;
 
     private Integer stockQuantity;
 
