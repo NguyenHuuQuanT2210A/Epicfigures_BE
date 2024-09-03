@@ -14,7 +14,7 @@ import java.util.concurrent.TimeUnit;
 public class DemoRedisController {
     private final RedisCacheService redisCacheService;
 
-    @GetMapping("push")
+    @GetMapping("/push")
     public String push() {
         try {
             String key = "list";

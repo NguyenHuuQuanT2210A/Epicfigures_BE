@@ -71,7 +71,7 @@ public class Product extends BaseEntity {
 //    private List<ShoppingCart> shoppingCarts;
 //
 //    @OneToOne
-//    private CartItem cartItem;
+//    private CartItemResponse cartItem;
 
     @Override
     public String toString() {

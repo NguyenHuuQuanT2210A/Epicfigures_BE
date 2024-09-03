@@ -50,6 +50,7 @@ public class OrderServiceImpl implements OrderService {
     private final FeedbackMapper feedbackMapper;
     private final PaymentClient paymentClient;
     private final CartClient cartClient;
+    private final CartRedisClient cartRedisClient;
 
     Specification<jakarta.persistence.criteria.Order> specification = Specification.where(null);
 
@@ -172,32 +173,16 @@ public class OrderServiceImpl implements OrderService {
 //                    productIds.add(cartItem.getProductId());
                 });
 
-//                ApiResponse<List<ProductDTO>> products = productService.getProductsByIds(productIds);
-
-//
-//                Map<Long, BigDecimal> productPriceMap = products.getData().stream()
-//                        .collect(Collectors.toMap(ProductDTO::getProductId, ProductDTO::getPrice));
-//
-//                // Set unit price for each order detail
-//                orderDetails.forEach(orderDetailDTO -> {
-//                    BigDecimal price = productPriceMap.get(orderDetailDTO.getId().getProductId());
-//                    orderDetailDTO.setUnitPrice(price);
-//                });
-
                 // Convert OrderDetailDTO to OrderDetail and set them to newOrder
                 newOrder.setOrderDetails(orderDetails.stream()
                         .map(orderDetailService::createOrderDetail)
                         .map(orderDetailMapper::orderDetailDTOToOrderDetail)
                         .collect(Collectors.toSet()));
-
-//                BigDecimal totalPrice = newOrder.getTotalPrice().add(orderDetails.stream()
-//                        .map(orderDetail -> orderDetail.getUnitPrice().multiply(BigDecimal.valueOf(orderDetail.getQuantity())))
-//                        .reduce(BigDecimal.ZERO, BigDecimal::add));
-//
-//                newOrder.setTotalPrice(totalPrice);
+                ;
                 // Save the order again with the new order details and total price
                 newOrder = orderRepository.save(newOrder);
                 cartClient.deleteByIds(ids);
+//                cartRedisClient.deleteByIds(ids);
             } catch (Exception e) {
                 e.printStackTrace();
                 throw new CustomException("Error while creating order", HttpStatus.BAD_REQUEST);

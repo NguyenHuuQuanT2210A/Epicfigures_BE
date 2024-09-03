@@ -23,8 +23,7 @@ public class PaymentController {
     @PostMapping("/create_payment")
     String creatPayment(@RequestBody PaymentRequest request) throws UnsupportedEncodingException {
 //        String baseUrl = request.getScheme() + "://" + request.getServerName() + ":" + request.getServerPort()+"/api/v1/payment";
-        String baseUrl = "http://localhost:3000/payment";
-//        String baseUrl = "http://localhost:8080";
+        String baseUrl = "http://localhost:3000/thankyou";
 
         String url = "";
         if (request.getPaymentMethod().equalsIgnoreCase("VNPAY")){
@@ -36,7 +35,7 @@ public class PaymentController {
             paymentService.savePayment(request.getOrderId());
             paymentService.updateStatusPayment(true, request.getOrderId());
             paymentService.UpdateStatusOrder(true, request.getOrderId());
-            url = "Payment Successfully!";
+            url = "http://localhost:3000/thankyou";
         }
         return url;
     }

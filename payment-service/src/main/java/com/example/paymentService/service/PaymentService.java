@@ -71,10 +71,7 @@ public class PaymentService {
         String locate = "vn";
         vnp_Params.put("vnp_Locale", locate);
         urlReturn += Config.urlReturn;
-//        vnp_Params.put("vnp_ReturnUrl", urlReturn + "/"+orderId);
-
-        String resultPage = "http://localhost:3000/payment";
-        vnp_Params.put("vnp_ReturnUrl", resultPage);
+        vnp_Params.put("vnp_ReturnUrl", urlReturn + "/"+orderId);
 
         vnp_Params.put("vnp_IpAddr", vnp_IpAddr);
 

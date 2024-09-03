@@ -3,28 +3,30 @@ package com.example.productservice.services;
 import com.example.productservice.dto.CategoryDTO;
 import com.example.productservice.dto.ProductDTO;
 import com.example.productservice.dto.ProductImageDTO;
-import com.example.productservice.dto.response.ApiResponse;
 import com.example.productservice.entities.Category;
 import com.example.productservice.entities.Product;
 import com.example.productservice.exception.CategoryNotFoundException;
 import com.example.productservice.exception.CustomException;
-import com.example.productservice.exception.NotFoundException;
 import com.example.productservice.mapper.CategoryMapper;
 import com.example.productservice.mapper.ProductMapper;
 import com.example.productservice.repositories.ProductRepository;
+import com.example.productservice.services.impl.BaseRedisServiceImpl;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.Pageable;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.client.RestTemplate;
 import org.springframework.web.multipart.MultipartFile;
 
 import java.time.LocalDateTime;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Optional;
-import java.util.Set;
+import java.util.*;
+
+import static com.example.productservice.constant.CommonDefine.*;
+
 
 @Service
 @RequiredArgsConstructor
@@ -35,6 +37,17 @@ public class ProductServiceImpl implements ProductService {
     private final CategoryMapper categoryMapper;
     private final ProductImageService productImageService;
     private final RestTemplate restTemplate;
+    private final BaseRedisServiceImpl<String, String, Object> redisService;
+    private final ObjectMapper objectMapper;
+
+
+    private ProductDTO convertToProductDTO(Object object) {
+        if (object instanceof LinkedHashMap) {
+            return objectMapper.convertValue(object, ProductDTO.class);
+        } else {
+            return (ProductDTO) object;
+        }
+    }
 
     @Override
     public int countProducts() {
@@ -43,8 +56,32 @@ public class ProductServiceImpl implements ProductService {
 
     @Override
     public Page<ProductDTO> getAllProducts(Pageable pageable) {
-        Page<Product> products = productRepository.findByDeletedAtIsNull(pageable);
-        return products.map(productMapper.INSTANCE::productToProductDTO);
+        String key = String.format(GET_ALL_PRODUCTS, pageable.getPageNumber(), pageable.getPageSize());
+
+        //redis
+        if (redisService.keyExists(key)) {
+//            Map<String, Object> productsMap = redisService.getField(key);
+//
+//            for (Map.Entry<String, Object> entry : productsMap.entrySet()) {
+//                Map<String, Object> product = (Map<String, Object>) entry.getValue();
+//                    productDTOS.add(convertToProductDTO(product));
+//            }
+
+            List<Object> values = redisService.getList(key);
+            List<ProductDTO> productDTOS = new ArrayList<>();
+            for (Object value : values) {
+                productDTOS.add(convertToProductDTO(value));
+            }
+            return new PageImpl<>(productDTOS, pageable, productDTOS.size());
+        } else {
+            Page<Product> products = productRepository.findByDeletedAtIsNull(pageable);
+            return products.map(product -> {
+                ProductDTO productDTO = productMapper.INSTANCE.productToProductDTO(product);
+                redisService.rightPushAll(key, Collections.singletonList(productDTO));
+//                redisService.hashSet(key, PRODUCT_ID + product.getProductId(), productDTO);
+                return productDTO;
+            });
+        }
     }
 
     @Override
@@ -58,8 +95,15 @@ public class ProductServiceImpl implements ProductService {
 
     @Override
     public ProductDTO getProductById(Long id) {
+        if (redisService.keyExists(PRODUCT_ID + id)) {
+            Object object =  redisService.getField(PRODUCT_ID + id);
+            return convertToProductDTO(object);
+        }
         Product product = findProductById(id);
-        return productMapper.INSTANCE.productToProductDTO(product);
+        var productResponse = productMapper.INSTANCE.productToProductDTO(product);
+        //redis
+        redisService.hashSetAll(PRODUCT_ID + id, productResponse);
+        return productResponse;
     }
 
     @Override
@@ -70,10 +114,12 @@ public class ProductServiceImpl implements ProductService {
                 throw new CustomException("Product is not found", HttpStatus.NOT_FOUND);
             }
         });
+
         return productMapper.INSTANCE.productListToProductDTOList(products);
     }
 
     @Override
+    @Transactional
     public void addProduct(ProductDTO productDTO, List<MultipartFile> imageFiles) {
         if (productRepository.existsByName(productDTO.getName())) {
             throw new CustomException("Product already exists with name: " + productDTO.getName(), HttpStatus.CONFLICT);
@@ -84,7 +130,6 @@ public class ProductServiceImpl implements ProductService {
             throw new CustomException("Can not find category with id " + productDTO.getCategoryId(), HttpStatus.NOT_FOUND);
         }
 
-
         Product product = productMapper.INSTANCE.productDTOToProduct(productDTO);
 
         product.setCategory(categoryMapper.INSTANCE.categoryDTOToCategory(categoryDTO));
@@ -92,19 +137,40 @@ public class ProductServiceImpl implements ProductService {
         productRepository.save(product);
 
         productImageService.saveProductImage(product.getProductId(), imageFiles);
+
+        //redis
+        redisService.getKeyPrefixes("get_products" + "*").forEach(redisService::delete);
     }
 
     @Override
     public Page<ProductDTO> findByCategory(Pageable pageable, CategoryDTO categoryDTO) {
         CategoryDTO category = categoryService.getCategoryById(categoryDTO.getCategoryId());
-        if (category == null) {
-            throw new CustomException("Can not find category with id " + categoryDTO.getCategoryId(), HttpStatus.NOT_FOUND);
+
+        String key = String.format(GET_PRODUCTS_BY_CATEGORY, category.getCategoryId(), pageable.getPageNumber(), pageable.getPageSize());
+
+        if (redisService.keyExists(key)) {
+            List<Object> values = redisService.getList(key);
+            List<ProductDTO> productDTOS = new ArrayList<>();
+            for (Object value : values) {
+                productDTOS.add(convertToProductDTO(value));
+            }
+            return new PageImpl<>(productDTOS, pageable, productDTOS.size());
+        }else {
+            if (category == null) {
+                throw new CustomException("Can not find category with id " + categoryDTO.getCategoryId(), HttpStatus.NOT_FOUND);
+            }
+            return productRepository.findByCategoryAndDeletedAtIsNull(pageable, categoryMapper.INSTANCE.categoryDTOToCategory(category))
+                    .map(product -> {
+                        ProductDTO productDTO = productMapper.INSTANCE.productToProductDTO(product);
+                        //redis
+                        redisService.rightPushAll(key, Collections.singletonList(productDTO));
+                        return productDTO;
+                    });
         }
-        return productRepository.findByCategoryAndDeletedAtIsNull(pageable, categoryMapper.INSTANCE.categoryDTOToCategory(category))
-                .map(productMapper.INSTANCE::productToProductDTO);
     }
 
     @Override
+    @Transactional
     public void updateProduct(long id, ProductDTO updatedProductDTO, List<MultipartFile> imageFiles) {
         Optional<Product> existingProduct = productRepository.findById(id);
         if (existingProduct.isEmpty()) {
@@ -164,20 +230,34 @@ public class ProductServiceImpl implements ProductService {
         }
         productImageService.updateProductImage(existingProduct.get().getProductId(), productImageIds , imageFiles);
 
+        //redis
+        if (redisService.keyExists(PRODUCT_ID + id)) {
+            redisService.delete(PRODUCT_ID + id);
+        }
+        redisService.getKeyPrefixes("get_products" + "*").forEach(redisService::delete);
     }
 
     @Override
+    @Transactional
     public void updateStockQuantity(long id, Integer stockQuantity) {
         Product product = findProductById(id);
+        redisService.delete(PRODUCT_ID + id);
+
         product.setStockQuantity(stockQuantity);
         productRepository.save(product);
+
+        //redis
+        redisService.hashSetAll(PRODUCT_ID + id, productMapper.INSTANCE.productToProductDTO(product));
     }
 
     @Override
+    @Transactional
     public void deleteProduct(long id) {
         findProductById(id);
-
         productRepository.deleteById(id);
+        //redis
+        redisService.delete(PRODUCT_ID + id);
+        redisService.getKeyPrefixes("get_products" + "*").forEach(redisService::delete);
     }
 
     @Override
@@ -198,6 +278,7 @@ public class ProductServiceImpl implements ProductService {
     }
 
     private Product findProductById(long id) {
+        //có thể sử dụng Distributed Lock
         return productRepository.findById(id).orElseThrow(() -> new CustomException("Product not found with id: " + id, HttpStatus.BAD_REQUEST));
     }
 }
