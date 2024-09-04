@@ -71,17 +71,23 @@ public class CartRedisServiceImpl implements CartRedisService {
     public void addCart(CartItemRequest request){
         String key = CART_ITEM_USER_ID + request.getId().getUserId().toString();
         String field = PRODUCT_ID + request.getId().getProductId().toString();
+        var product = productService.getProductById(request.getId().getProductId());
+        CartItemResponse cartItemResponse;
 
         if (baseRedisService.hashExists(key, field)) {
+            cartItemResponse = convertToCartItemResponse(baseRedisService.hashGet(key, field));
+            cartItemResponse.setQuantity(cartItemResponse.getQuantity() + request.getQuantity());
+            cartItemResponse.setUnitPrice(BigDecimal.valueOf(cartItemResponse.getQuantity() + request.getQuantity()).multiply(product.getPrice()));
+
             baseRedisService.delete(key, field);
+        }else {
+            cartItemResponse = cartMapper.toCartItemResponse(request);
+            cartItemResponse.setStatus(CartStatus.AVAILABLE);
+            cartItemResponse.setProductName(product.getName());
+            cartItemResponse.setProductPrice(product.getPrice());
+            cartItemResponse.setUnitPrice(BigDecimal.valueOf(cartItemResponse.getQuantity()).multiply(product.getPrice()));
+            cartItemResponse.setProductImages(product.getImages().stream().map(ProductImageDTO::getImageUrl).collect(Collectors.toSet()));
         }
-        var product = productService.getProductById(request.getId().getProductId());
-        var cartItemResponse = cartMapper.toCartItemResponse(request);
-        cartItemResponse.setStatus(CartStatus.AVAILABLE);
-        cartItemResponse.setProductName(product.getName());
-        cartItemResponse.setProductPrice(product.getPrice());
-        cartItemResponse.setUnitPrice(BigDecimal.valueOf(cartItemResponse.getQuantity()).multiply(product.getPrice()));
-        cartItemResponse.setProductImages(product.getImages().stream().map(ProductImageDTO::getImageUrl).collect(Collectors.toSet()));
 
         baseRedisService.hashSet(key, field, cartItemResponse);
         baseRedisService.sortedAdd(key, field);
