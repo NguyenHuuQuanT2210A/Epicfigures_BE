@@ -11,6 +11,8 @@ import com.example.inventoryservice.mapper.InventoryMapper;
 import com.example.inventoryservice.repository.InventoryRepository;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 
 import java.time.LocalDateTime;
@@ -25,8 +27,9 @@ public class InventoryServiceImpl implements InventoryService {
     private final ProductClients productClients;
 
     @Override
-    public List<InventoryResponse> getAllInventories() {
-        return inventoryRepository.findAll().stream().map(inventoryMapper::toInventoryResponse).toList();
+    public Page<InventoryResponse> getAllInventories(Pageable pageable) {
+        Page<Inventory> inventories = inventoryRepository.findAll(pageable);
+        return inventories.map(inventoryMapper::toInventoryResponse);
     }
 
     @Override
