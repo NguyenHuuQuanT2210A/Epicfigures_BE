@@ -1,9 +1,11 @@
 package com.example.productservice.controllers;
 
+import com.example.productservice.dto.FileUploadedDTO;
 import com.example.productservice.dto.ProductImageDTO;
 import com.example.productservice.dto.response.ApiResponse;
 import com.example.productservice.exception.CustomException;
 import com.example.productservice.services.FileStorageService;
+import com.example.productservice.services.FileUploadService;
 import com.example.productservice.services.ProductImageService;
 import jakarta.servlet.http.HttpServletRequest;
 import lombok.RequiredArgsConstructor;
@@ -16,7 +18,9 @@ import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 
+import java.io.IOException;
 import java.util.List;
+import java.util.Map;
 
 @RestController
 @RequiredArgsConstructor
@@ -24,6 +28,7 @@ import java.util.List;
 public class ProductImageController {
     private final ProductImageService productImageSevice;
     private final FileStorageService fileStorageService;
+    private final FileUploadService fileUploadService;
 
     @GetMapping("/{productId}")
     ApiResponse<List<ProductImageDTO>> getProductImages(@PathVariable Long productId) {
@@ -94,5 +99,10 @@ public class ProductImageController {
         return ResponseEntity.ok(ApiResponse.builder()
                 .message("delete images successfully")
                 .build());
+    }
+
+    @PostMapping("/upload")
+    public FileUploadedDTO uploadImageCloudinary(@RequestParam("file") MultipartFile file) throws Exception {
+        return fileUploadService.uploadFile(file);
     }
 }

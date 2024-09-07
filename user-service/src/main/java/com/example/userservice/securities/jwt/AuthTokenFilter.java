@@ -2,6 +2,7 @@ package com.example.userservice.securities.jwt;
 
 import com.example.userservice.securities.services.TokenBlacklistService;
 import com.example.userservice.securities.services.UserDetailsServiceImpl;
+import com.example.userservice.statics.enums.TokenType;
 import jakarta.servlet.FilterChain;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServletRequest;
@@ -18,6 +19,9 @@ import org.springframework.util.StringUtils;
 import org.springframework.web.filter.OncePerRequestFilter;
 
 import java.io.IOException;
+
+import static com.example.userservice.statics.enums.TokenType.ACCESS_TOKEN;
+
 @Component
 public class AuthTokenFilter extends OncePerRequestFilter {
     @Autowired
@@ -37,9 +41,9 @@ public class AuthTokenFilter extends OncePerRequestFilter {
             final String authorizationHeader = request.getHeader("Authorization");
 
             String jwt = parseJwt(request);
-            if (jwt != null && jwtUtils.validateJwtToken(jwt)) {
+            if (jwt != null && jwtUtils.validateJwtToken(jwt, ACCESS_TOKEN)) {
                 if (!tokenBlacklistService.isTokenInvalid(jwt)) {
-                    String username = jwtUtils.getUserNameFromJwtToken(jwt);
+                    String username = jwtUtils.getUserNameFromJwtToken(jwt, ACCESS_TOKEN);
 
                     UserDetails userDetails = userDetailsService.loadUserByUsername(username);
                     UsernamePasswordAuthenticationToken authentication = new UsernamePasswordAuthenticationToken(

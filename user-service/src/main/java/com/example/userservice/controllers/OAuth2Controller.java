@@ -46,11 +46,13 @@ public class OAuth2Controller {
 
                 List<String> roles = List.of("ROLE_USER");
 
-                return ResponseEntity.ok(new JwtResponse(jwt,
-                        Long.parseLong((Boolean.TRUE.equals(oauth2User.getAttribute("id"))) ? Objects.requireNonNull(oauth2User.getAttribute("id")) : "0"),
-                        oauth2User.getAttribute("name"),
-                        Boolean.TRUE.equals(oauth2User.getAttribute("email")) ? oauth2User.getAttribute("email") : oauth2User.getAttribute("login"),
-                        roles));
+                return ResponseEntity.ok(JwtResponse.builder()
+                        .accessToken(jwt)
+                        .id(Long.parseLong((Boolean.TRUE.equals(oauth2User.getAttribute("id"))) ? Objects.requireNonNull(oauth2User.getAttribute("id")) : "0"))
+                        .username(oauth2User.getAttribute("name"))
+                        .email(Boolean.TRUE.equals(oauth2User.getAttribute("email")) ? oauth2User.getAttribute("email") : oauth2User.getAttribute("login"))
+                        .roles(roles)
+                        .build());
             } catch (Exception e){
                 e.printStackTrace();
                 return ResponseEntity.status(HttpStatus.BAD_REQUEST).body("Cannot generate token");

@@ -13,6 +13,6 @@ public interface UserService {
     void deleteById(Long id);
     UserDTO findById(Long id);
     UserDTO findByUsername(String username);
+    UserDTO findByEmail(String email);
     void moveToTrash(Long id);
-
 }

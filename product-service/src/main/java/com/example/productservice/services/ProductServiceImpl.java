@@ -119,7 +119,6 @@ public class ProductServiceImpl implements ProductService {
     }
 
     @Override
-    @Transactional
     public void addProduct(ProductDTO productDTO, List<MultipartFile> imageFiles) {
         if (productRepository.existsByName(productDTO.getName())) {
             throw new CustomException("Product already exists with name: " + productDTO.getName(), HttpStatus.CONFLICT);
@@ -170,7 +169,6 @@ public class ProductServiceImpl implements ProductService {
     }
 
     @Override
-    @Transactional
     public void updateProduct(long id, ProductDTO updatedProductDTO, List<MultipartFile> imageFiles) {
         Optional<Product> existingProduct = productRepository.findById(id);
         if (existingProduct.isEmpty()) {
@@ -219,6 +217,8 @@ public class ProductServiceImpl implements ProductService {
             Category category = categoryMapper.INSTANCE.categoryDTOToCategory(categoryDTO);
             existingProduct.get().setCategory(category);
         }
+
+        existingProduct.get().setStockQuantity(existingProduct.get().getStockQuantity());
         productRepository.save(existingProduct.get());
 
         List<Long> productImageIds = new ArrayList<>();
@@ -238,7 +238,6 @@ public class ProductServiceImpl implements ProductService {
     }
 
     @Override
-    @Transactional
     public void updateStockQuantity(long id, Integer stockQuantity) {
         Product product = findProductById(id);
         redisService.delete(PRODUCT_ID + id);
@@ -251,7 +250,6 @@ public class ProductServiceImpl implements ProductService {
     }
 
     @Override
-    @Transactional
     public void deleteProduct(long id) {
         findProductById(id);
         productRepository.deleteById(id);

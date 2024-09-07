@@ -5,6 +5,7 @@ import com.example.inventoryservice.dto.InventoryRequest;
 import com.example.inventoryservice.dto.InventoryResponse;
 import com.example.inventoryservice.dto.ProductDTO;
 import com.example.inventoryservice.entities.Inventory;
+import com.example.inventoryservice.enums.InventoryStatus;
 import com.example.inventoryservice.exception.NotFoundException;
 import com.example.inventoryservice.helper.LocalDatetimeConverter;
 import com.example.inventoryservice.mapper.InventoryMapper;
@@ -53,12 +54,15 @@ public class InventoryServiceImpl implements InventoryService {
         ApiResponse<ProductDTO> product = productClients.getProductById(inventoryRequest.getProductId());
 
         Inventory inventory = inventoryMapper.toInventory(inventoryRequest);
-        inventory.setType(inventoryRequest.getType().toUpperCase());
-//        inventory.setDate(LocalDatetimeConverter.toLocalDateTime(inventoryRequest.getDate(), true));
         inventory.setDate(LocalDateTime.now());
         inventoryRepository.save(inventory);
 
-        Integer stockQuantity = product.getData().getStockQuantity() + inventoryRequest.getQuantity();
+        int stockQuantity;
+        if (inventoryRequest.getStatus().equals(InventoryStatus.IN)) {
+            stockQuantity = product.getData().getStockQuantity() + inventoryRequest.getQuantity();
+        } else {
+            stockQuantity = product.getData().getStockQuantity() - inventoryRequest.getQuantity();
+        }
 
         productClients.updateStockQuantity(product.getData().getProductId(), stockQuantity);
 

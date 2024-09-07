@@ -33,9 +33,11 @@ public class ProductImageServiceImpl implements ProductImageService {
 
     @Override
     public void deleteProductImage(Long id) {
-        if (productImageRepository.findById(id).isEmpty()) {
+        var productImage = productImageRepository.findById(id);
+        if (productImage.isEmpty()) {
             throw new CustomException("Product image not found with id: " + id, HttpStatus.BAD_REQUEST);
         }
+        fileStorageService.deleteProductImageFile(productImage.get().getImageUrl());
         productImageRepository.deleteById(id);
     }
 
@@ -45,6 +47,10 @@ public class ProductImageServiceImpl implements ProductImageService {
         ProductDTO product = getProductById(productId);
         if (product == null) {
             throw new CustomException("Product not found with id: " + productId, HttpStatus.BAD_REQUEST);
+        }
+        List<ProductImage> productImages = productImageRepository.findByProductProductId(productId);
+        for (ProductImage productImage : productImages) {
+            fileStorageService.deleteProductImageFile(productImage.getImageUrl());
         }
         productImageRepository.deleteAllImagesByProductId(productId);
     }
@@ -62,6 +68,7 @@ public class ProductImageServiceImpl implements ProductImageService {
                 if (!productImage.getProduct().getProductId().equals(productId)) {
                     throw new CustomException("Product image not found with id: " + productImage.getImageId() + " for product id: " + productId, HttpStatus.BAD_REQUEST);
                 }
+                fileStorageService.deleteProductImageFile(productImage.getImageUrl());
             }
         }
         productImageRepository.deleteAllImagesByProductIds(productIds);

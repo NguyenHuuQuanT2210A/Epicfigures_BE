@@ -1,8 +1,8 @@
 package com.example.inventoryservice.dto;
 
+import com.example.inventoryservice.enums.InventoryStatus;
+import com.example.inventoryservice.enums.InventoryType;
 import lombok.*;
-
-import java.time.LocalDateTime;
 
 @Getter
 @Setter
@@ -12,6 +12,7 @@ import java.time.LocalDateTime;
 public class InventoryRequest {
     private Long productId;
     private Integer quantity;
-    private String type;
+    private InventoryStatus status;
+    private InventoryType type;
     private String date;
 }

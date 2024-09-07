@@ -1,52 +1,105 @@
 package com.example.userservice.securities.jwt;
 
+import com.example.userservice.entities.User;
+import com.example.userservice.exceptions.CustomException;
 import com.example.userservice.securities.services.UserDetailsImpl;
+import com.example.userservice.statics.enums.TokenType;
 import io.jsonwebtoken.*;
+import io.jsonwebtoken.io.Decoders;
 import io.jsonwebtoken.security.Keys;
 import lombok.extern.slf4j.Slf4j;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.http.HttpStatus;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.GrantedAuthority;
+import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.oauth2.core.user.OAuth2User;
 import org.springframework.stereotype.Component;
 
-import javax.crypto.SecretKey;
-import java.util.Base64;
+import java.security.Key;
 import java.util.Date;
+import java.util.function.Function;
 import java.util.stream.Collectors;
+
+import static com.example.userservice.statics.enums.TokenType.ACCESS_TOKEN;
+import static com.example.userservice.statics.enums.TokenType.REFRESH_TOKEN;
 
 @Component
 @Slf4j
 public class JwtUtils {
     private static final Logger logger = LoggerFactory.getLogger(JwtUtils.class);
 
-    @Value("${application.jwtExpirationMs}")
+    @Value("${jwt.jwtExpirationMs}")
     private int jwtExpirationMs;
-    private static final String SECRET_KEY =
-            "enRmc3R5eW4zc3BhdW5tMjg3cHY5cWQyb2pxanoxdnJ4bjk0bmFkZXhqcjJ4eGpldGlscmZnenJyY2llZjNxN2Q5N3dwNmltdnA1YXFlN2JxMnIwdnU2dm51c2p4Ynk3Ym15emQxZnZmc3M4ZzE1cnZubG80d2N4Z3VqN2cxNjg=";
-//            "ZHhx9KAoMauq823k72mVjMhhmypx5QQ8eso8Ocwlsm8pQPDGdhtergbjKfTOVEMa2PR9SrFXbCrSLK8jSmWJTxS3oRd2KEZVzwO0YumtYftcNWNK8E1e3SpJvRH0KnW4X6sMoaPbWjf3EA8CiagAQ1IgTxDqOtAd14fvndtA87e9DjhRrluPj6t13M8Qp3pkHKXJVw6FfW3xj4j0YxSQXVMQkdTfgwjZfCvoS0YrnAW3plSfrfVueqTammoeX0NTiMd9Ua0fMjcUypyMM2aGe9MRMF4LZiEvsThvTt4UlGOS9Iozv4BnkEjU8yARJ582JnqoUUSWkDGfLA9m1WlTGCoavlcsehlTPCZQ9IenZcw4HlrmQGml08NQGTqN1u2YIzfV1Xb6pDnQtIGWxi2fasccPJZOFdo0QKy9bJVV3Q8dIorwX41dlFZWLh1y8haaPe5FBHAIIayd30S3jgQFpuiVmTUJEjQO9FM2mU0UagZnbBmZRHx78K1hbGjwtzGn";  // Tạo khóa ký an toàn
 
-    private SecretKey getSecretKey() {
-        log.info("getSecretKey {}", SECRET_KEY);
-        return Keys.hmacShaKeyFor(SECRET_KEY.getBytes());
+    @Value("${jwt.secretKey}")
+    private String secretKey;
+
+    @Value("${jwt.refreshKey}")
+    private String refreshKey;
+
+    @Value("${jwt.resetKey}")
+    private String resetKey;
+
+    private Key getKey(TokenType type){
+        return switch (type) {
+            case ACCESS_TOKEN -> Keys.hmacShaKeyFor(Decoders.BASE64.decode(secretKey));
+            case REFRESH_TOKEN -> Keys.hmacShaKeyFor(Decoders.BASE64.decode(refreshKey));
+            case RESET_TOKEN -> Keys.hmacShaKeyFor(Decoders.BASE64.decode(resetKey));
+            default -> throw new CustomException("Token type invalid", HttpStatus.BAD_REQUEST);
+        };
     }
 
-    public String generateJwtToken(Authentication authentication) {
-
-        UserDetailsImpl userPrincipal = (UserDetailsImpl) authentication.getPrincipal();
-
+    public String generateAccessToken(UserDetailsImpl userDetails) {
         return Jwts.builder()
-                .setSubject((userPrincipal.getUsername()))
-                .claim("roles", userPrincipal.getAuthorities().stream()
+                .setSubject((userDetails.getUsername()))
+                .claim("roles", userDetails.getAuthorities().stream()
                         .map(GrantedAuthority::getAuthority)
                         .collect(Collectors.joining(",")))
                 .setIssuedAt(new Date())
-                .setExpiration(new Date((new Date()).getTime() + jwtExpirationMs))
-                .signWith(getSecretKey())
+                .setExpiration(new Date(System.currentTimeMillis() + jwtExpirationMs))
+                .signWith(getKey(ACCESS_TOKEN), SignatureAlgorithm.HS256)
                 .compact();
     }
+
+    public String generateRefreshToken(UserDetailsImpl userDetails) {
+        return Jwts.builder()
+                .setSubject((userDetails.getUsername()))
+                .claim("roles", userDetails.getAuthorities().stream()
+                        .map(GrantedAuthority::getAuthority)
+                        .collect(Collectors.joining(",")))
+                .setIssuedAt(new Date())
+                .setExpiration(new Date(System.currentTimeMillis() + 86400000 * 7))
+                .signWith(getKey(REFRESH_TOKEN), SignatureAlgorithm.HS256)
+                .compact();
+    }
+
+    public String generateResetToken(UserDetailsImpl userDetails) {
+
+        return Jwts.builder()
+                .setSubject((userDetails.getUsername()))
+                .claim("roles", userDetails.getAuthorities().stream()
+                        .map(GrantedAuthority::getAuthority)
+                        .collect(Collectors.joining(",")))
+                .setIssuedAt(new Date())
+                .setExpiration(new Date(System.currentTimeMillis() + 3600000))
+                .signWith(getKey(REFRESH_TOKEN), SignatureAlgorithm.HS256)
+                .compact();
+    }
+
+//    public String generateAccessToken2(UserDetailsImpl userDetails) {
+//        return Jwts.builder()
+//                .setSubject((userDetails.getUsername()))
+//                .claim("roles", userDetails.getAuthorities().stream()
+//                        .map(GrantedAuthority::getAuthority)
+//                        .collect(Collectors.joining(",")))
+//                .setIssuedAt(new Date())
+//                .setExpiration(new Date(System.currentTimeMillis() + jwtExpirationMs))
+//                .signWith(getKey(ACCESS_TOKEN), SignatureAlgorithm.HS256)
+//                .compact();
+//    }
 
     public String generateJwtOAuth2Token(Authentication authentication) {
         OAuth2User oauth2User = (OAuth2User) authentication.getPrincipal();
@@ -62,17 +115,26 @@ public class JwtUtils {
                 .claim("roles", roles)
                 .setIssuedAt(new Date())
                 .setExpiration(new Date((new Date()).getTime() + jwtExpirationMs))
-                .signWith(SignatureAlgorithm.HS512, SECRET_KEY)
+                .signWith(SignatureAlgorithm.HS512, secretKey)
                 .compact();
     }
 
-    public String getUserNameFromJwtToken(String token) {
-        return Jwts.parser().setSigningKey(SECRET_KEY).parseClaimsJws(token).getBody().getSubject();
+    public String getUserNameFromJwtToken(String token, TokenType type) {
+        return extractClaim(token, type, Claims::getSubject);
     }
 
-    public boolean validateJwtToken(String authToken) {
+    private <T> T extractClaim(String token, TokenType type, Function<Claims, T> claimsResolver){
+        final Claims claims = extraAllClaim(token, type);
+        return claimsResolver.apply(claims);
+    }
+
+    private Claims extraAllClaim(String token, TokenType type){
+        return Jwts.parserBuilder().setSigningKey(getKey(type)).build().parseClaimsJws(token).getBody();
+    }
+
+    public boolean validateJwtToken(String authToken, TokenType type) {
         try {
-            Jwts.parser().setSigningKey(SECRET_KEY).parseClaimsJws(authToken);
+            Jwts.parser().setSigningKey(getKey(type)).parseClaimsJws(authToken);
             return true;
         } catch (SignatureException e) {
             logger.error("Invalid JWT signature: {}", e.getMessage());
@@ -88,4 +150,6 @@ public class JwtUtils {
 
         return false;
     }
+
+
 }

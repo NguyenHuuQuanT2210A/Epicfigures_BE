@@ -56,6 +56,11 @@ public class UserServiceImpl implements UserService {
         return UserMapper.INSTANCE.userToUserDTO(user);
     }
 
+    @Override
+    public UserDTO findByEmail(String email) {
+        return UserMapper.INSTANCE.userToUserDTO(userRepository.findByEmail(email).orElseThrow(() -> new UsernameNotFoundException("User Not Found with email: " + email)));
+    }
+
     public void moveToTrash(Long id) {
         User user = userRepository.findById(id).orElse(null);
         if (user == null) {
