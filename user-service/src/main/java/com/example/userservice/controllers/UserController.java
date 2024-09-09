@@ -66,6 +66,15 @@ public class UserController {
                 .build();
     }
 
+    @GetMapping(path = "/email")
+    ApiResponse<UserDTO> getUserByEmail(@RequestParam(name = "email") String email) {
+        UserDTO user = userService.findByEmail(email);
+        return ApiResponse.<UserDTO>builder()
+                .message("Get user by email")
+                .data(user)
+                .build();
+    }
+
 //    @PreAuthorize("hasRole('ROLE_ADMIN')")
     @PostMapping
     ApiResponse<UserDTO> createUser(@RequestBody UserRequest userRequest) {

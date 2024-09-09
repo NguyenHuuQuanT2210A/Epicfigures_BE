@@ -43,6 +43,12 @@ spring:
           jwt:
             jwk-set-uri: http://localhost:8080/auth/keys
 
+  kafka:
+    producer:
+        bootstrap-servers: localhost:9092
+        key-serializer: org.apache.kafka.common.serialization.StringSerializer
+        value-serializer: org.springframework.kafka.support.serializer.JsonSerializer
+
 server:
   port: 8081
 
@@ -58,8 +64,14 @@ bezkoder:
     dev-url: http://localhost:8081
 
 application:
-  jwtExpirationMs: 86400000
+#  jwtExpirationMs: 86400000
   returnUrl: http://localhost:8080/oauth2/redirect
+
+jwt:
+  jwtExpirationMs: 86400000
+  secretKey: cb17bdf73fb9500c10bc64270d65efedcbdbd412c9d7a258f293e298a44dc7e5
+  refreshKey: 5kMQSZWBxuyD0WUn3vgrRYkVY3FzfGS8eIsWAyRq5U0=
+  resetKey: 5kMQSZWBxuyD0WUn3vgrRYkVY3FzfGS8eIsWAyRq5U0=
 
 cloudinary:
   cloud-name: dptyuisjr
@@ -71,6 +83,9 @@ file:
   upload-product-image-dir: ./uploads/productimage
   upload-user-image-dir: ./uploads/userimage
   upload-thumbnail-image-dir: ./uploads/thumbnailimage
+
+
+
 
 eureka:
   instance:

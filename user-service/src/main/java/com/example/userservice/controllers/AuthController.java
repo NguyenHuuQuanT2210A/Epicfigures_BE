@@ -1,5 +1,6 @@
 package com.example.userservice.controllers;
 
+import com.example.userservice.dtos.request.ResetPasswordDto;
 import com.example.userservice.entities.Role;
 import com.example.userservice.entities.User;
 import com.example.userservice.models.requests.LoginRequest;
@@ -11,10 +12,12 @@ import com.example.userservice.repositories.UserRepository;
 import com.example.userservice.securities.jwt.JwtUtils;
 import com.example.userservice.securities.services.TokenBlacklistService;
 import com.example.userservice.securities.services.UserDetailsImpl;
+import com.example.userservice.services.AuthenticationService;
 import com.example.userservice.statics.enums.ERole;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.validation.Valid;
+import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.authentication.AuthenticationManager;
@@ -34,91 +37,54 @@ import java.util.stream.Collectors;
 @CrossOrigin(origins = "*", maxAge = 3600)
 @RestController
 @RequestMapping("/api/v1/auth")
+@RequiredArgsConstructor
 public class AuthController {
-    private final AuthenticationManager authenticationManager;
-
-    private final UserRepository userRepository;
-
-    private final RoleRepository roleRepository;
-
-    private final PasswordEncoder encoder;
-
-    private final JwtUtils jwtUtils;
-
-    private final TokenBlacklistService tokenBlacklistService;
-
-    public AuthController(AuthenticationManager authenticationManager, UserRepository userRepository, RoleRepository roleRepository, PasswordEncoder encoder, JwtUtils jwtUtils, TokenBlacklistService tokenBlacklistService) {
-        this.authenticationManager = authenticationManager;
-        this.userRepository = userRepository;
-        this.roleRepository = roleRepository;
-        this.encoder = encoder;
-        this.jwtUtils = jwtUtils;
-        this.tokenBlacklistService = tokenBlacklistService;
-    }
+    private final AuthenticationService authenticationService;
 
     @PostMapping("/login")
     public ResponseEntity<?> authenticateUser(@Valid @RequestBody LoginRequest loginRequest) {
         try {
-            Authentication authentication = authenticationManager.authenticate(
-                    new UsernamePasswordAuthenticationToken(loginRequest.getUsername(), loginRequest.getPassword()));
-            SecurityContextHolder.getContext().setAuthentication(authentication);
-            String jwt = jwtUtils.generateJwtToken(authentication);
-
-            UserDetailsImpl userDetails = (UserDetailsImpl) authentication.getPrincipal();
-            List<String> roles = userDetails.getAuthorities().stream()
-                    .map(GrantedAuthority::getAuthority)
-                    .collect(Collectors.toList());
-
-            return ResponseEntity.ok(new JwtResponse(jwt,
-                    userDetails.getId(),
-                    userDetails.getUsername(),
-                    userDetails.getEmail(),
-                    roles));
+            return ResponseEntity.ok(authenticationService.login(loginRequest));
         } catch (Exception e){
-            e.printStackTrace();
-            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body("UserName or PassWord wrong");
-        }
-
+        e.printStackTrace();
+        return ResponseEntity.status(HttpStatus.BAD_REQUEST).body("UserName or PassWord wrong");
+       }
     }
 
     @PostMapping("/register")
     public ResponseEntity<?> registerUser(@Valid @RequestBody SignupRequest signUpRequest) {
-        if (userRepository.existsByUsername(signUpRequest.getUsername())) {
-            return ResponseEntity
-                    .badRequest()
-                    .body(new MessageResponse("Error: Username is already taken!"));
-        }
-
-        if (userRepository.existsByEmail(signUpRequest.getEmail())) {
-            return ResponseEntity
-                    .badRequest()
-                    .body(new MessageResponse("Error: Email is already in use!"));
-        }
-        User user = new User(signUpRequest.getUsername(),
-                signUpRequest.getEmail(),
-                encoder.encode(signUpRequest.getPassword()));
-
-        Set<Role> roles = new HashSet<>();
-
-        Role userRole = roleRepository.findByName(ERole.ROLE_USER)
-                .orElseThrow(() -> new RuntimeException("Error: Role is not found."));
-        roles.add(userRole);
-
-        user.setRoles(roles);
-        userRepository.save(user);
-
+        authenticationService.register(signUpRequest);
         return ResponseEntity.ok(new MessageResponse("User registered successfully!"));
     }
+
+    @PostMapping("/refresh")
+    public ResponseEntity<?> refresh(HttpServletRequest request) {
+        return ResponseEntity.ok( authenticationService.refresh(request));
+    }
+
     @PostMapping("/logout")
     public String logout(HttpServletRequest request) {
-        String authorizationHeader = request.getHeader("Authorization");
-        if (authorizationHeader != null && authorizationHeader.startsWith("Bearer ")) {
-            String token = authorizationHeader.substring(7);
-            tokenBlacklistService.invalidateToken(token);
-            return "Logged out successfully";
-        } else {
-            return "Invalid token";
-        }
+        return authenticationService.logout(request);
+    }
+
+    @PostMapping("/forgot-password")
+    public ResponseEntity<String> forgotPassword(@RequestBody String email) {
+        return new ResponseEntity<>(authenticationService.forgotPassword(email), HttpStatus.OK);
+    }
+
+//    @PostMapping("/reset-password-post")
+//    public ResponseEntity<String> resetPasswordPost(@RequestBody String secretKey) {
+//        return new ResponseEntity<>(authenticationService.resetPassword(secretKey), HttpStatus.OK);
+//    }
+
+    @GetMapping("/reset-password")
+    public ResponseEntity<String> resetPassword(@RequestParam String secretKey) {
+        return new ResponseEntity<>(authenticationService.resetPassword(secretKey), HttpStatus.OK);
+    }
+
+    @PostMapping("/change-password")
+    public ResponseEntity<String> changePassword(@RequestBody ResetPasswordDto request) {
+        return new ResponseEntity<>(authenticationService.changePassword(request), HttpStatus.OK);
     }
 
 }

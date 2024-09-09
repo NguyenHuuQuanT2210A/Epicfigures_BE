@@ -32,6 +32,7 @@ import org.springframework.data.jpa.domain.Specification;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDateTime;
 import java.util.*;
@@ -197,6 +198,7 @@ public class OrderServiceImpl implements OrderService {
         }
     }
 
+    @Transactional
     public Object updateOrder(OrderRequest request) {
         OrderDTO existingOrder = orderMapper.toOrderDTO(findOrderById(request.getId()));
         if (existingOrder == null) {
@@ -206,6 +208,7 @@ public class OrderServiceImpl implements OrderService {
         return orderMapper.toOrderDTO(orderRepository.save(updatedOrder));
     }
 
+    @Transactional
     public ResponseEntity<?> deleteOrder(String id) {
         orderRepository.deleteById(id);
         List<OrderDetailDTO> orderDetailDTOs = orderDetailService.findOrderDetailByOrderId(id);
@@ -300,18 +303,28 @@ public class OrderServiceImpl implements OrderService {
     }
 
     @Override
+    @Transactional
     public OrderDTO changeStatus(String id, OrderSimpleStatus status) {
         var order = findOrderById(id);
 
+        if (order.getStatus() == OrderSimpleStatus.COMPLETE && status == OrderSimpleStatus.CANCEL) {
+            throw new CustomException("Cannot change status from COMPLETE to CANCEL", HttpStatus.BAD_REQUEST);
+        }
         if (order.getStatus().equals(OrderSimpleStatus.CANCEL)){
-            throw new CustomException("Cannot change status" + order.getStatus(), HttpStatus.BAD_REQUEST);
+            throw new CustomException("Cannot change status " + order.getStatus(), HttpStatus.BAD_REQUEST);
         }
 
-        if (order.getStatus().ordinal() > status.ordinal()) {
+        if (status == OrderSimpleStatus.CANCEL &&
+                (order.getStatus() == OrderSimpleStatus.CREATED ||
+                        order.getStatus() == OrderSimpleStatus.PENDING ||
+                        order.getStatus() == OrderSimpleStatus.PROCESSING)) {
+            order.setStatus(status);
+        } else if (order.getStatus().ordinal() + 1 != status.ordinal()) {
             throw new CustomException("Cannot change status from " + order.getStatus() + " to " + status, HttpStatus.BAD_REQUEST);
+        } else {
+            order.setStatus(status);
         }
 
-        order.setStatus(status);
         if (status == OrderSimpleStatus.COMPLETE){
             for (var orderDetail : order.getOrderDetails()){
                 feedbackRepository.save(feedbackMapper.toFeedback(FeedbackRequest.builder()

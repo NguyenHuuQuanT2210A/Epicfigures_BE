@@ -1,6 +1,5 @@
 package com.example.notificationService.email;
 
-import com.example.common.dto.UserDTO;
 import jakarta.mail.internet.MimeMessage;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -32,15 +31,19 @@ public class EmailService {
     private String fromMail;
 
     @Async
-    public void sendMail(String email, String subject, List<Object> emailParameters) {
+    public void sendMail(String email, String subject, List<Object> emailParameters, String template) {
         try {
             MimeMessage mimeMessage = javaMailSender.createMimeMessage();
             MimeMessageHelper helper = new MimeMessageHelper(mimeMessage, true, "UTF-8");
 
-            Context context = new Context();
-            context.setVariable("userName", emailParameters.get(0));
-            context.setVariable("total", emailParameters.get(1));
-            String html = templateEngine.process("thank-you", context);
+            String html = "";
+            if (template.equals("thank-you")) {
+                Context contextOrder = setContextOrder(emailParameters);
+                html = templateEngine.process(template, contextOrder);
+            } else if (template.equals("forgot-password")) {
+                Context contextForgotPassword = setContextForgotPassword(emailParameters);
+                html = templateEngine.process(template, contextForgotPassword);
+            }
 
             helper.setFrom(fromMail);
             helper.setTo(email);
@@ -52,5 +55,20 @@ public class EmailService {
             LOGGER.error("Failed to send email", e);
             throw new IllegalStateException("Failed to send email");
         }
+    }
+
+    private Context setContextOrder(List<Object> emailParameters){
+        Context context = new Context();
+        context.setVariable("userName", emailParameters.get(0));
+        context.setVariable("total", emailParameters.get(1));
+        return context;
+    }
+
+    private Context setContextForgotPassword(List<Object> emailParameters){
+        Context context = new Context();
+        context.setVariable("userName", emailParameters.get(0));
+        context.setVariable("email", emailParameters.get(1));
+        context.setVariable("linkReset", "http://localhost:3000/reset-password?secretKey=" + emailParameters.get(2));
+        return context;
     }
 }
