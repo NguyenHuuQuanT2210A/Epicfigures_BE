@@ -37,7 +37,7 @@ public class UserController {
                 .build();
     }
 
-//    @PreAuthorize("hasAnyRole('ROLE_ADMIN', 'ROLE_USER')")
+    @PreAuthorize("hasAnyRole('ROLE_ADMIN', 'ROLE_USER')")
     @GetMapping(path = "/{id}")
     ApiResponse<UserDTO> getUserById(@PathVariable(name = "id") Long id) {
         UserDTO user = userService.findById(id);

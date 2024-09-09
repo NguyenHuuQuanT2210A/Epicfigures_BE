@@ -2,7 +2,6 @@ package com.example.inventoryservice.entities;
 
 import com.example.inventoryservice.entities.base.BaseEntity;
 import com.example.inventoryservice.enums.InventoryStatus;
-import com.example.inventoryservice.enums.InventoryType;
 import jakarta.persistence.*;
 import lombok.*;
 
@@ -23,8 +22,6 @@ public class Inventory extends BaseEntity {
     private Integer quantity;
     @Enumerated(EnumType.STRING)
     private InventoryStatus status;
-    @Enumerated(EnumType.STRING)
-    private InventoryType type;
-
+    private String reason;
     private LocalDateTime date;
 }

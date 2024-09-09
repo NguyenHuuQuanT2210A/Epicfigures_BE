@@ -1,7 +1,6 @@
 package com.example.inventoryservice.dto;
 
 import com.example.inventoryservice.enums.InventoryStatus;
-import com.example.inventoryservice.enums.InventoryType;
 import lombok.*;
 
 @Getter
@@ -13,6 +12,6 @@ public class InventoryRequest {
     private Long productId;
     private Integer quantity;
     private InventoryStatus status;
-    private InventoryType type;
+    private String reason;
     private String date;
 }

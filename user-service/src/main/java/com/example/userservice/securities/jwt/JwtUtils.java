@@ -1,6 +1,5 @@
 package com.example.userservice.securities.jwt;
 
-import com.example.userservice.entities.User;
 import com.example.userservice.exceptions.CustomException;
 import com.example.userservice.securities.services.UserDetailsImpl;
 import com.example.userservice.statics.enums.TokenType;
@@ -14,7 +13,6 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.HttpStatus;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.GrantedAuthority;
-import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.oauth2.core.user.OAuth2User;
 import org.springframework.stereotype.Component;
 
@@ -59,7 +57,7 @@ public class JwtUtils {
                         .map(GrantedAuthority::getAuthority)
                         .collect(Collectors.joining(",")))
                 .setIssuedAt(new Date())
-                .setExpiration(new Date(System.currentTimeMillis() + jwtExpirationMs))
+                .setExpiration(new Date(System.currentTimeMillis() + 86400000))
                 .signWith(getKey(ACCESS_TOKEN), SignatureAlgorithm.HS256)
                 .compact();
     }
@@ -89,17 +87,6 @@ public class JwtUtils {
                 .compact();
     }
 
-//    public String generateAccessToken2(UserDetailsImpl userDetails) {
-//        return Jwts.builder()
-//                .setSubject((userDetails.getUsername()))
-//                .claim("roles", userDetails.getAuthorities().stream()
-//                        .map(GrantedAuthority::getAuthority)
-//                        .collect(Collectors.joining(",")))
-//                .setIssuedAt(new Date())
-//                .setExpiration(new Date(System.currentTimeMillis() + jwtExpirationMs))
-//                .signWith(getKey(ACCESS_TOKEN), SignatureAlgorithm.HS256)
-//                .compact();
-//    }
 
     public String generateJwtOAuth2Token(Authentication authentication) {
         OAuth2User oauth2User = (OAuth2User) authentication.getPrincipal();

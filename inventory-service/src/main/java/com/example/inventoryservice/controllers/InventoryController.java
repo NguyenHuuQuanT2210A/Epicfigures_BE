@@ -7,6 +7,8 @@ import com.example.inventoryservice.services.InventoryService;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
@@ -27,10 +29,12 @@ public class InventoryController {
     }
 
     @GetMapping
-    ApiResponse<List<InventoryResponse>> getInventories() {
-        return ApiResponse.<List<InventoryResponse>>builder()
+    ApiResponse<Page<InventoryResponse>> getInventories(
+            @RequestParam(defaultValue = "1", name = "page") int page,
+            @RequestParam(defaultValue = "10", name = "limit") int limit) {
+        return ApiResponse.<Page<InventoryResponse>>builder()
                 .message("Get All Inventories")
-                .data(inventoryService.getAllInventories())
+                .data(inventoryService.getAllInventories(PageRequest.of(page -1, limit)))
                 .build();
     }
 
