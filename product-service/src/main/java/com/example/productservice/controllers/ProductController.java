@@ -12,6 +12,7 @@ import org.springframework.data.domain.PageRequest;
 
 import com.example.productservice.exception.NotFoundException;
 import jakarta.validation.Valid;
+import org.springframework.data.domain.Pageable;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
@@ -33,6 +34,18 @@ public class ProductController {
     private final ProductService productService;
 
     private final CategoryService categoryService;
+
+    @GetMapping("/search-by-specification")
+    public ApiResponse<?> advanceSearchBySpecification(@RequestParam(defaultValue = "1", name = "page") int page,
+                                                       @RequestParam(defaultValue = "10", name = "limit") int limit,
+                                                        @RequestParam(required = false) String sort,
+                                                        @RequestParam(required = false) String[] product,
+                                                        @RequestParam(required = false) String category) {
+        return ApiResponse.builder()
+                .message("List of Products")
+                .data(productService.searchBySpecification(PageRequest.of(page -1, limit), sort, product, category))
+                .build();
+    }
 
     @GetMapping
     ApiResponse<Page<ProductDTO>> getAllProducts(
@@ -153,8 +166,15 @@ public class ProductController {
     ApiResponse<?> updateStockQuantity(@PathVariable Long id, @RequestParam Integer quantity) {
         productService.updateStockQuantity(id, quantity);
         return ApiResponse.builder()
-                .code(HttpStatus.OK.value())
                 .message("Update stock quantity successfully")
+                .build();
+    }
+
+    @PutMapping("/restore/{id}")
+    ApiResponse<?> restoreProduct(@PathVariable Long id) {
+        productService.restoreProduct(id);
+        return ApiResponse.builder()
+                .message("Restore product successfully")
                 .build();
     }
 }

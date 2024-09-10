@@ -15,4 +15,6 @@ public interface UserService {
     UserDTO findByUsername(String username);
     UserDTO findByEmail(String email);
     void moveToTrash(Long id);
+    void restoreUser(Long id);
+    Page<UserDTO> searchBySpecification(Pageable pageable, String sort, String[] user, String role);
 }

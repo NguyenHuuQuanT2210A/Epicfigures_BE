@@ -10,24 +10,30 @@ import com.example.productservice.exception.CustomException;
 import com.example.productservice.mapper.CategoryMapper;
 import com.example.productservice.mapper.ProductMapper;
 import com.example.productservice.repositories.ProductRepository;
+import com.example.productservice.repositories.specification.ProductSpecification;
+import com.example.productservice.repositories.specification.SpecSearchCriteria;
 import com.example.productservice.services.impl.BaseRedisServiceImpl;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import lombok.RequiredArgsConstructor;
-import org.springframework.data.domain.Page;
-import org.springframework.data.domain.PageImpl;
-import org.springframework.data.domain.Pageable;
+import lombok.extern.slf4j.Slf4j;
+import org.springframework.data.domain.*;
+import org.springframework.data.jpa.domain.Specification;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.util.StringUtils;
 import org.springframework.web.client.RestTemplate;
 import org.springframework.web.multipart.MultipartFile;
 
 import java.time.LocalDateTime;
 import java.util.*;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 import static com.example.productservice.constant.CommonDefine.*;
+import static com.example.productservice.repositories.specification.SearchOperation.OR_PREDICATE_FLAG;
 
-
+@Slf4j
 @Service
 @RequiredArgsConstructor
 public class ProductServiceImpl implements ProductService {
@@ -170,21 +176,18 @@ public class ProductServiceImpl implements ProductService {
 
     @Override
     public void updateProduct(long id, ProductDTO updatedProductDTO, List<MultipartFile> imageFiles) {
-        Optional<Product> existingProduct = productRepository.findById(id);
-        if (existingProduct.isEmpty()) {
-            throw new CustomException("Can not find product with id" + id, HttpStatus.NOT_FOUND);
-        }
+        Product existingProduct = findProductById(id);
         if (updatedProductDTO.getPrice() != null) {
-            existingProduct.get().setPrice(updatedProductDTO.getPrice());
+            existingProduct.setPrice(updatedProductDTO.getPrice());
         }
         if (updatedProductDTO.getName() != null) {
-            if (productRepository.existsByName(updatedProductDTO.getName()) && !updatedProductDTO.getName().equals(existingProduct.get().getName())) {
+            if (productRepository.existsByName(updatedProductDTO.getName()) && !updatedProductDTO.getName().equals(existingProduct.getName())) {
                 throw new CustomException("Product already exists with name: " + updatedProductDTO.getName(), HttpStatus.BAD_REQUEST);
             }
-            existingProduct.get().setName(updatedProductDTO.getName());
+            existingProduct.setName(updatedProductDTO.getName());
         }
         if (updatedProductDTO.getDescription() != null) {
-            existingProduct.get().setDescription(updatedProductDTO.getDescription());
+            existingProduct.setDescription(updatedProductDTO.getDescription());
         }
 
 //        if (updatedProductDTO.getImages() != null) {
@@ -197,15 +200,15 @@ public class ProductServiceImpl implements ProductService {
 //        }
 
         if (updatedProductDTO.getManufacturer() != null) {
-            existingProduct.get().setManufacturer(updatedProductDTO.getManufacturer());
+            existingProduct.setManufacturer(updatedProductDTO.getManufacturer());
         }
 
         if (updatedProductDTO.getSize() != null) {
-            existingProduct.get().setSize(updatedProductDTO.getSize());
+            existingProduct.setSize(updatedProductDTO.getSize());
         }
 
         if (updatedProductDTO.getWeight() != null) {
-            existingProduct.get().setWeight(updatedProductDTO.getWeight());
+            existingProduct.setWeight(updatedProductDTO.getWeight());
         }
 
         if (updatedProductDTO.getCategoryId() != null) {
@@ -215,20 +218,20 @@ public class ProductServiceImpl implements ProductService {
             }
 
             Category category = categoryMapper.INSTANCE.categoryDTOToCategory(categoryDTO);
-            existingProduct.get().setCategory(category);
+            existingProduct.setCategory(category);
         }
 
-        existingProduct.get().setStockQuantity(existingProduct.get().getStockQuantity());
-        productRepository.save(existingProduct.get());
+        existingProduct.setStockQuantity(existingProduct.getStockQuantity());
+        productRepository.save(existingProduct);
 
         List<Long> productImageIds = new ArrayList<>();
-        List<ProductImageDTO> productImageDTOs = productImageService.getProductImages(existingProduct.get().getProductId());
+        List<ProductImageDTO> productImageDTOs = productImageService.getProductImages(existingProduct.getProductId());
         for (ProductImageDTO productImageDTO : productImageDTOs) {
             if (!updatedProductDTO.getImages().contains(productImageDTO)) {
                 productImageIds.add(productImageDTO.getImageId());
             }
         }
-        productImageService.updateProductImage(existingProduct.get().getProductId(), productImageIds , imageFiles);
+        productImageService.updateProductImage(existingProduct.getProductId(), productImageIds , imageFiles);
 
         //redis
         if (redisService.keyExists(PRODUCT_ID + id)) {
@@ -260,10 +263,7 @@ public class ProductServiceImpl implements ProductService {
 
     @Override
     public void moveToTrash(Long id) {
-        Product product = productRepository.findById(id).orElse(null);
-        if (product == null) {
-            throw new CustomException("Cannot find this product id: " + id, HttpStatus.NOT_FOUND);
-        }
+        Product product = findProductById(id);
         LocalDateTime now = LocalDateTime.now();
         product.setDeletedAt(now);
         productRepository.save(product);
@@ -279,4 +279,74 @@ public class ProductServiceImpl implements ProductService {
         //có thể sử dụng Distributed Lock
         return productRepository.findById(id).orElseThrow(() -> new CustomException("Product not found with id: " + id, HttpStatus.BAD_REQUEST));
     }
+
+    @Override
+    public void restoreProduct(Long id) {
+        Product product = findProductById(id);
+        product.setDeletedAt(null);
+        productRepository.save(product);
+    }
+
+    @Override
+    public Page<ProductDTO> searchBySpecification(Pageable pageable, String sort, String[] product, String category) {
+        log.info("getProductsBySpecifications");
+
+        Pageable pageableSorted = pageable;
+        if (StringUtils.hasLength(sort)){
+            Pattern patternSort = Pattern.compile("(\\w+?)(:)(asc|desc)");
+            Matcher matcher = patternSort.matcher(sort);
+            if (matcher.find()) {
+                String columnName = matcher.group(1);
+                if (matcher.group(3).equalsIgnoreCase("desc")){
+                    pageableSorted = PageRequest.of(pageable.getPageNumber(), pageable.getPageSize(), Sort.by(columnName).descending());
+                }else {
+                    pageableSorted = PageRequest.of(pageable.getPageNumber(), pageable.getPageSize(), Sort.by(columnName).ascending());
+                }
+            }
+        }
+
+        if (product != null) {
+            List<SpecSearchCriteria> params = new ArrayList<>();
+
+            Pattern pattern = Pattern.compile("(\\p{Punct}?)(\\w+?)(\\p{Punct}?)([<:>~!-])(.*)");
+            for (String p : product) {
+                Matcher matcher = pattern.matcher(p);
+                if (matcher.find()) {
+                    SpecSearchCriteria searchCriteria = new SpecSearchCriteria(null, matcher.group(2), matcher.group(4), matcher.group(5), matcher.group(1), matcher.group(3));
+                    if (p.startsWith(OR_PREDICATE_FLAG)){
+                        searchCriteria.setOrPredicate(true);
+                    }
+                    params.add(searchCriteria);
+                }
+            }
+
+            if (category != null) {
+//                for (String c : category) {
+                    Matcher matcher = pattern.matcher(category);
+                    if (matcher.find()) {
+                        SpecSearchCriteria searchCriteria = new SpecSearchCriteria(null, matcher.group(2), matcher.group(4), matcher.group(5), matcher.group(1), matcher.group(3));
+                        if (category.startsWith(OR_PREDICATE_FLAG)){
+                            searchCriteria.setOrPredicate(true);
+                        }
+                        params.add(searchCriteria);
+                    }
+//                }
+            }
+
+            Specification<Product> result = new ProductSpecification(params.get(0));
+            for (int i = 1; i < params.size(); i++) {
+                result = params.get(i).getOrPredicate()
+                        ? Specification.where(result).or(new ProductSpecification(params.get(i)))
+                        : Specification.where(result).and(new ProductSpecification(params.get(i)));
+            }
+
+            Page<Product> users = productRepository.findAll(Objects.requireNonNull(result), pageableSorted);
+
+            return users.map(productMapper.INSTANCE::productToProductDTO);
+        }
+
+        return productRepository.findAll(pageableSorted).map(productMapper.INSTANCE::productToProductDTO);
+    }
+
+
 }

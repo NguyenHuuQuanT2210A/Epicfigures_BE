@@ -8,20 +8,28 @@ import com.example.userservice.mappers.UserMapper;
 import com.example.userservice.models.requests.UserRequest;
 import com.example.userservice.repositories.RoleRepository;
 import com.example.userservice.repositories.UserRepository;
+import com.example.userservice.repositories.specification.SpecSearchCriteria;
+import com.example.userservice.repositories.specification.UserSpecification;
 import com.example.userservice.statics.enums.ERole;
 import lombok.RequiredArgsConstructor;
 import org.springframework.beans.BeanUtils;
 import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort;
+import org.springframework.data.jpa.domain.Specification;
 import org.springframework.http.HttpStatus;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
+import org.springframework.util.StringUtils;
 
 import java.time.LocalDateTime;
-import java.util.HashSet;
-import java.util.Objects;
-import java.util.Set;
+import java.util.*;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
+
+import static com.example.userservice.repositories.specification.SearchOperation.OR_PREDICATE_FLAG;
 
 @Service
 @RequiredArgsConstructor
@@ -41,10 +49,7 @@ public class UserServiceImpl implements UserService {
     }
   
     public UserDTO findById(Long id) {
-        User user = userRepository.findById(id).orElse(null);
-        if (user == null) {
-            throw new CustomException("Cannot find this user id: " + id, HttpStatus.NOT_FOUND);
-        }
+        User user = findUserById(id);
         return UserMapper.INSTANCE.userToUserDTO(user);
     }
 
@@ -62,10 +67,7 @@ public class UserServiceImpl implements UserService {
     }
 
     public void moveToTrash(Long id) {
-        User user = userRepository.findById(id).orElse(null);
-        if (user == null) {
-            throw new CustomException("Cannot find this user id: " + id, HttpStatus.NOT_FOUND);
-        }
+        User user = findUserById(id);
         LocalDateTime now = LocalDateTime.now();
         user.setDeletedAt(now);
 
@@ -122,10 +124,7 @@ public class UserServiceImpl implements UserService {
     }
 
     public UserDTO updateUser(Long id, UserRequest userRequest) {
-        User user = userRepository.findById(id).orElse(null);
-        if (user == null) {
-            throw new CustomException("Cannot find this user id: " + id, HttpStatus.NOT_FOUND);
-        }
+        User user = findUserById(id);
         var userDTO = findByUsername(userRequest.getUsername());
         if (userDTO != null && !user.getUsername().equals(userRequest.getUsername())) {
             throw new CustomException("User name already exists", HttpStatus.BAD_REQUEST);
@@ -184,16 +183,83 @@ public class UserServiceImpl implements UserService {
     }
   
     public void deleteById(Long id) {
-        User user = userRepository.findById(id).orElse(null);
-        if (user == null) {
-            throw new CustomException("Cannot find this user id: " + id, HttpStatus.NOT_FOUND);
-        }
+        User user = findUserById(id);
 
         try {
             userRepository.deleteById(id);
         } catch (Exception e) {
             throw new CustomException("Cannot delete this user", HttpStatus.BAD_REQUEST);
         }
+    }
+
+    private User findUserById(Long id) {
+        return userRepository.findById(id).orElseThrow(() -> new CustomException("Cannot find this user id: " + id, HttpStatus.NOT_FOUND));
+    }
+
+    @Override
+    public void restoreUser(Long id) {
+        User user = findUserById(id);
+        user.setDeletedAt(null);
+        userRepository.save(user);
+    }
+
+    @Override
+    public Page<UserDTO> searchBySpecification(Pageable pageable, String sort, String[] user, String role) {
+        Pageable pageableSorted = pageable;
+        if (StringUtils.hasLength(sort)){
+            Pattern patternSort = Pattern.compile("(\\w+?)(:)(asc|desc)");
+            Matcher matcher = patternSort.matcher(sort);
+            if (matcher.find()) {
+                String columnName = matcher.group(1);
+                if (matcher.group(3).equalsIgnoreCase("desc")){
+                    pageableSorted = PageRequest.of(pageable.getPageNumber(), pageable.getPageSize(), Sort.by(columnName).descending());
+                }else {
+                    pageableSorted = PageRequest.of(pageable.getPageNumber(), pageable.getPageSize(), Sort.by(columnName).ascending());
+                }
+            }
+        }
+
+        if (user != null) {
+            List<SpecSearchCriteria> params = new ArrayList<>();
+
+            Pattern pattern = Pattern.compile("(\\p{Punct}?)(\\w+?)(\\p{Punct}?)([<:>~!-])(.*)");
+            for (String u : user) {
+                Matcher matcher = pattern.matcher(u);
+                if (matcher.find()) {
+                    SpecSearchCriteria searchCriteria = new SpecSearchCriteria(null, matcher.group(2), matcher.group(4), matcher.group(5), matcher.group(1), matcher.group(3));
+                    if (u.startsWith(OR_PREDICATE_FLAG)){
+                        searchCriteria.setOrPredicate(true);
+                    }
+                    params.add(searchCriteria);
+                }
+            }
+
+            if (role != null) {
+//                for (String c : category) {
+                Matcher matcher = pattern.matcher(role);
+                if (matcher.find()) {
+                    SpecSearchCriteria searchCriteria = new SpecSearchCriteria(null, matcher.group(2), matcher.group(4), matcher.group(5), matcher.group(1), matcher.group(3));
+                    if (role.startsWith(OR_PREDICATE_FLAG)){
+                        searchCriteria.setOrPredicate(true);
+                    }
+                    params.add(searchCriteria);
+                }
+//                }
+            }
+
+            Specification<User> result = new UserSpecification(params.get(0));
+            for (int i = 1; i < params.size(); i++) {
+                result = params.get(i).getOrPredicate()
+                        ? Specification.where(result).or(new UserSpecification(params.get(i)))
+                        : Specification.where(result).and(new UserSpecification(params.get(i)));
+            }
+
+            Page<User> users = userRepository.findAll(Objects.requireNonNull(result), pageableSorted);
+
+            return users.map(UserMapper.INSTANCE::userToUserDTO);
+        }
+
+        return userRepository.findAll(pageableSorted).map(UserMapper.INSTANCE::userToUserDTO);
     }
 
 }

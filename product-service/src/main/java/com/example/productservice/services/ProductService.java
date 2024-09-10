@@ -24,4 +24,6 @@ public interface ProductService {
     void moveToTrash(Long id);
     Page<ProductDTO> getInTrash(Pageable pageable);
     List<ProductDTO> getProductsByIds(Set<Long> productIds);
+    void restoreProduct(Long id);
+    Page<ProductDTO> searchBySpecification(Pageable pageable, String sort, String[] product, String category);
 }

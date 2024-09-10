@@ -140,4 +140,25 @@ public class UserController {
         fileStorageService.deleteUserImageFile(filename);
         return ResponseEntity.ok("Delete user images successfully");
     }
+
+    @PreAuthorize("hasRole('ROLE_ADMIN')")
+    @PutMapping("/restore/{id}")
+    ApiResponse<?> restoreUser(@PathVariable Long id) {
+        userService.restoreUser(id);
+        return ApiResponse.builder()
+                .message("Restore user successfully")
+                .build();
+    }
+
+    @GetMapping("/search-by-specification")
+    public ApiResponse<?> advanceSearchBySpecification(@RequestParam(defaultValue = "1", name = "page") int page,
+                                                       @RequestParam(defaultValue = "10", name = "limit") int limit,
+                                                       @RequestParam(required = false) String sort,
+                                                       @RequestParam(required = false) String[] user,
+                                                       @RequestParam(required = false) String role) {
+        return ApiResponse.builder()
+                .message("List of Products")
+                .data(userService.searchBySpecification(PageRequest.of(page -1, limit), sort, user, role))
+                .build();
+    }
 }
