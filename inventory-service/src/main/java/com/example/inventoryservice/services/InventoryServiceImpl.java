@@ -6,6 +6,7 @@ import com.example.inventoryservice.dto.InventoryResponse;
 import com.example.inventoryservice.dto.ProductDTO;
 import com.example.inventoryservice.entities.Inventory;
 import com.example.inventoryservice.enums.InventoryStatus;
+import com.example.inventoryservice.exception.CustomException;
 import com.example.inventoryservice.exception.NotFoundException;
 import com.example.inventoryservice.helper.LocalDatetimeConverter;
 import com.example.inventoryservice.mapper.InventoryMapper;
@@ -14,6 +15,7 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
+import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 
 import java.time.LocalDateTime;
@@ -79,5 +81,27 @@ public class InventoryServiceImpl implements InventoryService {
 
     private Inventory findInventoryById(long id) {
         return inventoryRepository.findById(id).orElseThrow(() -> new NotFoundException("Inventory not found"));
+    }
+
+    @Override
+    public void moveToTrash(Long id) {
+        Inventory inventory = findInventoryById(id);
+
+        LocalDateTime now = LocalDateTime.now();
+        inventory.setDeletedAt(now);
+        inventoryRepository.save(inventory);
+    }
+
+    @Override
+    public Page<InventoryResponse> getInTrash(Pageable pageable) {
+        Page<Inventory> inventories = inventoryRepository.findByDeletedAtIsNotNull(pageable);
+        return inventories.map(inventoryMapper::toInventoryResponse);
+    }
+
+    @Override
+    public void restoreInventory(Long id) {
+        Inventory inventory = findInventoryById(id);
+        inventory.setDeletedAt(null);
+        inventoryRepository.save(inventory);
     }
 }

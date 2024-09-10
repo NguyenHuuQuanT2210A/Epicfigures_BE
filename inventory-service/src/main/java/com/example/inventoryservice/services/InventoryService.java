@@ -14,4 +14,7 @@ public interface InventoryService {
     InventoryResponse updateInventory(long id, InventoryRequest inventoryRequest);
     InventoryResponse addInventory(InventoryRequest inventoryRequest);
     void deleteInventory(long id);
+    void moveToTrash(Long id);
+    Page<InventoryResponse> getInTrash(Pageable pageable);
+    void restoreInventory(Long id);
 }

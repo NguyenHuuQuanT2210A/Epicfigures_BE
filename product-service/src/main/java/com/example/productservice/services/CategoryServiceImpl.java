@@ -31,11 +31,8 @@ public class CategoryServiceImpl implements CategoryService{
 
     @Override
     public CategoryDTO getCategoryById(Long id) {
-        Optional<Category> category = categoryRepository.findById(id);
-        if(category.isEmpty()){
-            throw new CategoryNotFoundException("Can not find category with id " + id);
-        }
-        return CategoryMapper.INSTANCE.categoryToCategoryDTO(category.get());
+        Category category = findCategoryById(id);
+        return CategoryMapper.INSTANCE.categoryToCategoryDTO(category);
     }
 
     @Override
@@ -52,8 +49,7 @@ public class CategoryServiceImpl implements CategoryService{
 
     @Override
     public void updateCategory(Long id, CategoryDTO updatedCategoryDTO) {
-        Category category = categoryRepository.findById(id)
-                .orElseThrow(() -> new CategoryNotFoundException("Category not found with id: " + id));
+        Category category = findCategoryById(id);
 
         if (category.getDeletedAt() != null){
             throw new CustomException("Category is in trash with id: " + id, HttpStatus.BAD_REQUEST);
@@ -71,9 +67,7 @@ public class CategoryServiceImpl implements CategoryService{
 
     @Override
     public void deleteCategory(Long id) {
-        categoryRepository.findById(id)
-                .orElseThrow(() -> new CategoryNotFoundException("Category not found with id: " + id));
-
+        findCategoryById(id);
         categoryRepository.deleteById(id);
     }
 
@@ -92,10 +86,8 @@ public class CategoryServiceImpl implements CategoryService{
     }
 
     public void moveToTrash(Long id) {
-        Category category = categoryRepository.findById(id).orElse(null);
-        if (category == null) {
-            throw new CategoryNotFoundException("Cannot find this category id: " + id);
-        }
+        Category category = findCategoryById(id);
+
         LocalDateTime now = LocalDateTime.now();
         category.setDeletedAt(now);
         categoryRepository.save(category);
@@ -105,6 +97,20 @@ public class CategoryServiceImpl implements CategoryService{
     public Page<CategoryDTO> getInTrash(Pageable pageable) {
         Page<Category> categories = categoryRepository.findByDeletedAtIsNotNull(pageable);
         return categories.map(CategoryMapper.INSTANCE::categoryToCategoryDTO);
+    }
+
+    private Category findCategoryById(Long id) {
+        return categoryRepository.findById(id).orElseThrow(() -> new CategoryNotFoundException("Category not found with id: " + id));
+    }
+
+    @Override
+    public void restoreCategory(Long id) {
+        Category category = findCategoryById(id);
+        if (category == null) {
+            throw new CategoryNotFoundException("Cannot find this category id: " + id);
+        }
+        category.setDeletedAt(null);
+        categoryRepository.save(category);
     }
 
 }

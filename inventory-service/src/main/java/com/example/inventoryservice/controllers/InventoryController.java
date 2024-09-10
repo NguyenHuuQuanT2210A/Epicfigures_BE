@@ -9,11 +9,13 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
+import org.springframework.http.HttpStatus;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
 
 @Slf4j
+@CrossOrigin()
 @RestController
 @RequiredArgsConstructor
 @RequestMapping("/api/v1/inventory")
@@ -67,6 +69,30 @@ public class InventoryController {
         return ApiResponse.<InventoryResponse>builder()
                 .message("Update Inventory")
                 .data(inventoryService.updateInventory(id, request))
+                .build();
+    }
+
+    @PutMapping("/restore/{id}")
+    ApiResponse<?> restoreInventory(@PathVariable Long id) {
+        inventoryService.restoreInventory(id);
+        return ApiResponse.builder()
+                .message("Restore inventory successfully")
+                .build();
+    }
+
+    @DeleteMapping("/in-trash/{id}")
+    ApiResponse<?> moveToTrash(@PathVariable Long id) {
+        inventoryService.moveToTrash(id);
+        return ApiResponse.builder()
+                .message("Move to trash inventory successfully")
+                .build();
+    }
+
+    @GetMapping("/trash")
+    ApiResponse<?> getInTrashInventory(@RequestParam(name = "page", defaultValue = "1") int page, @RequestParam(name = "limit", defaultValue = "10") int limit){
+        return ApiResponse.builder()
+                .message("Get in trash inventory")
+                .data(inventoryService.getInTrash(PageRequest.of(page -1, limit)))
                 .build();
     }
 }

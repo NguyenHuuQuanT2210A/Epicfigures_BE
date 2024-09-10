@@ -91,15 +91,6 @@ public class CategoryController {
     }
 
     @DeleteMapping("/{id}")
-    ApiResponse<?> moveToTrash(@PathVariable Long id) {
-        categoryService.moveToTrash(id);
-        return ApiResponse.builder()
-                .code(HttpStatus.NO_CONTENT.value())
-                .message("Move to Trash Category Successfully")
-                .build();
-    }
-
-    @DeleteMapping("/in-trash/{id}")
     ApiResponse<?> deleteCategory(@PathVariable Long id) {
         categoryService.deleteCategory(id);
         return ApiResponse.builder()
@@ -108,11 +99,28 @@ public class CategoryController {
                 .build();
     }
 
+    @DeleteMapping("/in-trash/{id}")
+    ApiResponse<?> moveToTrash(@PathVariable Long id) {
+        categoryService.moveToTrash(id);
+        return ApiResponse.builder()
+                .code(HttpStatus.NO_CONTENT.value())
+                .message("Move to Trash Category Successfully")
+                .build();
+    }
+
     @GetMapping("/trash")
     ApiResponse<?> getInTrashCategory(@RequestParam(defaultValue = "1", name = "page") int page, @RequestParam(defaultValue = "10", name = "limit") int limit) {
         return ApiResponse.builder()
                 .message("Get In Trash Category")
                 .data(categoryService.getInTrash(PageRequest.of(page - 1, limit)))
+                .build();
+    }
+
+    @PutMapping("/restore/{id}")
+    ApiResponse<?> restoreCategory(@PathVariable Long id) {
+        categoryService.restoreCategory(id);
+        return ApiResponse.builder()
+                .message("Restore Category Successfully")
                 .build();
     }
 }

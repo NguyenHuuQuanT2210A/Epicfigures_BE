@@ -17,4 +17,6 @@ public interface CategoryService {
     List<CategoryDTO> getCategoryByName(String name);
     void moveToTrash(Long id);
     Page<CategoryDTO> getInTrash(Pageable pageable);
+
+    void restoreCategory(Long id);
 }

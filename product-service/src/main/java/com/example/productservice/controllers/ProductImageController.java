@@ -22,6 +22,7 @@ import java.io.IOException;
 import java.util.List;
 import java.util.Map;
 
+@CrossOrigin()
 @RestController
 @RequiredArgsConstructor
 @RequestMapping("/api/v1/product-images")

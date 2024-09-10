@@ -84,6 +84,14 @@ public class PaymentController {
                 .build();
     }
 
+    @PutMapping("/updateStatus/{orderId}")
+    ApiResponse<Payment> updateStatus(@PathVariable String orderId, @RequestParam Boolean isDone){
+        paymentService.updateStatusPayment(isDone, orderId);
+        return ApiResponse.<Payment>builder()
+                .message("Update Status Payment Success")
+                .build();
+    }
+
 }
 
 
