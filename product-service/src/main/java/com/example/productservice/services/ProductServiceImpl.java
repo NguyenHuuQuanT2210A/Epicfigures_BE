@@ -14,6 +14,9 @@ import com.example.productservice.repositories.specification.ProductSpecificatio
 import com.example.productservice.repositories.specification.SpecSearchCriteria;
 import com.example.productservice.services.impl.BaseRedisServiceImpl;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import jakarta.persistence.EntityManager;
+import jakarta.persistence.PersistenceContext;
+import jakarta.persistence.criteria.*;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.domain.*;
@@ -32,6 +35,8 @@ import java.util.regex.Pattern;
 
 import static com.example.productservice.constant.CommonDefine.*;
 import static com.example.productservice.repositories.specification.SearchOperation.OR_PREDICATE_FLAG;
+import static com.example.productservice.util.AppConst.SEARCH_SPEC_OPERATOR;
+import static com.example.productservice.util.AppConst.SORT_BY;
 
 @Slf4j
 @Service
@@ -45,6 +50,8 @@ public class ProductServiceImpl implements ProductService {
     private final RestTemplate restTemplate;
     private final BaseRedisServiceImpl<String, String, Object> redisService;
     private final ObjectMapper objectMapper;
+    @PersistenceContext
+    private EntityManager entityManager;
 
 
     private ProductDTO convertToProductDTO(Object object) {
@@ -292,61 +299,66 @@ public class ProductServiceImpl implements ProductService {
         log.info("getProductsBySpecifications");
 
         Pageable pageableSorted = pageable;
-        if (StringUtils.hasLength(sort)){
-            Pattern patternSort = Pattern.compile("(\\w+?)(:)(asc|desc)");
+        if (StringUtils.hasText(sort)){
+            Pattern patternSort = Pattern.compile(SORT_BY);
             Matcher matcher = patternSort.matcher(sort);
             if (matcher.find()) {
                 String columnName = matcher.group(1);
-                if (matcher.group(3).equalsIgnoreCase("desc")){
-                    pageableSorted = PageRequest.of(pageable.getPageNumber(), pageable.getPageSize(), Sort.by(columnName).descending());
-                }else {
-                    pageableSorted = PageRequest.of(pageable.getPageNumber(), pageable.getPageSize(), Sort.by(columnName).ascending());
-                }
+                pageableSorted = matcher.group(3).equalsIgnoreCase("desc")
+                        ? PageRequest.of(pageable.getPageNumber(), pageable.getPageSize(), Sort.by(columnName).descending())
+                        : PageRequest.of(pageable.getPageNumber(), pageable.getPageSize(), Sort.by(columnName).ascending());
             }
         }
 
+        List<SpecSearchCriteria> params = new ArrayList<>();
+        Pattern pattern = Pattern.compile(SEARCH_SPEC_OPERATOR);
         if (product != null) {
-            List<SpecSearchCriteria> params = new ArrayList<>();
-
-            Pattern pattern = Pattern.compile("(\\p{Punct}?)(\\w+?)(\\p{Punct}?)([<:>~!-])(.*)");
-            for (String p : product) {
-                Matcher matcher = pattern.matcher(p);
-                if (matcher.find()) {
-                    SpecSearchCriteria searchCriteria = new SpecSearchCriteria(null, matcher.group(2), matcher.group(4), matcher.group(5), matcher.group(1), matcher.group(3));
-                    if (p.startsWith(OR_PREDICATE_FLAG)){
-                        searchCriteria.setOrPredicate(true);
-                    }
-                    params.add(searchCriteria);
-                }
-            }
-
-            if (category != null) {
-//                for (String c : category) {
-                    Matcher matcher = pattern.matcher(category);
-                    if (matcher.find()) {
-                        SpecSearchCriteria searchCriteria = new SpecSearchCriteria(null, matcher.group(2), matcher.group(4), matcher.group(5), matcher.group(1), matcher.group(3));
-                        if (category.startsWith(OR_PREDICATE_FLAG)){
-                            searchCriteria.setOrPredicate(true);
-                        }
-                        params.add(searchCriteria);
-                    }
-//                }
-            }
-
-            Specification<Product> result = new ProductSpecification(params.get(0));
-            for (int i = 1; i < params.size(); i++) {
-                result = params.get(i).getOrPredicate()
-                        ? Specification.where(result).or(new ProductSpecification(params.get(i)))
-                        : Specification.where(result).and(new ProductSpecification(params.get(i)));
-            }
-
-            Page<Product> users = productRepository.findAll(Objects.requireNonNull(result), pageableSorted);
-
-            return users.map(productMapper.INSTANCE::productToProductDTO);
+            params.addAll(parseProductCriteria(product, pattern));
+        }
+        if (category != null) {
+            params.addAll(parseCategoryCriteria(category, pattern));
         }
 
-        return productRepository.findAll(pageableSorted).map(productMapper.INSTANCE::productToProductDTO);
+        if (params.isEmpty()) {
+            return productRepository.findAll(pageableSorted).map(productMapper.INSTANCE::productToProductDTO);
+        }
+
+        Specification<Product> result = new ProductSpecification(params.get(0));
+        for (int i = 1; i < params.size(); i++) {
+            result = params.get(i).getOrPredicate()
+                    ? Specification.where(result).or(new ProductSpecification(params.get(i)))
+                    : Specification.where(result).and(new ProductSpecification(params.get(i)));
+        }
+
+        Page<Product> products = productRepository.findAll(Objects.requireNonNull(result), pageableSorted);
+        return products.map(productMapper.INSTANCE::productToProductDTO);
     }
 
+    private List<SpecSearchCriteria> parseProductCriteria(String[] product, Pattern pattern) {
+        List<SpecSearchCriteria> params = new ArrayList<>();
+        for (String p : product) {
+            Matcher matcher = pattern.matcher(p);
+            if (matcher.find()) {
+                SpecSearchCriteria searchCriteria = new SpecSearchCriteria(null, matcher.group(2), matcher.group(4), matcher.group(6), matcher.group(1), matcher.group(3), matcher.group(5));
+                if (p.startsWith(OR_PREDICATE_FLAG)) {
+                    searchCriteria.setOrPredicate(true);
+                }
+                params.add(searchCriteria);
+            }
+        }
+        return params;
+    }
 
+    private List<SpecSearchCriteria> parseCategoryCriteria(String category, Pattern pattern) {
+        List<SpecSearchCriteria> params = new ArrayList<>();
+        Matcher matcher = pattern.matcher(category);
+        if (matcher.find()) {
+            SpecSearchCriteria searchCriteria = new SpecSearchCriteria(null, matcher.group(2), matcher.group(4), matcher.group(6), matcher.group(1), matcher.group(3), matcher.group(5));
+            if (category.startsWith(OR_PREDICATE_FLAG)){
+                searchCriteria.setOrPredicate(true);
+            }
+            params.add(searchCriteria);
+        }
+        return params;
+    }
 }

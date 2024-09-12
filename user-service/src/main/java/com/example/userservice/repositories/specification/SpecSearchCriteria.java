@@ -4,8 +4,7 @@ import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
 
-import static com.example.userservice.repositories.specification.SearchOperation.OR_PREDICATE_FLAG;
-import static com.example.userservice.repositories.specification.SearchOperation.ZERO_OR_MORE_REGEX;
+import static com.example.userservice.repositories.specification.SearchOperation.*;
 
 @Getter
 @Setter
@@ -16,7 +15,7 @@ public class SpecSearchCriteria {
     private Object value;
     private Boolean orPredicate;
 
-    public SpecSearchCriteria(String orPredicate, String key, String operation, String value,String prefix, String suffix) {
+    public SpecSearchCriteria(String orPredicate, String key, String operation, String value,String prefix, String suffix, String operation2) {
         this.orPredicate = orPredicate != null && orPredicate.equals(OR_PREDICATE_FLAG);
         SearchOperation oper = SearchOperation.getSimpleOperation(operation.charAt(0));
         if (oper == SearchOperation.EQUALITY){
@@ -30,6 +29,8 @@ public class SpecSearchCriteria {
             }else if (endWithAsterisk){
                 oper = SearchOperation.STARTS_WITH;
             }
+        } else if ((oper == SearchOperation.GREATER_THAN || oper == SearchOperation.LESS_THAN) && operation2.equals(COMPARISON_EQUALITY)) {
+            oper = (oper == SearchOperation.GREATER_THAN) ? SearchOperation.GREATER_THAN_EQUAL : SearchOperation.LESS_THAN_EQUAL;
         }
         this.key = key;
         this.operation = oper;

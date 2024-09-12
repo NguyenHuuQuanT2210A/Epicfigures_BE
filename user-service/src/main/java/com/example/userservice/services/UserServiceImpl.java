@@ -30,6 +30,8 @@ import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 import static com.example.userservice.repositories.specification.SearchOperation.OR_PREDICATE_FLAG;
+import static com.example.userservice.util.AppConst.SEARCH_SPEC_OPERATOR;
+import static com.example.userservice.util.AppConst.SORT_BY;
 
 @Service
 @RequiredArgsConstructor
@@ -206,60 +208,67 @@ public class UserServiceImpl implements UserService {
     @Override
     public Page<UserDTO> searchBySpecification(Pageable pageable, String sort, String[] user, String role) {
         Pageable pageableSorted = pageable;
-        if (StringUtils.hasLength(sort)){
-            Pattern patternSort = Pattern.compile("(\\w+?)(:)(asc|desc)");
+        if (StringUtils.hasText(sort)){
+            Pattern patternSort = Pattern.compile(SORT_BY);
             Matcher matcher = patternSort.matcher(sort);
             if (matcher.find()) {
                 String columnName = matcher.group(1);
-                if (matcher.group(3).equalsIgnoreCase("desc")){
-                    pageableSorted = PageRequest.of(pageable.getPageNumber(), pageable.getPageSize(), Sort.by(columnName).descending());
-                }else {
-                    pageableSorted = PageRequest.of(pageable.getPageNumber(), pageable.getPageSize(), Sort.by(columnName).ascending());
-                }
+                pageableSorted = matcher.group(3).equalsIgnoreCase("desc")
+                        ? PageRequest.of(pageable.getPageNumber(), pageable.getPageSize(), Sort.by(columnName).descending())
+                        : PageRequest.of(pageable.getPageNumber(), pageable.getPageSize(), Sort.by(columnName).ascending());
             }
         }
 
+        List<SpecSearchCriteria> params = new ArrayList<>();
+        Pattern pattern = Pattern.compile(SEARCH_SPEC_OPERATOR);
         if (user != null) {
-            List<SpecSearchCriteria> params = new ArrayList<>();
-
-            Pattern pattern = Pattern.compile("(\\p{Punct}?)(\\w+?)(\\p{Punct}?)([<:>~!-])(.*)");
-            for (String u : user) {
-                Matcher matcher = pattern.matcher(u);
-                if (matcher.find()) {
-                    SpecSearchCriteria searchCriteria = new SpecSearchCriteria(null, matcher.group(2), matcher.group(4), matcher.group(5), matcher.group(1), matcher.group(3));
-                    if (u.startsWith(OR_PREDICATE_FLAG)){
-                        searchCriteria.setOrPredicate(true);
-                    }
-                    params.add(searchCriteria);
-                }
-            }
-
-            if (role != null) {
-//                for (String c : category) {
-                Matcher matcher = pattern.matcher(role);
-                if (matcher.find()) {
-                    SpecSearchCriteria searchCriteria = new SpecSearchCriteria(null, matcher.group(2), matcher.group(4), matcher.group(5), matcher.group(1), matcher.group(3));
-                    if (role.startsWith(OR_PREDICATE_FLAG)){
-                        searchCriteria.setOrPredicate(true);
-                    }
-                    params.add(searchCriteria);
-                }
-//                }
-            }
-
-            Specification<User> result = new UserSpecification(params.get(0));
-            for (int i = 1; i < params.size(); i++) {
-                result = params.get(i).getOrPredicate()
-                        ? Specification.where(result).or(new UserSpecification(params.get(i)))
-                        : Specification.where(result).and(new UserSpecification(params.get(i)));
-            }
-
-            Page<User> users = userRepository.findAll(Objects.requireNonNull(result), pageableSorted);
-
-            return users.map(UserMapper.INSTANCE::userToUserDTO);
+            params.addAll(parseUserCriteria(user, pattern));
+        }
+        if (role != null) {
+            params.addAll(parseRoleCriteria(role, pattern));
         }
 
-        return userRepository.findAll(pageableSorted).map(UserMapper.INSTANCE::userToUserDTO);
+        if (params.isEmpty()) {
+            return userRepository.findAll(pageableSorted).map(UserMapper.INSTANCE::userToUserDTO);
+        }
+
+        Specification<User> result = new UserSpecification(params.get(0));
+        for (int i = 1; i < params.size(); i++) {
+            result = params.get(i).getOrPredicate()
+                    ? Specification.where(result).or(new UserSpecification(params.get(i)))
+                    : Specification.where(result).and(new UserSpecification(params.get(i)));
+        }
+
+        Page<User> products = userRepository.findAll(Objects.requireNonNull(result), pageableSorted);
+        return products.map(UserMapper.INSTANCE::userToUserDTO);
+    }
+
+    private List<SpecSearchCriteria> parseUserCriteria(String[] user, Pattern pattern) {
+        List<SpecSearchCriteria> params = new ArrayList<>();
+        for (String u : user) {
+            Matcher matcher = pattern.matcher(u);
+            if (matcher.find()) {
+                SpecSearchCriteria searchCriteria = new SpecSearchCriteria(null, matcher.group(2), matcher.group(4), matcher.group(6), matcher.group(1), matcher.group(3), matcher.group(5));
+                if (u.startsWith(OR_PREDICATE_FLAG)) {
+                    searchCriteria.setOrPredicate(true);
+                }
+                params.add(searchCriteria);
+            }
+        }
+        return params;
+    }
+
+    private List<SpecSearchCriteria> parseRoleCriteria(String role, Pattern pattern) {
+        List<SpecSearchCriteria> params = new ArrayList<>();
+        Matcher matcher = pattern.matcher(role);
+        if (matcher.find()) {
+            SpecSearchCriteria searchCriteria = new SpecSearchCriteria(null, matcher.group(2), matcher.group(4), matcher.group(6), matcher.group(1), matcher.group(3), matcher.group(5));
+            if (role.startsWith(OR_PREDICATE_FLAG)){
+                searchCriteria.setOrPredicate(true);
+            }
+            params.add(searchCriteria);
+        }
+        return params;
     }
 
 }
