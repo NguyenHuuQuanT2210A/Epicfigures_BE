@@ -20,7 +20,7 @@ import java.util.stream.Collectors;
 @RestController
 @RequiredArgsConstructor
 @RequestMapping("/api/v1/categories")
-@CrossOrigin()
+//@CrossOrigin()
 public class CategoryController {
     private final CategoryService categoryService;
 
