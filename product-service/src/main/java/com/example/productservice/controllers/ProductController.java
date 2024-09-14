@@ -16,6 +16,7 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.validation.BindingResult;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
@@ -35,7 +36,7 @@ public class ProductController {
 
     private final CategoryService categoryService;
 
-    @GetMapping("/search-by-specification")
+    @GetMapping("/public/search-by-specification")
     public ApiResponse<?> advanceSearchBySpecification(@RequestParam(defaultValue = "1", name = "page") int page,
                                                        @RequestParam(defaultValue = "10", name = "limit") int limit,
                                                         @RequestParam(required = false) String sort,
@@ -47,7 +48,7 @@ public class ProductController {
                 .build();
     }
 
-    @GetMapping
+    @GetMapping("/public")
     ApiResponse<Page<ProductDTO>> getAllProducts(
             @RequestParam(defaultValue = "1", name = "page") int page,
             @RequestParam(defaultValue = "10", name = "limit") int limit) {
@@ -57,7 +58,7 @@ public class ProductController {
                 .build();
     }
 
-    @GetMapping("/{id}")
+    @GetMapping("/public/{id}")
     ApiResponse<?> getProductById(@PathVariable Long id) {
         ProductDTO product = productService.getProductById(id);
         if (product == null) {
@@ -69,7 +70,7 @@ public class ProductController {
                 .build();
     }
 
-    @PostMapping("/list")
+    @PostMapping("/public/list")
     ApiResponse<?> getProductsByIds(@RequestBody Set<Long> productIds) {
         return ApiResponse.builder()
                 .message("Get products by Ids")
@@ -77,7 +78,7 @@ public class ProductController {
                 .build();
     }
 
-    @GetMapping("/name/{name}")
+    @GetMapping("/public/name/{name}")
     ApiResponse<?> getProductByName(@PathVariable String name) {
         ProductDTO product = productService.getProductByName(name);
         if (product == null) {
@@ -89,7 +90,7 @@ public class ProductController {
                 .build();
     }
 
-    @GetMapping("/category/{categoryId}")
+    @GetMapping("/public/category/{categoryId}")
     ApiResponse<Page<ProductDTO>> findByCategory( @RequestParam(defaultValue = "1") int page,
                                             @RequestParam(defaultValue = "10") int limit,
                                             @PathVariable Long categoryId) {

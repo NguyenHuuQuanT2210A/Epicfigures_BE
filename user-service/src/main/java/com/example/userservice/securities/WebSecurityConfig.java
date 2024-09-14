@@ -4,6 +4,7 @@ import com.example.userservice.securities.jwt.AccessDeniedHandler;
 import com.example.userservice.securities.jwt.AuthEntryPointJwt;
 import com.example.userservice.securities.jwt.AuthTokenFilter;
 import com.example.userservice.securities.services.UserDetailsServiceImpl;
+import lombok.RequiredArgsConstructor;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.security.authentication.AuthenticationManager;
@@ -21,6 +22,7 @@ import org.springframework.security.web.authentication.UsernamePasswordAuthentic
 
 @Configuration
 @EnableWebSecurity
+@RequiredArgsConstructor
 @EnableGlobalMethodSecurity(
         // securedEnabled = true,
         // jsr250Enabled = true,
@@ -31,12 +33,9 @@ public class WebSecurityConfig {
     private final AuthEntryPointJwt unauthorizedHandler;
     private final AccessDeniedHandler accessDeniedHandler;
 
-    public WebSecurityConfig(UserDetailsServiceImpl userDetailsService, AuthTokenFilter authTokenFilter, AuthEntryPointJwt unauthorizedHandler, AccessDeniedHandler accessDeniedHandler) {
-        this.userDetailsService = userDetailsService;
-        this.authTokenFilter = authTokenFilter;
-        this.unauthorizedHandler = unauthorizedHandler;
-        this.accessDeniedHandler = accessDeniedHandler;
-    }
+    private static final String[] PUBLIC_ENDPOINTS = {
+            "/api/v1/auth/login", "/api/v1/auth/register", "/api/v1/users/{id}", "/api/v1/roles/**", "/api/v1/white_list/product/{productId}"
+    };
 
     @Bean
     public DaoAuthenticationProvider authenticationProvider() {
@@ -63,14 +62,13 @@ public class WebSecurityConfig {
         http.csrf(AbstractHttpConfigurer::disable)  // Vô hiệu hóa CSRF
                 .authorizeHttpRequests(authorizeRequests ->
                         authorizeRequests
-                            .requestMatchers("/api/v1/auth/login").permitAll()
-                            .requestMatchers("/api/v1/auth/register").permitAll()
+                            .requestMatchers(PUBLIC_ENDPOINTS).permitAll()
 //                            .requestMatchers("/oauth2/user").authenticated()
 //                            .requestMatchers("/api/v1/users/**").permitAll() // Yêu cầu xác thực cho /api/v1/**
 //                            .requestMatchers("/api/private/**").hasRole("ADMIN")//.anyRequest().hasAnyRole("ADMIN") // Yêu cầu xác thực cho /api/private/**
 //                            .requestMatchers("/api/v1/auth/logout").authenticated()
 //                            .requestMatchers("/oauth2/login-success").authenticated()
-                            .anyRequest().permitAll()
+                            .anyRequest().authenticated()
                 )
                 .headers(headers -> headers
                         .frameOptions(HeadersConfigurer.FrameOptionsConfig::sameOrigin

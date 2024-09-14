@@ -158,7 +158,6 @@ public class OrderServiceImpl implements OrderService {
                 newOrder = orderRepository.save(newOrder);
 
                 Set<OrderDetailDTO> orderDetails = new HashSet<>();
-//                Set<Long> productIds = new HashSet<>();
                 List<UserAndProductId> ids = new ArrayList<>();
 
                 Order finalNewOrder = newOrder;
@@ -171,7 +170,6 @@ public class OrderServiceImpl implements OrderService {
                             .build());
 
                     ids.add(new UserAndProductId(cartItem.getUserId(), cartItem.getProductId()));
-//                    productIds.add(cartItem.getProductId());
                 });
 
                 // Convert OrderDetailDTO to OrderDetail and set them to newOrder

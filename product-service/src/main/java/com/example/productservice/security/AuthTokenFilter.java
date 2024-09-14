@@ -1,4 +1,4 @@
-package com.example.paymentService.security;
+package com.example.productservice.security;
 
 
 import io.jsonwebtoken.Claims;
@@ -40,7 +40,7 @@ public class AuthTokenFilter extends OncePerRequestFilter {
             final String authorizationHeader = request.getHeader("Authorization");
 
             String jwt = parseJwt(request);
-            if (jwt != null) {
+            if (jwt != null){
                 Claims claims = jwtUtils.getAllClaimsFromToken(jwt);
                 List<GrantedAuthority> authorities = Arrays.stream(claims.get("roles").toString().split(","))
                         .map(SimpleGrantedAuthority::new)

@@ -1,4 +1,4 @@
-package com.example.paymentService.security;
+package com.example.inventoryservice.security;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Bean;
@@ -30,11 +30,8 @@ public class SecurityConfig {
         http.csrf(AbstractHttpConfigurer::disable)  // Vô hiệu hóa CSRF
                 .authorizeHttpRequests(authorizeRequests ->
                                 authorizeRequests
-                                        .requestMatchers("/api/v1/owner/product/**").authenticated() // Yêu cầu xác thực cho /api/v1/**
-                                        .requestMatchers("/api/private/**").hasRole("ADMIN")//.anyRequest().hasAnyRole("ADMIN") // Yêu cầu xác thực cho /api/private/**
-                                        .requestMatchers("/api/v1/auth/logout").authenticated()
-//                            .requestMatchers("/oauth2/login-success").authenticated()
-                                        .anyRequest().authenticated() // Mở quyền truy cập cho tất cả các yêu cầu khác
+                                        .requestMatchers("/api/v1/inventory/**").hasRole("ADMIN")
+                                        .anyRequest().authenticated()
                 )
                 .sessionManagement(sessionManagement ->
                         sessionManagement.sessionCreationPolicy(SessionCreationPolicy.STATELESS)

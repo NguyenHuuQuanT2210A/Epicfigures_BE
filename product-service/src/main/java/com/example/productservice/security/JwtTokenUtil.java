@@ -1,4 +1,4 @@
-package com.example.paymentService.security;
+package com.example.productservice.security;
 
 import io.jsonwebtoken.Claims;
 import io.jsonwebtoken.Jwts;

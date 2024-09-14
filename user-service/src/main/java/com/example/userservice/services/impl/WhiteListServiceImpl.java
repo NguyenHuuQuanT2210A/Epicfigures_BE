@@ -31,8 +31,8 @@ public class WhiteListServiceImpl implements WhiteListService {
     }
 
     @Override
-    public List<WhiteList> getWhiteListByProductId(Long productId) {
-        return whiteListRepository.findAllByProductId(productId);
+    public Long getWhiteListByProductId(Long productId) {
+        return whiteListRepository.findAllByProductId(productId).stream().count();
     }
 
     @Override

@@ -11,11 +11,11 @@ import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
 
-@Tag(name = "White List", description = "White List Controller")
-@CrossOrigin
+//@CrossOrigin
 @RestController
 @RequiredArgsConstructor
-@RequestMapping(path = "api/v1/white_list")
+@RequestMapping(path = "/api/v1/white_list")
+@Tag(name = "White List", description = "White List Controller")
 public class WhiteListController {
     private final WhiteListService whiteListService;
 
@@ -36,8 +36,8 @@ public class WhiteListController {
     }
 
     @GetMapping("/product/{productId}")
-    ApiResponse<List<WhiteList>> getByProductId(@PathVariable Long productId) {
-        return ApiResponse.<List<WhiteList>>builder()
+    ApiResponse<Long> getByProductId(@PathVariable Long productId) {
+        return ApiResponse.<Long>builder()
                 .message("Get white lists by product id")
                 .data(whiteListService.getWhiteListByProductId(productId))
                 .build();

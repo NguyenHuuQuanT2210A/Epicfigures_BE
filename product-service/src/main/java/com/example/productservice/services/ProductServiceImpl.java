@@ -14,18 +14,13 @@ import com.example.productservice.repositories.specification.ProductSpecificatio
 import com.example.productservice.repositories.specification.SpecSearchCriteria;
 import com.example.productservice.services.impl.BaseRedisServiceImpl;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import jakarta.persistence.EntityManager;
-import jakarta.persistence.PersistenceContext;
-import jakarta.persistence.criteria.*;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.domain.*;
 import org.springframework.data.jpa.domain.Specification;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
-import org.springframework.transaction.annotation.Transactional;
 import org.springframework.util.StringUtils;
-import org.springframework.web.client.RestTemplate;
 import org.springframework.web.multipart.MultipartFile;
 
 import java.time.LocalDateTime;
@@ -47,12 +42,8 @@ public class ProductServiceImpl implements ProductService {
     private final ProductMapper productMapper;
     private final CategoryMapper categoryMapper;
     private final ProductImageService productImageService;
-    private final RestTemplate restTemplate;
     private final BaseRedisServiceImpl<String, String, Object> redisService;
     private final ObjectMapper objectMapper;
-    @PersistenceContext
-    private EntityManager entityManager;
-
 
     private ProductDTO convertToProductDTO(Object object) {
         if (object instanceof LinkedHashMap) {

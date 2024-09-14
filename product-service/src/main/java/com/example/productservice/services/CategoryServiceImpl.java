@@ -44,7 +44,7 @@ public class CategoryServiceImpl implements CategoryService{
 
         Category category = CategoryMapper.INSTANCE.categoryDTOToCategory(categoryDTO);
         categoryRepository.save(category);
-        return categoryDTO;
+        return CategoryMapper.INSTANCE.categoryToCategoryDTO(category);
     }
 
     @Override

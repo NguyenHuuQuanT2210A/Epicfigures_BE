@@ -10,8 +10,8 @@ import java.util.Map;
 import java.util.Set;
 
 @RestController
-@RequestMapping("/api/v1/redis")
 @RequiredArgsConstructor
+@RequestMapping("/api/v1/redis")
 public class RedisController {
     private final BaseRedisService<String, String, Object> baseRedisService;
 

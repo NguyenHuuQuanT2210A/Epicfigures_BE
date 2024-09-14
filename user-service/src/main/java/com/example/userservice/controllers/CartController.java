@@ -13,11 +13,11 @@ import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
 
-@Tag(name = "Cart", description = "Cart Controller")
-@CrossOrigin
+//@CrossOrigin
 @RestController
 @RequiredArgsConstructor
-@RequestMapping(path = "api/v1/cart")
+@RequestMapping(path = "/api/v1/cart")
+@Tag(name = "Cart", description = "Cart Controller")
 public class CartController {
     private final CartService cartService;
 

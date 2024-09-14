@@ -11,11 +11,11 @@ import org.springframework.web.bind.annotation.*;
 import java.util.List;
 import java.util.Optional;
 
-@Tag(name = "Roles", description = "Role Controller")
-@CrossOrigin()
+//@CrossOrigin()
 @RestController
-@RequestMapping("/api/v1/roles")
 @RequiredArgsConstructor
+@RequestMapping("/api/v1/roles")
+@Tag(name = "Roles", description = "Role Controller")
 public class RoleController {
     private final RoleService roleService;
 

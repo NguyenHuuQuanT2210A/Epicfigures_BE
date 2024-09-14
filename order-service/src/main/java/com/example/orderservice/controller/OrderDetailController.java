@@ -13,11 +13,11 @@ import org.springframework.web.bind.annotation.*;
 import java.util.List;
 
 @Slf4j
-@Tag(name = "Order", description = "Order Detail Controller")
-@CrossOrigin()
+//@CrossOrigin()
 @RestController
 @RequiredArgsConstructor
-@RequestMapping("api/v1/orderDetail")
+@RequestMapping("/api/v1/orderDetail")
+@Tag(name = "Order", description = "Order Detail Controller")
 public class OrderDetailController {
     private final OrderDetailService orderDetailService;
 

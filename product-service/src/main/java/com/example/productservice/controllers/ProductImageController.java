@@ -22,7 +22,7 @@ import java.io.IOException;
 import java.util.List;
 import java.util.Map;
 
-@CrossOrigin()
+//@CrossOrigin()
 @RestController
 @RequiredArgsConstructor
 @RequestMapping("/api/v1/product-images")
@@ -31,7 +31,7 @@ public class ProductImageController {
     private final FileStorageService fileStorageService;
     private final FileUploadService fileUploadService;
 
-    @GetMapping("/{productId}")
+    @GetMapping("/public/{productId}")
     ApiResponse<List<ProductImageDTO>> getProductImages(@PathVariable Long productId) {
         return ApiResponse.<List<ProductImageDTO>>builder()
                 .message("Get all Product Images By Product ID")
@@ -73,7 +73,7 @@ public class ProductImageController {
                 .build();
     }
 
-    @GetMapping("/images/{filename:.+}")
+    @GetMapping("/public/images/{filename:.+}")
     ResponseEntity<?> downloadFile(@PathVariable String filename, HttpServletRequest request){
         Resource resource = fileStorageService.loadProductImageFileAsResource(filename);
 

@@ -8,16 +8,18 @@ import com.example.orderservice.specification.SearchBody;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.PageRequest;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 
-@Tag(name = "Order", description = "Order Controller")
-@CrossOrigin()
+//@CrossOrigin()
 @RestController
-@RequestMapping("api/v1/orders")
+@RequestMapping("/api/v1/orders")
 @RequiredArgsConstructor
+@Tag(name = "Order", description = "Order Controller")
 public class OrderController {
     private final OrderService orderService;
 
+    @PreAuthorize("hasRole('ROLE_ADMIN')")
     @GetMapping
     public ApiResponse<?> getAllOrder(@RequestParam(name = "page") int page, @RequestParam(name = "limit") int limit) {
         return ApiResponse.builder()
@@ -26,6 +28,7 @@ public class OrderController {
                 .build();
     }
 
+    @PreAuthorize("hasRole('ROLE_ADMIN')")
     @RequestMapping(method = RequestMethod.POST, path = "search")
     public ApiResponse<?> getAllOrders(@RequestBody SearchBody search) {
         return ApiResponse.builder()
@@ -74,6 +77,7 @@ public class OrderController {
                 .build();
     }
 
+    @PreAuthorize("hasRole('ROLE_ADMIN')")
     @PutMapping("/changeStatus/{id}")
     public ApiResponse<?> changeStatus(@PathVariable String id, @RequestParam OrderSimpleStatus status) {
         return ApiResponse.builder()

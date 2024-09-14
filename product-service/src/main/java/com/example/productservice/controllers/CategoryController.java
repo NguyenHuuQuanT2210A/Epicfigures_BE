@@ -10,6 +10,7 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.validation.BindingResult;
 import org.springframework.web.bind.annotation.*;
 
@@ -24,7 +25,7 @@ import java.util.stream.Collectors;
 public class CategoryController {
     private final CategoryService categoryService;
 
-    @GetMapping
+    @GetMapping("/public")
     ApiResponse<Page<CategoryDTO>> getAllCategory(@RequestParam(defaultValue = "1", name = "page") int page, @RequestParam(defaultValue = "10", name = "limit") int limit) {
         Page<CategoryDTO> categoryDTOS = categoryService.getAllCategory(PageRequest.of(page - 1, limit));
         return ApiResponse.<Page<CategoryDTO>>builder()
@@ -33,7 +34,7 @@ public class CategoryController {
                 .build();
     }
 
-    @GetMapping("/{id}")
+    @GetMapping("/public/{id}")
     ApiResponse<CategoryDTO> getCategoryById(@PathVariable Long id) {
         CategoryDTO category = categoryService.getCategoryById(id);
         if (category == null) {
@@ -45,7 +46,7 @@ public class CategoryController {
                 .build();
     }
 
-    @GetMapping("/name/{name}")
+    @GetMapping("/public/name/{name}")
     ApiResponse<List<CategoryDTO>> getCategoryByName(@PathVariable String name) {
         List<CategoryDTO> category = categoryService.getCategoryByName(name);
         if (category == null) {
@@ -58,6 +59,7 @@ public class CategoryController {
     }
 
     @PostMapping
+    @PreAuthorize("hasAnyRole('ROLE_ADMIN')")
     ResponseEntity<?> addCategory(@Valid @RequestBody CategoryDTO categoryDTO, BindingResult result) {
         if (result.hasErrors()) {
             Map<String, String> errors = result.getFieldErrors().stream()

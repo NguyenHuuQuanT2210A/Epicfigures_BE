@@ -12,10 +12,10 @@ import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
 
-@CrossOrigin()
+//@CrossOrigin()
 @RestController
 @RequiredArgsConstructor
-@RequestMapping(path = "api/v1/cart")
+@RequestMapping(path = "/api/v1/cart")
 public class CartController {
     private final CartRedisService cartRedisService;
 

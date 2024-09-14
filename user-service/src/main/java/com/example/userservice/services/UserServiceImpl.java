@@ -127,9 +127,18 @@ public class UserServiceImpl implements UserService {
 
     public UserDTO updateUser(Long id, UserRequest userRequest) {
         User user = findUserById(id);
-        var userDTO = findByUsername(userRequest.getUsername());
-        if (userDTO != null && !user.getUsername().equals(userRequest.getUsername())) {
-            throw new CustomException("User name already exists", HttpStatus.BAD_REQUEST);
+        if (userRequest.getUsername() != null){
+            var userDTO = userRepository.findByUsername(userRequest.getUsername());
+            if (userDTO.isPresent() && !user.getUsername().equals(userRequest.getUsername())) {
+                throw new CustomException("User name already exists", HttpStatus.BAD_REQUEST);
+            }
+        }
+
+        if (userRequest.getEmail() != null) {
+            var emailDTO = userRepository.findByEmail(userRequest.getEmail());
+            if (emailDTO.isPresent() && !userRequest.getEmail().equals(user.getEmail())) {
+                throw new CustomException("User already exists with email: " + userRequest.getEmail(), HttpStatus.BAD_REQUEST);
+            }
         }
 
         String oldPassword = user.getPassword();

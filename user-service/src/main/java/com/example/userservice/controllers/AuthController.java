@@ -1,43 +1,23 @@
 package com.example.userservice.controllers;
 
 import com.example.userservice.dtos.request.ResetPasswordDto;
-import com.example.userservice.entities.Role;
-import com.example.userservice.entities.User;
 import com.example.userservice.models.requests.LoginRequest;
 import com.example.userservice.models.requests.SignupRequest;
-import com.example.userservice.models.response.JwtResponse;
 import com.example.userservice.models.response.MessageResponse;
-import com.example.userservice.repositories.RoleRepository;
-import com.example.userservice.repositories.UserRepository;
-import com.example.userservice.securities.jwt.JwtUtils;
-import com.example.userservice.securities.services.TokenBlacklistService;
-import com.example.userservice.securities.services.UserDetailsImpl;
 import com.example.userservice.services.AuthenticationService;
-import com.example.userservice.statics.enums.ERole;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
-import org.springframework.security.authentication.AuthenticationManager;
-import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
-import org.springframework.security.core.Authentication;
-import org.springframework.security.core.GrantedAuthority;
-import org.springframework.security.core.context.SecurityContextHolder;
-import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.web.bind.annotation.*;
 
-import java.util.HashSet;
-import java.util.List;
-import java.util.Set;
-import java.util.stream.Collectors;
-
-@Tag(name = "Auth", description = "Auth Controller")
-@CrossOrigin(origins = "*", maxAge = 3600)
+//@CrossOrigin(origins = "*", maxAge = 3600)
 @RestController
-@RequestMapping("/api/v1/auth")
 @RequiredArgsConstructor
+@RequestMapping("/api/v1/auth")
+@Tag(name = "Auth", description = "Auth Controller")
 public class AuthController {
     private final AuthenticationService authenticationService;
 

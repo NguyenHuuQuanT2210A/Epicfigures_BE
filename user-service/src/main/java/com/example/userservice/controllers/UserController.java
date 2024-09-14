@@ -19,16 +19,16 @@ import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 
-@Tag(name = "User", description = "User Controller")
-@CrossOrigin
+//@CrossOrigin
 @RestController
-@RequestMapping(path = "api/v1/users")
 @RequiredArgsConstructor
+@RequestMapping(path = "/api/v1/users")
+@Tag(name = "User", description = "User Controller")
 public class UserController {
     private final UserService userService;
     private final FileStorageService fileStorageService;
 
-//    @PreAuthorize("hasRole('ROLE_ADMIN')")
+    @PreAuthorize("hasRole('ROLE_ADMIN')")
     @GetMapping
     ApiResponse<?> getAllUsers(@RequestParam(name = "page") int page, @RequestParam(name = "limit") int limit) {
         return ApiResponse.builder()
@@ -37,7 +37,6 @@ public class UserController {
                 .build();
     }
 
-    @PreAuthorize("hasAnyRole('ROLE_ADMIN', 'ROLE_USER')")
     @GetMapping(path = "/{id}")
     ApiResponse<UserDTO> getUserById(@PathVariable(name = "id") Long id) {
         UserDTO user = userService.findById(id);
@@ -47,7 +46,7 @@ public class UserController {
                 .build();
     }
 
-//    @PreAuthorize("hasRole('ROLE_ADMIN')")
+    @PreAuthorize("hasRole('ROLE_ADMIN')")
     @GetMapping(path = "/trash")
     ApiResponse<?> getInTrashUsers(@RequestParam(name = "page") int page, @RequestParam(name = "limit") int limit) {
         return ApiResponse.builder()
@@ -56,7 +55,6 @@ public class UserController {
                 .build();
     }
 
-//    @PreAuthorize("hasAnyRole('ROLE_ADMIN', 'ROLE_USER')")
     @GetMapping(path = "/username")
     ApiResponse<UserDTO> getUserByUsername(@RequestParam(name = "username") String username) {
         UserDTO user = userService.findByUsername(username);
@@ -75,7 +73,6 @@ public class UserController {
                 .build();
     }
 
-//    @PreAuthorize("hasRole('ROLE_ADMIN')")
     @PostMapping
     ApiResponse<UserDTO> createUser(@RequestBody UserRequest userRequest) {
         UserDTO newUser = userService.createUser(userRequest);
@@ -86,7 +83,6 @@ public class UserController {
                 .build();
     }
 
-//    @PreAuthorize("hasRole('ROLE_ADMIN')")
     @PutMapping(path = "/{id}")
     ApiResponse<UserDTO> updateUser(@PathVariable(name = "id") Long id, @RequestBody UserRequest userRequest) {
         UserDTO updatedUser = userService.updateUser(id, userRequest);
@@ -96,7 +92,6 @@ public class UserController {
                 .build();
     }
 
-//    @PreAuthorize("hasRole('ROLE_ADMIN')")
     @DeleteMapping(path = "/{id}")
     ApiResponse<?> deleteUser(@PathVariable(name = "id") Long id) {
         userService.moveToTrash(id);
@@ -134,14 +129,12 @@ public class UserController {
                 .body(resource);
     }
 
-    @PreAuthorize("hasRole('ROLE_ADMIN')")
     @DeleteMapping ("/images/{filename:.+}")
     ResponseEntity<?> deleteFile(@PathVariable String filename){
         fileStorageService.deleteUserImageFile(filename);
         return ResponseEntity.ok("Delete user images successfully");
     }
 
-    @PreAuthorize("hasRole('ROLE_ADMIN')")
     @PutMapping("/restore/{id}")
     ApiResponse<?> restoreUser(@PathVariable Long id) {
         userService.restoreUser(id);
@@ -157,7 +150,7 @@ public class UserController {
                                                        @RequestParam(required = false) String[] user,
                                                        @RequestParam(required = false) String role) {
         return ApiResponse.builder()
-                .message("List of Products")
+                .message("List of Users")
                 .data(userService.searchBySpecification(PageRequest.of(page -1, limit), sort, user, role))
                 .build();
     }

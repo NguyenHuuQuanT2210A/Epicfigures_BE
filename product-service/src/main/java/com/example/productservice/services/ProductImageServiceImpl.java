@@ -25,7 +25,6 @@ import java.util.stream.Collectors;
 @RequiredArgsConstructor
 public class ProductImageServiceImpl implements ProductImageService {
     private final ProductImageRepository productImageRepository;
-//    private final ProductService productService;
     private final ProductRepository productRepository;
     private final ProductImageMapper productImageMapper;
     private final ProductMapper productMapper;

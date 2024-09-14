@@ -71,7 +71,7 @@ jwt:
   jwtExpirationMs: 86400000
   secretKey: cb17bdf73fb9500c10bc64270d65efedcbdbd412c9d7a258f293e298a44dc7e5
   refreshKey: 5kMQSZWBxuyD0WUn3vgrRYkVY3FzfGS8eIsWAyRq5U0=
-  resetKey: 5kMQSZWBxuyD0WUn3vgrRYkVY3FzfGS8eIsWAyRq5U0=
+  resetKey: Q0GaCiO66seNNR8otkrpkwDo0JTYkV31Bp7uxB9ULbcw5PSO3UcMfgCCRIt5yJLv
 
 cloudinary:
   cloud-name: dptyuisjr

@@ -11,15 +11,15 @@ import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
 
-@Tag(name = "Feedback", description = "Feedback Controller")
-@CrossOrigin()
+//@CrossOrigin()
 @RestController
 @RequiredArgsConstructor
-@RequestMapping("api/v1/feedback")
+@RequestMapping("/api/v1/feedback")
+@Tag(name = "Feedback", description = "Feedback Controller")
 public class FeedbackController {
     private final FeedbackService feedbackService;
 
-    @GetMapping("/{id}")
+    @GetMapping("/public/{id}")
     ApiResponse<FeedbackResponse> getFeedbackById(@PathVariable Long id) {
         return ApiResponse.<FeedbackResponse>builder()
                 .message("Get Feedback by Id")
@@ -27,7 +27,7 @@ public class FeedbackController {
                 .build();
     }
 
-    @GetMapping("/orderDetail")
+    @GetMapping("/public/orderDetail")
     ApiResponse<FeedbackResponse> getFeedbackByOrderDetailId(@RequestBody OrderDetailId orderDetailId) {
         return ApiResponse.<FeedbackResponse>builder()
                 .message("Get Feedback by Order Detail Id")
@@ -43,7 +43,7 @@ public class FeedbackController {
                 .build();
     }
 
-    @GetMapping("/product/{productId}")
+    @GetMapping("/public/product/{productId}")
     ApiResponse<List<FeedbackResponse>> getFeedbackByProductId(@PathVariable Long productId) {
         return ApiResponse.<List<FeedbackResponse>>builder()
                 .message("Get Feedback by Product Id")

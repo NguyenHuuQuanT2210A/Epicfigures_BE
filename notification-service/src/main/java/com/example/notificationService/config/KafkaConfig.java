@@ -19,7 +19,10 @@ import org.springframework.kafka.support.serializer.JsonDeserializer;
 import org.springframework.kafka.support.serializer.JsonSerializer;
 import org.springframework.util.backoff.FixedBackOff;
 import org.springframework.web.client.RestTemplate;
+import org.springframework.web.context.request.RequestContextHolder;
+import org.springframework.web.context.request.ServletRequestAttributes;
 
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -74,7 +77,22 @@ public class KafkaConfig {
     }
 
     @Bean
-    public RestTemplate restTemplate() {
+    public RestTemplate restTemplate(){
         return new RestTemplate();
+
+//        restTemplate.setInterceptors(Collections.singletonList((request, body, execution) -> {
+//            ServletRequestAttributes requestAttributes = (ServletRequestAttributes) RequestContextHolder.getRequestAttributes();
+//
+//            if (requestAttributes != null) {
+//                String authHeader = requestAttributes.getRequest().getHeader("Authorization");
+//
+//                if (authHeader != null && !authHeader.isEmpty()) {
+//                    request.getHeaders().set("Authorization", authHeader);
+//                }
+//            }
+//
+//            return execution.execute(request, body);
+//        }));
+//        return restTemplate;
     }
 }

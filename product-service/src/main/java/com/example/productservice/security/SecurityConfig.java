@@ -1,4 +1,4 @@
-package com.example.paymentService.security;
+package com.example.productservice.security;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Bean;
@@ -20,6 +20,11 @@ import org.springframework.security.web.authentication.UsernamePasswordAuthentic
 public class SecurityConfig {
     @Autowired
     private AuthTokenFilter authTokenFilter;
+
+    private static final String[] PUBLIC_ENDPOINTS = {
+            "/api/v1/products/public/**", "/api/v1/product-images/public/**", "/api/v1/categories/public/**"
+    };
+
     @Bean
     public PasswordEncoder passwordEncoder() {
         return new BCryptPasswordEncoder();
@@ -30,11 +35,12 @@ public class SecurityConfig {
         http.csrf(AbstractHttpConfigurer::disable)  // Vô hiệu hóa CSRF
                 .authorizeHttpRequests(authorizeRequests ->
                                 authorizeRequests
-                                        .requestMatchers("/api/v1/owner/product/**").authenticated() // Yêu cầu xác thực cho /api/v1/**
-                                        .requestMatchers("/api/private/**").hasRole("ADMIN")//.anyRequest().hasAnyRole("ADMIN") // Yêu cầu xác thực cho /api/private/**
-                                        .requestMatchers("/api/v1/auth/logout").authenticated()
-//                            .requestMatchers("/oauth2/login-success").authenticated()
-                                        .anyRequest().authenticated() // Mở quyền truy cập cho tất cả các yêu cầu khác
+                                        .requestMatchers("/api/v1/products/**").hasRole("ADMIN")
+                                        .requestMatchers("/api/v1/categories/**").hasRole("ADMIN")
+                                        .requestMatchers("/api/v1/product-images/**").hasRole("ADMIN")
+//                                        .requestMatchers("/api/v1/cart/**").hasRole("USER")
+                                        .requestMatchers(PUBLIC_ENDPOINTS).permitAll()
+                                        .anyRequest().authenticated() // Tất cả các request đều cần được xác thực
                 )
                 .sessionManagement(sessionManagement ->
                         sessionManagement.sessionCreationPolicy(SessionCreationPolicy.STATELESS)
