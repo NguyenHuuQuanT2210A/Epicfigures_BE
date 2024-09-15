@@ -22,7 +22,17 @@ public class SecurityConfig {
     private AuthTokenFilter authTokenFilter;
 
     private static final String[] PUBLIC_ENDPOINTS = {
-            "/api/v1/products/public/**", "/api/v1/product-images/public/**", "/api/v1/categories/public/**"
+            "/api/v1/products/search-by-specification/**",
+            "/api/v1/products/getAll/**",
+            "/api/v1/products/list/**",
+            "/api/v1/products/name/**",
+            "/api/v1/products/category/**",
+            "/api/v1/products/id/**",
+            "/api/v1/categories/getAll/**",
+            "/api/v1/categories/id/**",
+            "/api/v1/categories/name/**",
+            "/api/v1/product-images/productId/**",
+            "/api/v1/product-images/imagesPost/**"
     };
 
     @Bean
@@ -35,11 +45,11 @@ public class SecurityConfig {
         http.csrf(AbstractHttpConfigurer::disable)  // Vô hiệu hóa CSRF
                 .authorizeHttpRequests(authorizeRequests ->
                                 authorizeRequests
+                                        .requestMatchers(PUBLIC_ENDPOINTS).permitAll()
                                         .requestMatchers("/api/v1/products/**").hasRole("ADMIN")
                                         .requestMatchers("/api/v1/categories/**").hasRole("ADMIN")
                                         .requestMatchers("/api/v1/product-images/**").hasRole("ADMIN")
 //                                        .requestMatchers("/api/v1/cart/**").hasRole("USER")
-                                        .requestMatchers(PUBLIC_ENDPOINTS).permitAll()
                                         .anyRequest().authenticated() // Tất cả các request đều cần được xác thực
                 )
                 .sessionManagement(sessionManagement ->

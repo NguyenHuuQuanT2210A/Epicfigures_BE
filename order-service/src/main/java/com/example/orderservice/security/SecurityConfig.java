@@ -22,7 +22,9 @@ public class SecurityConfig {
     private AuthTokenFilter authTokenFilter;
 
     private static final String[] PUBLIC_ENDPOINTS = {
-            "/api/v1/feedback/public/**"
+            "/api/v1/feedback/id/**",
+            "/api/v1/feedback/orderDetail/**",
+            "/api/v1/feedback/product/**"
     };
 
     @Bean
