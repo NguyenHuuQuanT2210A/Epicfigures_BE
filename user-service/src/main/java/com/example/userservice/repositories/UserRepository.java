@@ -1,5 +1,6 @@
 package com.example.userservice.repositories;
 
+import com.example.common.dto.response.Statistics;
 import com.example.userservice.entities.User;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
@@ -9,6 +10,7 @@ import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.jpa.repository.query.Procedure;
 import org.springframework.stereotype.Repository;
 
+import java.util.List;
 import java.util.Optional;
 
 @Repository
@@ -23,4 +25,8 @@ public interface UserRepository extends JpaRepository<User, Long>, JpaSpecificat
     Boolean existsByEmail(String email);
     Page<User> findByDeletedAtIsNull(Pageable pageable);
     Page<User> findByDeletedAtIsNotNull(Pageable pageable);
+
+//    @Procedure(procedureName = "get_count_users_by_roles")
+    @Query(value = "{call get_count_users_by_roles()}", nativeQuery = true)
+    List<Object> getUserCountByRole();
 }

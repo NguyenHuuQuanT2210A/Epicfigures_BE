@@ -26,7 +26,7 @@ import java.util.Map;
 import java.util.Set;
 import java.util.stream.Collectors;
 
-//@CrossOrigin()
+//@CrossOrigin("*")
 @Valid
 @RestController
 @RequiredArgsConstructor
@@ -55,6 +55,14 @@ public class ProductController {
         return ApiResponse.<Page<ProductDTO>>builder()
                 .message("Get all Products")
                 .data(productService.getAllProducts(PageRequest.of(page -1, limit)))
+                .build();
+    }
+
+    @GetMapping("/count")
+    ApiResponse<Long> countProducts() {
+        return ApiResponse.<Long>builder()
+                .message("Get count Products")
+                .data(productService.countProducts())
                 .build();
     }
 

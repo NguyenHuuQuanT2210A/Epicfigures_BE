@@ -2,13 +2,11 @@ package com.example.common.dto.response;
 
 import com.example.common.enums.ERole;
 import jakarta.persistence.*;
-import lombok.AllArgsConstructor;
-import lombok.Data;
-import lombok.NoArgsConstructor;
-import lombok.ToString;
+import lombok.*;
 
 @Data
 @ToString
+@Builder
 @NoArgsConstructor
 @AllArgsConstructor
 public class RoleResponse {

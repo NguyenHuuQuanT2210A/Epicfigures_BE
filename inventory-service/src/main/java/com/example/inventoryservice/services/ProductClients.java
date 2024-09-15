@@ -12,7 +12,7 @@ import org.springframework.web.bind.annotation.RequestParam;
 @FeignClient(name = "productInventory-service", url = "http://localhost:8082/api/v1/products",
         configuration = { AuthenticationRequestInterceptor.class })
 public interface ProductClients {
-    @GetMapping("/public/{id}")
+    @GetMapping("/id/{id}")
     ApiResponse<ProductDTO> getProductById(@PathVariable("id") Long id);
 
     @PutMapping("/updateQuantity/{id}")

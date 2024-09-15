@@ -11,10 +11,10 @@ import org.springframework.web.bind.annotation.PostMapping;
         configuration = { AuthenticationRequestInterceptor.class })
 public interface FeignClientService {
 
-    @GetMapping("/public")
+    @GetMapping("/getAll")
     String getAllProducts();
 
-    @GetMapping("/public/{id}")
+    @GetMapping("/id/{id}")
     ProductRequest getProductById(@PathVariable("id") Long id);
 
     @PostMapping()

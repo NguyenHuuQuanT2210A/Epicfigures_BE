@@ -12,7 +12,7 @@ import java.util.Set;
 
 @Service
 public interface ProductService {
-    int countProducts();
+    Long countProducts();
     Page<ProductDTO> getAllProducts(Pageable pageable);
     ProductDTO getProductByName(String name);
     ProductDTO getProductById(Long id);

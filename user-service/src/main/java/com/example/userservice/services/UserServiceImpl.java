@@ -1,5 +1,7 @@
 package com.example.userservice.services;
 
+import com.example.common.dto.response.RoleResponse;
+import com.example.common.dto.response.Statistics;
 import com.example.userservice.dtos.UserDTO;
 import com.example.userservice.entities.Role;
 import com.example.userservice.entities.User;
@@ -28,6 +30,7 @@ import java.time.LocalDateTime;
 import java.util.*;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
+import java.util.stream.Collectors;
 
 import static com.example.userservice.repositories.specification.SearchOperation.OR_PREDICATE_FLAG;
 import static com.example.userservice.util.AppConst.SEARCH_SPEC_OPERATOR;
@@ -39,6 +42,20 @@ public class UserServiceImpl implements UserService {
     private final UserRepository userRepository;
     private final RoleRepository roleRepository;
     private final PasswordEncoder encoder;
+
+    @Override
+    public Object countUsers() {
+        List<Integer> countUsers = new ArrayList<>();
+        List<Object> results = userRepository.getUserCountByRole();
+
+        for (Object result : results) {
+            for (Object column : (Object[]) result) {
+                System.out.println(column);
+                countUsers.add((int) column);
+            }
+        }
+        return new Statistics(countUsers.get(0), countUsers.get(1));
+    }
 
     public Page<UserDTO> getAll(Pageable pageable) {
         Page<User> userPage = userRepository.findByDeletedAtIsNull(pageable);

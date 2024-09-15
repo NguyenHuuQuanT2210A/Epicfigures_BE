@@ -34,6 +34,14 @@ public class CategoryController {
                 .build();
     }
 
+    @GetMapping("/count")
+    ApiResponse<Long> countCategories() {
+        return ApiResponse.<Long>builder()
+                .message("Get count Categories")
+                .data(categoryService.countCategories())
+                .build();
+    }
+
     @GetMapping("/id/{id}")
     ApiResponse<CategoryDTO> getCategoryById(@PathVariable Long id) {
         CategoryDTO category = categoryService.getCategoryById(id);

@@ -22,6 +22,8 @@ public interface OrderService {
     OrderDTO findCartByUserId(Long userId);
     OrderDTO changeStatus(String id, OrderSimpleStatus status);
     List<ProductDTO> findProductsByOrderId(String orderId);
+
+    Long countOrders();
 }
 
 

@@ -37,6 +37,14 @@ public class UserController {
                 .build();
     }
 
+    @GetMapping("/count")
+    ApiResponse<?> getCountUsers() {
+        return ApiResponse.builder()
+                .message("Get count users")
+                .data(userService.countUsers())
+                .build();
+    }
+
     @GetMapping(path = "/{id}")
     ApiResponse<UserDTO> getUserById(@PathVariable(name = "id") Long id) {
         UserDTO user = userService.findById(id);

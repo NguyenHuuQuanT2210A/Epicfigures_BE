@@ -13,10 +13,10 @@ import java.util.Set;
         configuration = { AuthenticationRequestInterceptor.class })
 public interface ProductServiceClient {
 
-    @GetMapping("/public/{id}")
+    @GetMapping("/id/{id}")
     ApiResponse<ProductDTO> getProductById(@PathVariable("id") Long id);
 
-    @PostMapping("/public/list")
+    @PostMapping("/list")
     ApiResponse<List<ProductDTO>> getProductsByIds(@RequestBody Set<Long> productIds);
 
     @PutMapping("/updateQuantity/{id}")

@@ -19,4 +19,6 @@ public interface CategoryService {
     Page<CategoryDTO> getInTrash(Pageable pageable);
 
     void restoreCategory(Long id);
+
+    Long countCategories();
 }

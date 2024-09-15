@@ -28,6 +28,14 @@ public class OrderController {
                 .build();
     }
 
+    @GetMapping("/count")
+    public ApiResponse<Long> getCountOrders() {
+        return ApiResponse.<Long>builder()
+                .message("Get Count Orders")
+                .data(orderService.countOrders())
+                .build();
+    }
+
     @PreAuthorize("hasRole('ROLE_ADMIN')")
     @RequestMapping(method = RequestMethod.POST, path = "search")
     public ApiResponse<?> getAllOrders(@RequestBody SearchBody search) {

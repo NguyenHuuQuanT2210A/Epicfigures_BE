@@ -23,10 +23,10 @@ public class ProductCacheUpdater {
     private final BaseRedisServiceImpl<String, String, Object> baseRedisService;
 
     public void updateCache() {
-        int totalProducts = productService.countProducts();
+        Long totalProducts = productService.countProducts();
 
         int pageSize = 10;
-        int totalPages = (totalProducts + pageSize - 1) / pageSize;
+        int totalPages = (totalProducts.intValue() + pageSize - 1) / pageSize;
 
         ExecutorService executor = Executors.newFixedThreadPool(1);
 

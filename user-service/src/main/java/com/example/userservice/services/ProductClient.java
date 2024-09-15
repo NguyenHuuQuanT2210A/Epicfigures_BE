@@ -10,6 +10,6 @@ import org.springframework.web.bind.annotation.PathVariable;
 @FeignClient(name = "cart-service", url = "http://localhost:8082/api/v1/products",
         configuration = { AuthenticationRequestInterceptor.class })
 public interface ProductClient {
-    @GetMapping("/public/{id}")
+    @GetMapping("/id/{id}")
     ApiResponse<ProductResponse> getProductById(@PathVariable("id") Long id);
 }

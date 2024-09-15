@@ -113,4 +113,9 @@ public class CategoryServiceImpl implements CategoryService{
         categoryRepository.save(category);
     }
 
+    @Override
+    public Long countCategories() {
+        return categoryRepository.count();
+    }
+
 }

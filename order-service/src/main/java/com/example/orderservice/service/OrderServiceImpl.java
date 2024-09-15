@@ -345,6 +345,11 @@ public class OrderServiceImpl implements OrderService {
         return products;
     }
 
+    @Override
+    public Long countOrders() {
+        return orderRepository.count();
+    }
+
     private Order findOrderById(String id) {
         return orderRepository.findById(id).orElseThrow(() -> new CustomException("Order not found", HttpStatus.NOT_FOUND));
     }
