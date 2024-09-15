@@ -36,8 +36,8 @@ public class ProductController {
 
     private final CategoryService categoryService;
 
-    @GetMapping("/public/search-by-specification")
-    public ApiResponse<?> advanceSearchBySpecification(@RequestParam(defaultValue = "1", name = "page") int page,
+    @GetMapping("/search-by-specification")
+    ApiResponse<?> advanceSearchBySpecification(@RequestParam(defaultValue = "1", name = "page") int page,
                                                        @RequestParam(defaultValue = "10", name = "limit") int limit,
                                                         @RequestParam(required = false) String sort,
                                                         @RequestParam(required = false) String[] product,
@@ -48,7 +48,7 @@ public class ProductController {
                 .build();
     }
 
-    @GetMapping("/public")
+    @GetMapping("/getAll")
     ApiResponse<Page<ProductDTO>> getAllProducts(
             @RequestParam(defaultValue = "1", name = "page") int page,
             @RequestParam(defaultValue = "10", name = "limit") int limit) {
@@ -58,7 +58,7 @@ public class ProductController {
                 .build();
     }
 
-    @GetMapping("/public/{id}")
+    @GetMapping("/id/{id}")
     ApiResponse<?> getProductById(@PathVariable Long id) {
         ProductDTO product = productService.getProductById(id);
         if (product == null) {
@@ -70,7 +70,7 @@ public class ProductController {
                 .build();
     }
 
-    @PostMapping("/public/list")
+    @PostMapping("/list")
     ApiResponse<?> getProductsByIds(@RequestBody Set<Long> productIds) {
         return ApiResponse.builder()
                 .message("Get products by Ids")
@@ -78,7 +78,7 @@ public class ProductController {
                 .build();
     }
 
-    @GetMapping("/public/name/{name}")
+    @GetMapping("/name/{name}")
     ApiResponse<?> getProductByName(@PathVariable String name) {
         ProductDTO product = productService.getProductByName(name);
         if (product == null) {
@@ -90,7 +90,7 @@ public class ProductController {
                 .build();
     }
 
-    @GetMapping("/public/category/{categoryId}")
+    @GetMapping("/category/{categoryId}")
     ApiResponse<Page<ProductDTO>> findByCategory( @RequestParam(defaultValue = "1") int page,
                                             @RequestParam(defaultValue = "10") int limit,
                                             @PathVariable Long categoryId) {

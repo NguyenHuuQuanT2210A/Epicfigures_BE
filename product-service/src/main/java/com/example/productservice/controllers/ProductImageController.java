@@ -31,7 +31,7 @@ public class ProductImageController {
     private final FileStorageService fileStorageService;
     private final FileUploadService fileUploadService;
 
-    @GetMapping("/public/{productId}")
+    @GetMapping("/productId/{productId}")
     ApiResponse<List<ProductImageDTO>> getProductImages(@PathVariable Long productId) {
         return ApiResponse.<List<ProductImageDTO>>builder()
                 .message("Get all Product Images By Product ID")
@@ -73,7 +73,7 @@ public class ProductImageController {
                 .build();
     }
 
-    @GetMapping("/public/images/{filename:.+}")
+    @GetMapping("/imagesPost/{filename:.+}")
     ResponseEntity<?> downloadFile(@PathVariable String filename, HttpServletRequest request){
         Resource resource = fileStorageService.loadProductImageFileAsResource(filename);
 
@@ -103,7 +103,7 @@ public class ProductImageController {
     }
 
     @PostMapping("/upload")
-    public FileUploadedDTO uploadImageCloudinary(@RequestParam("file") MultipartFile file) throws Exception {
+    FileUploadedDTO uploadImageCloudinary(@RequestParam("file") MultipartFile file) throws Exception {
         return fileUploadService.uploadFile(file);
     }
 }

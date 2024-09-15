@@ -25,7 +25,7 @@ import java.util.stream.Collectors;
 public class CategoryController {
     private final CategoryService categoryService;
 
-    @GetMapping("/public")
+    @GetMapping("/getAll")
     ApiResponse<Page<CategoryDTO>> getAllCategory(@RequestParam(defaultValue = "1", name = "page") int page, @RequestParam(defaultValue = "10", name = "limit") int limit) {
         Page<CategoryDTO> categoryDTOS = categoryService.getAllCategory(PageRequest.of(page - 1, limit));
         return ApiResponse.<Page<CategoryDTO>>builder()
@@ -34,7 +34,7 @@ public class CategoryController {
                 .build();
     }
 
-    @GetMapping("/public/{id}")
+    @GetMapping("/id/{id}")
     ApiResponse<CategoryDTO> getCategoryById(@PathVariable Long id) {
         CategoryDTO category = categoryService.getCategoryById(id);
         if (category == null) {
@@ -46,7 +46,7 @@ public class CategoryController {
                 .build();
     }
 
-    @GetMapping("/public/name/{name}")
+    @GetMapping("/name/{name}")
     ApiResponse<List<CategoryDTO>> getCategoryByName(@PathVariable String name) {
         List<CategoryDTO> category = categoryService.getCategoryByName(name);
         if (category == null) {

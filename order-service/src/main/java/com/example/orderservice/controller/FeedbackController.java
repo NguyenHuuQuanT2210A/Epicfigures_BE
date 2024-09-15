@@ -19,7 +19,7 @@ import java.util.List;
 public class FeedbackController {
     private final FeedbackService feedbackService;
 
-    @GetMapping("/public/{id}")
+    @GetMapping("/id/{id}")
     ApiResponse<FeedbackResponse> getFeedbackById(@PathVariable Long id) {
         return ApiResponse.<FeedbackResponse>builder()
                 .message("Get Feedback by Id")
@@ -27,7 +27,7 @@ public class FeedbackController {
                 .build();
     }
 
-    @GetMapping("/public/orderDetail")
+    @GetMapping("/orderDetail")
     ApiResponse<FeedbackResponse> getFeedbackByOrderDetailId(@RequestBody OrderDetailId orderDetailId) {
         return ApiResponse.<FeedbackResponse>builder()
                 .message("Get Feedback by Order Detail Id")
@@ -43,7 +43,7 @@ public class FeedbackController {
                 .build();
     }
 
-    @GetMapping("/public/product/{productId}")
+    @GetMapping("/product/{productId}")
     ApiResponse<List<FeedbackResponse>> getFeedbackByProductId(@PathVariable Long productId) {
         return ApiResponse.<List<FeedbackResponse>>builder()
                 .message("Get Feedback by Product Id")
