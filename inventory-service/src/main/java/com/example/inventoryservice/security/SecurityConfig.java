@@ -30,7 +30,7 @@ public class SecurityConfig {
         http.csrf(AbstractHttpConfigurer::disable)  // Vô hiệu hóa CSRF
                 .authorizeHttpRequests(authorizeRequests ->
                                 authorizeRequests
-                                        .requestMatchers("/api/v1/inventory/**").hasRole("ADMIN")
+//                                        .requestMatchers("/api/v1/inventory/**").hasRole("ADMIN")
                                         .anyRequest().authenticated()
                 )
                 .sessionManagement(sessionManagement ->

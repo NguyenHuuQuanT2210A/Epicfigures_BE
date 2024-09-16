@@ -52,13 +52,13 @@ public class OrderController {
                 .build();
     }
 
-    @GetMapping("user/{id}")
-    public ApiResponse<?> getCartByUserId(@PathVariable Long id) {
-        return ApiResponse.builder()
-                .message("Get Cart by User Id")
-                .data(orderService.findCartByUserId(id))
-                .build();
-    }
+//    @GetMapping("user/{id}")
+//    public ApiResponse<?> getCartByUserId(@PathVariable Long id) {
+//        return ApiResponse.builder()
+//                .message("Get Cart by User Id")
+//                .data(orderService.findCartByUserId(id))
+//                .build();
+//    }
 
     @PostMapping("user/{id}")
     public ApiResponse<?> getOrderByUserId(@PathVariable Long id, @RequestBody SearchBody search) {

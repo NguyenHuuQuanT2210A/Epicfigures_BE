@@ -46,9 +46,9 @@ public class SecurityConfig {
                 .authorizeHttpRequests(authorizeRequests ->
                                 authorizeRequests
                                         .requestMatchers(PUBLIC_ENDPOINTS).permitAll()
-                                        .requestMatchers("/api/v1/products/**").hasRole("ADMIN")
-                                        .requestMatchers("/api/v1/categories/**").hasRole("ADMIN")
-                                        .requestMatchers("/api/v1/product-images/**").hasRole("ADMIN")
+//                                        .requestMatchers("/api/v1/products/**").hasRole("ADMIN")
+//                                        .requestMatchers("/api/v1/categories/**").hasRole("ADMIN")
+//                                        .requestMatchers("/api/v1/product-images/**").hasRole("ADMIN")
 //                                        .requestMatchers("/api/v1/cart/**").hasRole("USER")
                                         .anyRequest().authenticated() // Tất cả các request đều cần được xác thực
                 )
