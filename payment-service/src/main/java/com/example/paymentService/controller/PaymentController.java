@@ -15,7 +15,6 @@ import org.springframework.web.bind.annotation.*;
 import java.io.UnsupportedEncodingException;
 import java.util.*;
 
-//@CrossOrigin
 @RestController
 @RequiredArgsConstructor
 @RequestMapping("/api/v1/payment")
