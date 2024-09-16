@@ -1,9 +1,12 @@
 package com.example.paymentService.controller;
 
+import com.example.common.dto.OrderDTO;
 import com.example.paymentService.dto.ApiResponse;
 import com.example.paymentService.dto.PaymentRequest;
 import com.example.paymentService.entity.Payment;
 import com.example.paymentService.service.PaymentService;
+import com.example.paymentService.service.PaypalService;
+import com.paypal.base.rest.PayPalRESTException;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
@@ -20,17 +23,18 @@ import java.util.*;
 @RequestMapping("/api/v1/payment")
 public class PaymentController {
     private final PaymentService paymentService;
+    private final PaypalService paypalService;
 
     @PostMapping("/create_payment")
-    String creatPayment(@RequestBody PaymentRequest request) throws UnsupportedEncodingException {
-//        String baseUrl = request.getScheme() + "://" + request.getServerName() + ":" + request.getServerPort()+"/api/v1/payment";
+    String creatPayment(@RequestBody PaymentRequest request) throws UnsupportedEncodingException, PayPalRESTException {
         String baseUrl = "http://localhost:3000/thankyou";
 
         String url = "";
         if (request.getPaymentMethod().equalsIgnoreCase("VNPAY")){
-            url = paymentService.creatPayment( baseUrl, request.getOrderId());
-            Map<String, String> response = new HashMap<>();
-            response.put("paymentUrl", url);
+            url = paymentService.creatPayment( baseUrl, request.getOrderId(), request.getPaymentMethod());
+            paymentService.savePayment(request.getOrderId());
+        }else if(request.getPaymentMethod().equalsIgnoreCase("PAYPAL")){
+            url = paymentService.creatPayment( baseUrl, request.getOrderId(), request.getPaymentMethod());
             paymentService.savePayment(request.getOrderId());
         }if (request.getPaymentMethod().equalsIgnoreCase("COD")){
             paymentService.savePayment(request.getOrderId());
@@ -93,6 +97,24 @@ public class PaymentController {
                 .build();
     }
 
+    @GetMapping("/executePaypal")
+    public ResponseEntity<String> executePayment(@RequestParam("paymentId") String paymentId, @RequestParam("PayerID") String payerId, @RequestParam("orderId") String orderId) {
+        try {
+            var payment = paypalService.executePayment(paymentId, payerId);
+            if (payment.getState().equals("approved")) {
+                paymentService.updateStatusPayment(true, orderId);
+                paymentService.UpdateStatusOrder(true, orderId);
+                return ResponseEntity.ok("Payment Successfully!");
+            }else {
+                paymentService.updateStatusPayment(false,orderId);
+                paymentService.UpdateStatusOrder(false,orderId);
+                return ResponseEntity.status(HttpStatus.BAD_REQUEST).body("Payment Failed!");
+            }
+        } catch (Exception e) {
+            e.printStackTrace();
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body("Payment Faileddd!");
+        }
+    }
 }
 
 
