@@ -1,6 +1,6 @@
 package com.example.userservice.configs;
 
-import com.example.common.event.CreateEventToForgotPassword;
+import com.example.userservice.dtos.request.CreateEventToForgotPassword;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.kafka.core.KafkaTemplate;

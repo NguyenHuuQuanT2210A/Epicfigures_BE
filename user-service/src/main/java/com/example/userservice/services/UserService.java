@@ -1,6 +1,6 @@
 package com.example.userservice.services;
 
-import com.example.common.dto.response.Statistics;
+import com.example.userservice.dtos.response.Statistics;
 import com.example.userservice.dtos.UserDTO;
 import com.example.userservice.models.requests.UserRequest;
 import org.springframework.data.domain.Page;

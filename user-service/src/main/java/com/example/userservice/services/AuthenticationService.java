@@ -1,6 +1,6 @@
 package com.example.userservice.services;
 
-import com.example.common.event.CreateEventToForgotPassword;
+import com.example.userservice.dtos.request.CreateEventToForgotPassword;
 import com.example.userservice.configs.KafkaProducer;
 import com.example.userservice.dtos.request.ResetPasswordDto;
 import com.example.userservice.entities.Role;

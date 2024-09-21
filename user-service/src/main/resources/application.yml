@@ -7,16 +7,18 @@ spring:
 #    driverClassName: org.h2.Driver
 #    username: sa
 #    password: password
+#    url: jdbc:sqlserver://techwiz5.database.windows.net:1433;database=techwiz5-db;user=techwiz5@techwiz5;password=@Epicfigure;encrypt=true;trustServerCertificate=false;hostNameInCertificate=*.database.windows.net;loginTimeout=30;
+#    driverClassName: com.microsoft.sqlserver.jdbc.SQLServerDriver
     url: jdbc:mysql://localhost:3306/epic_figures_user
     driverClassName: com.mysql.cj.jdbc.Driver
     username: root
     password:
-
   jpa:
     show-sql: true
     hibernate:
       ddl-auto: update
-#    database-platform: org.hibernate.dialect.H2Dialect
+#    database-platform: org.hibernate.dialect.SQLServerDialect
+  #    database-platform: org.hibernate.dialect.H2Dialect
 
   security:
     oauth2:
@@ -83,9 +85,6 @@ file:
   upload-product-image-dir: ./uploads/productimage
   upload-user-image-dir: ./uploads/userimage
   upload-thumbnail-image-dir: ./uploads/thumbnailimage
-
-
-
 
 eureka:
   instance:

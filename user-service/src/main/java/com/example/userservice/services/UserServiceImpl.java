@@ -1,7 +1,7 @@
 package com.example.userservice.services;
 
-import com.example.common.dto.response.RoleResponse;
-import com.example.common.dto.response.Statistics;
+import com.example.userservice.dtos.response.RoleResponse;
+import com.example.userservice.dtos.response.Statistics;
 import com.example.userservice.dtos.UserDTO;
 import com.example.userservice.entities.Role;
 import com.example.userservice.entities.User;

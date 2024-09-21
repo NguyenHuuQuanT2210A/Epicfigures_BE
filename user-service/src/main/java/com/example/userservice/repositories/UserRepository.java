@@ -1,6 +1,6 @@
 package com.example.userservice.repositories;
 
-import com.example.common.dto.response.Statistics;
+import com.example.userservice.dtos.response.Statistics;
 import com.example.userservice.entities.User;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
