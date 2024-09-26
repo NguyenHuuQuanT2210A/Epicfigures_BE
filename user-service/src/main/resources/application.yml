@@ -85,6 +85,7 @@ file:
   upload-product-image-dir: ./uploads/productimage
   upload-user-image-dir: ./uploads/userimage
   upload-thumbnail-image-dir: ./uploads/thumbnailimage
+  upload-blog-image-dir: ./uploads/blogimage
 
 eureka:
   instance:

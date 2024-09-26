@@ -22,6 +22,7 @@ public class FileStorageService {
     private final Path fileProductImageStorageLocation;
     private final Path fileUserImageStorageLocation;
     private final Path fileThumbnailImageStorageLocation;
+    private final Path fileBlogImageStorageLocation;
 
     public FileStorageService(FileStorageProperties fileStorageProperties) {
         this.fileLogoStorageLocation = Paths.get(fileStorageProperties.getUploadLogoDir())
@@ -32,11 +33,14 @@ public class FileStorageService {
                 .toAbsolutePath().normalize();
         this.fileThumbnailImageStorageLocation = Paths.get(fileStorageProperties.getUploadThumbnailImageDir())
                 .toAbsolutePath().normalize();
+        this.fileBlogImageStorageLocation = Paths.get(fileStorageProperties.getUploadBlogImageDir())
+                .toAbsolutePath().normalize();
         try {
             Files.createDirectories(fileLogoStorageLocation);
             Files.createDirectories(fileProductImageStorageLocation);
             Files.createDirectories(fileUserImageStorageLocation);
             Files.createDirectories(fileThumbnailImageStorageLocation);
+            Files.createDirectories(fileBlogImageStorageLocation);
         }catch (Exception ex){
             throw new CustomException("File upload fail " + ex, HttpStatus.BAD_REQUEST);
         }
@@ -51,6 +55,10 @@ public class FileStorageService {
 
     public  String storeUserImageFile(MultipartFile file){
         return storeFile(fileUserImageStorageLocation,file);
+    }
+
+    public  String storeBlogImageFile(MultipartFile file){
+        return storeFile(fileBlogImageStorageLocation,file);
     }
 
     public String storeThumbnailImageFile(MultipartFile file){
@@ -86,6 +94,10 @@ public class FileStorageService {
         return  loadFileAsResource(fileUserImageStorageLocation,filename);
     }
 
+    public Resource loadBlogImageFileAsResource(String filename){
+        return  loadFileAsResource(fileBlogImageStorageLocation,filename);
+    }
+
     public Resource loadThumblnailImageFileAsResource(String filename){
         return  loadFileAsResource(fileThumbnailImageStorageLocation,filename);
     }
@@ -116,6 +128,10 @@ public class FileStorageService {
 
     public void deleteUserImageFile(String filename){
         deleteFile(fileUserImageStorageLocation,filename);
+    }
+
+    public void deleteBlogImageFile(String filename){
+        deleteFile(fileBlogImageStorageLocation,filename);
     }
 
     public void deleteThumbnailImageFile(String filename){

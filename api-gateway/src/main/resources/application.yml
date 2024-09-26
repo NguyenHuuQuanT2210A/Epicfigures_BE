@@ -36,6 +36,20 @@ spring:
           filters:
             - JwtAuthenticationFilter
 
+        - id: address_order-service
+          uri: http://localhost:8081
+          predicates:
+            - Path=/api/v1/address_order/**
+          filters:
+            - JwtAuthenticationFilter
+
+        - id: blog-service
+          uri: http://localhost:8081
+          predicates:
+            - Path=/api/v1/blogs/**
+          filters:
+            - JwtAuthenticationFilter
+
 #        product-service
         - id: categories-service
           uri: http://localhost:8082
