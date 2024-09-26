@@ -1,5 +1,6 @@
 package com.example.userservice.controllers;
 
+import com.example.userservice.dtos.request.EmailForgotPassword;
 import com.example.userservice.dtos.request.ResetPasswordDto;
 import com.example.userservice.models.requests.LoginRequest;
 import com.example.userservice.models.requests.SignupRequest;
@@ -47,8 +48,8 @@ public class AuthController {
     }
 
     @PostMapping("/forgot-password")
-    public ResponseEntity<String> forgotPassword(@RequestBody String email) {
-        return new ResponseEntity<>(authenticationService.forgotPassword(email), HttpStatus.OK);
+    public ResponseEntity<String> forgotPassword(@RequestBody EmailForgotPassword request) {
+        return new ResponseEntity<>(authenticationService.forgotPassword(request), HttpStatus.OK);
     }
 
 //    @PostMapping("/reset-password-post")

@@ -43,8 +43,8 @@ public class PaypalService {
         payment.setTransactions(transactions);
 
         RedirectUrls redirectUrls = new RedirectUrls();
-        redirectUrls.setCancelUrl("http://localhost:3000/cancel");
-        redirectUrls.setReturnUrl(urlReturn + "/" + orderId);
+        redirectUrls.setCancelUrl(urlReturn + "/" + orderId + "?success=false");
+        redirectUrls.setReturnUrl(urlReturn + "/" + orderId + "?success=true");
 
         payment.setRedirectUrls(redirectUrls);
         Payment createdPayment = payment.create(apiContext);

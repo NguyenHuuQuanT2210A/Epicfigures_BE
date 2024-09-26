@@ -109,7 +109,6 @@ public class OrderController {
                 .build();
     }
 
-    @PreAuthorize("hasRole('ROLE_ADMIN')")
     @PutMapping("/changeStatus/{id}")
     public ApiResponse<?> changeStatus(@PathVariable String id, @RequestParam OrderSimpleStatus status) {
         return ApiResponse.builder()

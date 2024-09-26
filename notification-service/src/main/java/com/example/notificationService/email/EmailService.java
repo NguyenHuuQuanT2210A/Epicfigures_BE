@@ -14,6 +14,7 @@ import org.springframework.stereotype.Service;
 import org.thymeleaf.context.Context;
 import org.thymeleaf.spring6.SpringTemplateEngine;
 
+import java.io.UnsupportedEncodingException;
 import java.util.List;
 
 @Slf4j
@@ -43,7 +44,14 @@ public class EmailService {
                 html = templateEngine.process(template, contextForgotPassword);
             }
 
-            helper.setFrom(fromMail);
+            // Send attach files
+//            if (files != null) {
+//                for (MultipartFile file : files) {
+//                    helper.addAttachment(Objects.requireNonNull(file.getOriginalFilename()), file);
+//                }
+//            }
+
+            helper.setFrom(fromMail, "Epicfigures Shop");
             helper.setTo(email);
             helper.setSubject(subject);
             helper.setText(html, true);
@@ -52,6 +60,8 @@ public class EmailService {
         } catch (MessagingException | jakarta.mail.MessagingException e) {
             log.error("Failed to send email", e);
             throw new IllegalStateException("Failed to send email");
+        } catch (UnsupportedEncodingException e) {
+            throw new RuntimeException(e);
         }
     }
 
@@ -66,7 +76,7 @@ public class EmailService {
         Context context = new Context();
         context.setVariable("userName", emailParameters.get(0));
         context.setVariable("email", emailParameters.get(1));
-        context.setVariable("linkReset", "http://localhost:3000/reset-password?secretKey=" + emailParameters.get(2));
+        context.setVariable("linkReset", emailParameters.get(2) + "?secretKey=" + emailParameters.get(3));
         return context;
     }
 }

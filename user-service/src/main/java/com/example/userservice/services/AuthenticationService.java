@@ -2,6 +2,7 @@ package com.example.userservice.services;
 
 import com.example.userservice.configs.KafkaProducer;
 import com.example.userservice.dtos.request.CreateEventToForgotPassword;
+import com.example.userservice.dtos.request.EmailForgotPassword;
 import com.example.userservice.dtos.request.ResetPasswordDto;
 import com.example.userservice.entities.Role;
 import com.example.userservice.entities.User;
@@ -15,6 +16,7 @@ import com.example.userservice.securities.jwt.JwtUtils;
 import com.example.userservice.securities.services.TokenBlacklistService;
 import com.example.userservice.securities.services.UserDetailsImpl;
 import com.example.userservice.statics.enums.ERole;
+import com.example.userservice.statics.enums.Platform;
 import com.example.userservice.statics.enums.TokenType;
 import jakarta.servlet.http.HttpServletRequest;
 import lombok.RequiredArgsConstructor;
@@ -141,11 +143,11 @@ public class AuthenticationService {
         }
     }
 
-    public String forgotPassword(String email) {
+    public String forgotPassword(EmailForgotPassword request) {
         log.info("---------- forgotPassword ----------");
 
         // check email exists or not
-        User user = userRepository.findByEmail(email).orElseThrow(() -> new CustomException("User not found", HttpStatus.NOT_FOUND));
+        User user = userRepository.findByEmail(request.getEmail()).orElseThrow(() -> new CustomException("User not found", HttpStatus.NOT_FOUND));
 
         // generate reset token
         String resetToken = jwtUtils.generateResetToken(UserDetailsImpl.build(user));
@@ -157,8 +159,16 @@ public class AuthenticationService {
 //                "--data '%s'", resetToken);
 //        log.info("--> confirmLink: {}", confirmLink);
 
+        String resetPasswordLink;
+        if (Platform.MOBILE.name().equalsIgnoreCase(request.getPlatform())) {
+            // URL for mobile platform
+            resetPasswordLink = "http://localhost:3001/reset-password";
+        } else {
+            // Default to web platform
+            resetPasswordLink = "http://localhost:3000/reset-password";
+        }
 
-        kafkaProducer.sendEmailForgotPassword(new CreateEventToForgotPassword(user.getId(), user.getEmail(), resetToken));
+        kafkaProducer.sendEmailForgotPassword(new CreateEventToForgotPassword(user.getId(), user.getEmail(), resetToken, resetPasswordLink));
 
         return resetToken;
     }

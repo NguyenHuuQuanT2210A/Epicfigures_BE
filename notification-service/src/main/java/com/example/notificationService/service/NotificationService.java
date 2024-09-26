@@ -8,7 +8,6 @@ import com.example.notificationService.email.EmailService;
 import com.example.paymentService.event.CreateEventToNotification;
 import com.example.paymentService.event.RequestUpdateStatusOrder;
 import com.example.userservice.dtos.request.CreateEventToForgotPassword;
-import com.fasterxml.jackson.databind.ObjectMapper;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
@@ -25,15 +24,10 @@ public class NotificationService {
     private final UserClient userClient;
 
     public void sendMailOrder(CreateEventToNotification orderSendMail) {
-//        ApiResponse<?> response = restTemplate.getForObject("http://localhost:8081/api/v1/users/" + orderSendMail.getUserId(), ApiResponse.class);
-        ApiResponse<?> response = userClient.getUserById(orderSendMail.getUserId());
-
-        assert response != null;
-        ObjectMapper mapper = new ObjectMapper();
-        UserResponse userDTO = mapper.convertValue(response.getData(), UserResponse.class);
+        ApiResponse<UserResponse> response = userClient.getUserById(orderSendMail.getUserId());
 
         List<Object> emailParameters = new ArrayList<>();
-        emailParameters.add(userDTO.getUsername());
+        emailParameters.add(response.getData().getUsername());
         emailParameters.add(orderSendMail.getPrice().toString());
 
         emailService.sendMail(orderSendMail.getEmail(), "Order successfully", emailParameters, "thank-you");
@@ -50,19 +44,15 @@ public class NotificationService {
     }
 
     public void sendMailForgotPassword(CreateEventToForgotPassword forgotPasswordEvent) {
-//        ApiResponse<?> response = restTemplate.getForObject("http://localhost:8081/api/v1/users/" + forgotPasswordEvent.getId(), ApiResponse.class);
-        ApiResponse<?> response = userClient.getUserById(forgotPasswordEvent.getId());
-
-        assert response != null;
-        ObjectMapper mapper = new ObjectMapper();
-        UserResponse userDTO = mapper.convertValue(response.getData(), UserResponse.class);
+        ApiResponse<UserResponse> response = userClient.getUserById(forgotPasswordEvent.getId());
 
         List<Object> emailParameters = new ArrayList<>();
-        emailParameters.add(userDTO.getUsername());
-        emailParameters.add(userDTO.getEmail());
+        emailParameters.add(response.getData().getUsername());
+        emailParameters.add(response.getData().getEmail());
+        emailParameters.add(forgotPasswordEvent.getUrlPlatform());
         emailParameters.add(forgotPasswordEvent.getSecretKey());
 
-        emailService.sendMail(userDTO.getEmail(), "Forgot Password", emailParameters, "forgot-password");
+        emailService.sendMail(response.getData().getEmail(), "Forgot Password", emailParameters, "forgot-password");
     }
 }
 
