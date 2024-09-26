@@ -1,6 +1,6 @@
 package com.example.orderservice.repositories;
 
-import com.example.common.enums.OrderSimpleStatus;
+import com.example.orderservice.enums.OrderSimpleStatus;
 import com.example.orderservice.entities.Order;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
@@ -17,5 +17,6 @@ public interface OrderRepository extends JpaRepository<Order, String>, JpaSpecif
     @Query("SELECT o FROM Order o WHERE o.userId = ?1")
     Page<Order> findOrderByUserId(Long userId, Specification specification, Pageable pageable);
     List<Order> findByUserId(Long userId);
-    Order findOrderByUserIdAndStatus(Long userId, OrderSimpleStatus status);
+    Page<Order> findOrderByUserIdAndStatus(Long userId, OrderSimpleStatus status, Pageable pageable);
+    Long countOrdersByStatus(OrderSimpleStatus status);
 }

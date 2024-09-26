@@ -7,7 +7,7 @@ import org.springframework.cloud.openfeign.EnableFeignClients;
 
 @SpringBootApplication
 @EnableFeignClients
-//@EnableDiscoveryClient
+@EnableDiscoveryClient
 public class InventoryServiceApplication {
 
     public static void main(String[] args) {

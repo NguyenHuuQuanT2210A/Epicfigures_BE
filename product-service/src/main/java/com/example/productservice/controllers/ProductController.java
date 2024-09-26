@@ -1,8 +1,9 @@
 package com.example.productservice.controllers;
 
-import com.example.productservice.dto.CategoryDTO;
-import com.example.productservice.dto.ProductDTO;
+import com.example.productservice.dto.request.ProductRequest;
 import com.example.productservice.dto.response.ApiResponse;
+import com.example.productservice.dto.response.CategoryResponse;
+import com.example.productservice.dto.response.ProductResponse;
 import com.example.productservice.services.CategoryService;
 import com.example.productservice.services.ProductService;
 import lombok.NonNull;
@@ -46,10 +47,10 @@ public class ProductController {
     }
 
     @GetMapping("/getAll")
-    ApiResponse<Page<ProductDTO>> getAllProducts(
+    ApiResponse<Page<ProductResponse>> getAllProducts(
             @RequestParam(defaultValue = "1", name = "page") int page,
             @RequestParam(defaultValue = "10", name = "limit") int limit) {
-        return ApiResponse.<Page<ProductDTO>>builder()
+        return ApiResponse.<Page<ProductResponse>>builder()
                 .message("Get all Products")
                 .data(productService.getAllProducts(PageRequest.of(page -1, limit)))
                 .build();
@@ -65,7 +66,7 @@ public class ProductController {
 
     @GetMapping("/id/{id}")
     ApiResponse<?> getProductById(@PathVariable Long id) {
-        ProductDTO product = productService.getProductById(id);
+        ProductResponse product = productService.getProductById(id);
         if (product == null) {
             throw new NotFoundException("Product not found with id: " + id);
         }
@@ -85,7 +86,7 @@ public class ProductController {
 
     @GetMapping("/name/{name}")
     ApiResponse<?> getProductByName(@PathVariable String name) {
-        ProductDTO product = productService.getProductByName(name);
+        ProductResponse product = productService.getProductByName(name);
         if (product == null) {
             throw new NotFoundException("Product not found with name: " + name);
         }
@@ -96,19 +97,18 @@ public class ProductController {
     }
 
     @GetMapping("/category/{categoryId}")
-    ApiResponse<Page<ProductDTO>> findByCategory( @RequestParam(defaultValue = "1") int page,
+    ApiResponse<Page<ProductResponse>> findByCategory( @RequestParam(defaultValue = "1") int page,
                                             @RequestParam(defaultValue = "10") int limit,
                                             @PathVariable Long categoryId) {
-        CategoryDTO category = categoryService.getCategoryById(categoryId);
-        return ApiResponse.<Page<ProductDTO>>builder()
+        return ApiResponse.<Page<ProductResponse>>builder()
                 .message("Get products by Category")
-                .data(productService.findByCategory(PageRequest.of(page -1, limit), category))
+                .data(productService.findByCategory(PageRequest.of(page -1, limit), categoryId))
                 .build();
     }
 
     @PostMapping(consumes = MediaType.MULTIPART_FORM_DATA_VALUE,
             produces = MediaType.APPLICATION_JSON_VALUE)
-    ResponseEntity<?> addProduct(@Valid @RequestPart("productDTO") ProductDTO productDTO, @RequestPart("files") @NonNull List<MultipartFile> imageFiles, BindingResult result) {
+    ResponseEntity<?> addProduct(@Valid @RequestPart("productDTO") ProductRequest request, @RequestPart("files") @NonNull List<MultipartFile> imageFiles, BindingResult result) {
         if (result.hasErrors()) {
             Map<String, String> errors = result.getFieldErrors().stream()
                     .collect(Collectors.toMap(fieldError -> fieldError.getField(), fieldError -> fieldError.getDefaultMessage()));
@@ -118,14 +118,14 @@ public class ProductController {
                     .data(errors)
                     .build());
         }
-        productService.addProduct(productDTO, imageFiles);
+        productService.addProduct(request, imageFiles);
         return ResponseEntity.ok(ApiResponse.builder()
                 .code(HttpStatus.CREATED.value())
                 .message("Create product successfully")
                 .build());
     }
     @PutMapping("/{id}")
-    ResponseEntity<?> updateProduct(@PathVariable Long id, @RequestPart("productDTO") ProductDTO updatedProductDto, @RequestPart("files") @NonNull List<MultipartFile> imageFiles, BindingResult result) {
+    ResponseEntity<?> updateProduct(@PathVariable Long id, @RequestPart("productDTO")ProductRequest request, @RequestPart("files") @NonNull List<MultipartFile> imageFiles, BindingResult result) {
         if (result.hasErrors()) {
             Map<String, String> errors = result.getFieldErrors().stream()
                     .collect(Collectors.toMap(fieldError -> fieldError.getField(), fieldError -> fieldError.getDefaultMessage()));
@@ -135,7 +135,7 @@ public class ProductController {
                     .data(errors)
                     .build());
         }
-        productService.updateProduct(id, updatedProductDto, imageFiles);
+        productService.updateProduct(id, request, imageFiles);
         return ResponseEntity.ok(ApiResponse.builder()
                 .code(HttpStatus.NO_CONTENT.value())
                 .message("Update product successfully")

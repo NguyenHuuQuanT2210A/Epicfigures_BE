@@ -1,7 +1,7 @@
 package com.example.orderservice.entities;
 
 import com.example.orderservice.entities.base.BaseEntity;
-import com.example.common.enums.OrderSimpleStatus;
+import com.example.orderservice.enums.OrderSimpleStatus;
 import com.fasterxml.jackson.annotation.JsonManagedReference;
 import jakarta.persistence.*;
 import lombok.AllArgsConstructor;

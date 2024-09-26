@@ -15,5 +15,5 @@ public class FeedbackResponse {
     Integer rateStar;
     String comment;
     @JsonIgnore
-    OrderDetail orderDetail;
+    OrderDetailResponse orderDetail;
 }

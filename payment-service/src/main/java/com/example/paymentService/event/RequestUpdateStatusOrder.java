@@ -9,5 +9,5 @@ import lombok.NoArgsConstructor;
 @AllArgsConstructor
 public class RequestUpdateStatusOrder {
     Boolean status;
-    Long orderId;
+    String orderId;
 }

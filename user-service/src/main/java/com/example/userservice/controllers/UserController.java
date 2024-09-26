@@ -1,15 +1,16 @@
 package com.example.userservice.controllers;
 
-import com.example.userservice.dtos.UserDTO;
+import com.example.userservice.dtos.request.UserRequest;
 import com.example.userservice.dtos.response.ApiResponse;
+import com.example.userservice.dtos.response.UserResponse;
 import com.example.userservice.exceptions.CustomException;
-import com.example.userservice.models.requests.UserRequest;
 import com.example.userservice.services.FileStorageService;
 import com.example.userservice.services.UserService;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.servlet.http.HttpServletRequest;
 import lombok.RequiredArgsConstructor;
 import org.springframework.core.io.Resource;
+import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
@@ -45,11 +46,19 @@ public class UserController {
     }
 
     @GetMapping(path = "/{id}")
-    ApiResponse<UserDTO> getUserById(@PathVariable(name = "id") Long id) {
-        UserDTO user = userService.findById(id);
-        return ApiResponse.<UserDTO>builder()
+    ApiResponse<UserResponse> getUserById(@PathVariable(name = "id") Long id) {
+        UserResponse user = userService.findById(id);
+        return ApiResponse.<UserResponse>builder()
                 .message("Get user by Id")
                 .data(user)
+                .build();
+    }
+
+    @GetMapping(path = "/role/{roleId}")
+    ApiResponse<Page<UserResponse>> getUserByRoleId(@PathVariable(name = "roleId") Long roleId) {
+        return ApiResponse.<Page<UserResponse>>builder()
+                .message("Get user by Role Id")
+                .data(userService.findByRoleId(roleId))
                 .build();
     }
 
@@ -63,27 +72,27 @@ public class UserController {
     }
 
     @GetMapping(path = "/username")
-    ApiResponse<UserDTO> getUserByUsername(@RequestParam(name = "username") String username) {
-        UserDTO user = userService.findByUsername(username);
-        return ApiResponse.<UserDTO>builder()
+    ApiResponse<UserResponse> getUserByUsername(@RequestParam(name = "username") String username) {
+        UserResponse user = userService.findByUsername(username);
+        return ApiResponse.<UserResponse>builder()
                 .message("Get user by Username")
                 .data(user)
                 .build();
     }
 
     @GetMapping(path = "/email")
-    ApiResponse<UserDTO> getUserByEmail(@RequestParam(name = "email") String email) {
-        UserDTO user = userService.findByEmail(email);
-        return ApiResponse.<UserDTO>builder()
+    ApiResponse<UserResponse> getUserByEmail(@RequestParam(name = "email") String email) {
+        UserResponse user = userService.findByEmail(email);
+        return ApiResponse.<UserResponse>builder()
                 .message("Get user by email")
                 .data(user)
                 .build();
     }
 
     @PostMapping
-    ApiResponse<UserDTO> createUser(@RequestBody UserRequest userRequest) {
-        UserDTO newUser = userService.createUser(userRequest);
-        return ApiResponse.<UserDTO>builder()
+    ApiResponse<UserResponse> createUser(@RequestBody UserRequest userRequest) {
+        UserResponse newUser = userService.createUser(userRequest);
+        return ApiResponse.<UserResponse>builder()
                 .code(HttpStatus.CREATED.value())
                 .message("Create user")
                 .data(newUser)
@@ -91,9 +100,9 @@ public class UserController {
     }
 
     @PutMapping(path = "/{id}")
-    ApiResponse<UserDTO> updateUser(@PathVariable(name = "id") Long id, @RequestBody UserRequest userRequest) {
-        UserDTO updatedUser = userService.updateUser(id, userRequest);
-        return ApiResponse.<UserDTO>builder()
+    ApiResponse<UserResponse> updateUser(@PathVariable(name = "id") Long id, @RequestBody UserRequest userRequest) {
+        UserResponse updatedUser = userService.updateUser(id, userRequest);
+        return ApiResponse.<UserResponse>builder()
                 .message("Update user")
                 .data(updatedUser)
                 .build();

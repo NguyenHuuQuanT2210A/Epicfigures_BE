@@ -1,6 +1,6 @@
 package com.example.paymentService.service;
 
-import com.example.common.dto.OrderDTO;
+import com.example.paymentService.dto.response.OrderResponse;
 import com.paypal.api.payments.*;
 import com.paypal.api.payments.Links;
 import com.paypal.base.rest.APIContext;
@@ -23,14 +23,14 @@ public class PaypalService {
         return amountVND.divide(EXCHANGE_RATE, 2, BigDecimal.ROUND_HALF_UP);
     }
 
-    public String createPayment(String orderId, OrderDTO orderDTO, String urlReturn) throws PayPalRESTException {
+    public String createPayment(String orderId, OrderResponse orderResponse, String urlReturn) throws PayPalRESTException {
         Amount amount = new Amount();
         amount.setCurrency("USD");
-        amount.setTotal(String.format(Locale.forLanguageTag("USD"),"%.2f", convertVNDToUSD(orderDTO.getTotalPrice()).doubleValue()));
+        amount.setTotal(String.format(Locale.forLanguageTag("USD"),"%.2f", convertVNDToUSD(orderResponse.getTotalPrice()).doubleValue()));
 
         Transaction transaction = new Transaction();
         transaction.setAmount(amount);
-        transaction.setDescription(orderDTO.getNote());
+        transaction.setDescription(orderResponse.getNote());
 
         List<Transaction> transactions = new java.util.ArrayList<>(Collections.singletonList(transaction));
 

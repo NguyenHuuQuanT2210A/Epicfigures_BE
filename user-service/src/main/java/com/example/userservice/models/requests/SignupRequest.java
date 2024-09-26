@@ -1,5 +1,6 @@
 package com.example.userservice.models.requests;
 
+import jakarta.validation.constraints.NotNull;
 import org.hibernate.validator.constraints.Email;
 import org.hibernate.validator.constraints.NotBlank;
 import lombok.AllArgsConstructor;
@@ -20,6 +21,9 @@ public class SignupRequest {
     @Size(max = 50)
     @Email
     private String email;
+
+    @NotNull
+    private String phoneNumber;
 
     private Set<String> role;
 

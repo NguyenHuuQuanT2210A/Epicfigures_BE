@@ -1,7 +1,7 @@
 package com.example.inventoryservice.services;
 
-import com.example.inventoryservice.dto.InventoryRequest;
-import com.example.inventoryservice.dto.InventoryResponse;
+import com.example.inventoryservice.dto.request.InventoryRequest;
+import com.example.inventoryservice.dto.response.InventoryResponse;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 

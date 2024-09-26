@@ -19,4 +19,8 @@ public interface CategoryRepository extends JpaRepository<Category, Long>, JpaSp
     Page<Category> findByDeletedAtIsNotNull(Pageable pageable);
     Page<Category> findByDeletedAtIsNull(Pageable pageable);
     boolean existsByCategoryName(String name);
+
+    @Query("SELECT c FROM Category c WHERE c.parentCategory.categoryId = :parentCategoryId")
+    List<Category> findByParentCategoryId(@Param("parentCategoryId") Long parentCategoryId);
+    List<Category> findByParentCategoryIsNull();
 }

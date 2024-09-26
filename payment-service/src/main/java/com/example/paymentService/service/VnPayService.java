@@ -1,7 +1,7 @@
 package com.example.paymentService.service;
 
-import com.example.common.dto.OrderDTO;
 import com.example.paymentService.config.Config;
+import com.example.paymentService.dto.response.OrderResponse;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 
@@ -16,7 +16,7 @@ import java.util.*;
 @RequiredArgsConstructor
 public class VnPayService {
 
-    public String createPaymentVnPay(String orderId, OrderDTO orderDTO, String urlReturn) throws UnsupportedEncodingException {
+    public String createPaymentVnPay(String orderId, OrderResponse orderResponse, String urlReturn) throws UnsupportedEncodingException {
         String vnp_Version = "2.1.0";
         String vnp_Command = "pay";
         String vnp_TxnRef = Config.getRandomNumber(8);
@@ -25,7 +25,7 @@ public class VnPayService {
         String orderType = "other";
         String bankCode = "NCB";
 
-        BigDecimal total = orderDTO.getTotalPrice();
+        BigDecimal total = orderResponse.getTotalPrice();
         Map<String, String> vnp_Params = new HashMap<>();
         vnp_Params.put("vnp_Version", vnp_Version);
         vnp_Params.put("vnp_Command", vnp_Command);

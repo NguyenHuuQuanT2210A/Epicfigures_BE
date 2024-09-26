@@ -24,15 +24,19 @@ public class UserDetailsImpl implements UserDetails {
     @JsonIgnore
     // thuộc tính password sẽ khong xuất hiện
     private String password;
+
+    private String phoneNumber;
+
     // chỉ định role của user
     private Collection<? extends GrantedAuthority> authorities;
 
     public UserDetailsImpl(Long id, String username, String email, String password,
-                           Collection<? extends GrantedAuthority> authorities) {
+                           String phoneNumber, Collection<? extends GrantedAuthority> authorities) {
         this.id = id;
         this.username = username;
         this.email = email;
         this.password = password;
+        this.phoneNumber = phoneNumber;
         this.authorities = authorities;
     }
 
@@ -46,6 +50,7 @@ public class UserDetailsImpl implements UserDetails {
                 user.getUsername(),
                 user.getEmail(),
                 user.getPassword(),
+                user.getPhoneNumber(),
                 authorities);
     }
 
@@ -65,6 +70,10 @@ public class UserDetailsImpl implements UserDetails {
     @Override
     public String getPassword() {
         return password;
+    }
+
+    public String getPhoneNumber() {
+        return phoneNumber;
     }
 
     @Override

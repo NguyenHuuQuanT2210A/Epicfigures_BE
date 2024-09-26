@@ -42,7 +42,22 @@ public class CartServiceImpl implements CartService {
     @Override
     public List<CartResponse> getCartByUserId(Long userId) {
         var carts = cartRepository.findAllByUserId(userId);
-        return getCartResponse(carts);
+        List<Cart> cartsToCheck = new ArrayList<>();
+        for (var cart : carts) {
+            var product = productClient.getProductById(cart.getId().getProductId());
+            if (product.getData() == null) {
+                cart.setStatus(CartStatus.DISCONTINUED);
+            }else if (product.getData().getStockQuantity() < cart.getQuantity()) {
+                cart.setStatus(CartStatus.EXCEEDED_AVAILABLE_STOCK);
+            }else if (product.getData().getStockQuantity() == 0) {
+                cart.setStatus(CartStatus.OUT_OF_STOCK);
+            }else if (product.getData().getPrice().compareTo(cart.getUnitPrice().divide(BigDecimal.valueOf(cart.getQuantity()))) != 0) {
+                cart.setStatus(CartStatus.PRICE_CHANGED);
+            }
+            cartRepository.save(cart);
+            cartsToCheck.add(cart);
+        }
+        return getCartResponse(cartsToCheck);
     }
 
     @Override

@@ -1,7 +1,8 @@
 package com.example.productservice.services;
 
-import com.example.productservice.dto.CategoryDTO;
-import com.example.productservice.dto.ProductDTO;
+import com.example.productservice.dto.request.CategoryRequest;
+import com.example.productservice.dto.request.ProductRequest;
+import com.example.productservice.dto.response.ProductResponse;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
@@ -13,17 +14,17 @@ import java.util.Set;
 @Service
 public interface ProductService {
     Long countProducts();
-    Page<ProductDTO> getAllProducts(Pageable pageable);
-    ProductDTO getProductByName(String name);
-    ProductDTO getProductById(Long id);
-    Page<ProductDTO> findByCategory(Pageable pageable, CategoryDTO category);
-    void addProduct(ProductDTO productDTO, List<MultipartFile> imageFiles);
-    void updateProduct(long id, ProductDTO updatedProductDTO, List<MultipartFile> imageFiles);
+    Page<ProductResponse> getAllProducts(Pageable pageable);
+    ProductResponse getProductByName(String name);
+    ProductResponse getProductById(Long id);
+    Page<ProductResponse> findByCategory(Pageable pageable, Long categoryId);
+    void addProduct(ProductRequest request, List<MultipartFile> imageFiles);
+    void updateProduct(long id, ProductRequest request, List<MultipartFile> imageFiles);
     void updateStockQuantity(long id, Integer stockQuantity);
     void deleteProduct(long id);
     void moveToTrash(Long id);
-    Page<ProductDTO> getInTrash(Pageable pageable);
-    List<ProductDTO> getProductsByIds(Set<Long> productIds);
+    Page<ProductResponse> getInTrash(Pageable pageable);
+    List<ProductResponse> getProductsByIds(Set<Long> productIds);
     void restoreProduct(Long id);
-    Page<ProductDTO> searchBySpecification(Pageable pageable, String sort, String[] product, String category);
+    Page<ProductResponse> searchBySpecification(Pageable pageable, String sort, String[] product, String category);
 }

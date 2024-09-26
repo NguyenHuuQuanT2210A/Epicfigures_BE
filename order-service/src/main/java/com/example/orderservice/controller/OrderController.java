@@ -1,13 +1,15 @@
 package com.example.orderservice.controller;
 
-import com.example.common.enums.OrderSimpleStatus;
+import com.example.orderservice.enums.OrderSimpleStatus;
 import com.example.orderservice.dto.request.OrderRequest;
 import com.example.orderservice.dto.response.ApiResponse;
+import com.example.orderservice.dto.response.CountOrderByStatus;
 import com.example.orderservice.service.OrderService;
 import com.example.orderservice.specification.SearchBody;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Sort;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 
@@ -17,6 +19,17 @@ import org.springframework.web.bind.annotation.*;
 @Tag(name = "Order", description = "Order Controller")
 public class OrderController {
     private final OrderService orderService;
+
+    @GetMapping("/search-by-specification")
+    ApiResponse<?> advanceSearchBySpecification(@RequestParam(defaultValue = "1", name = "page") int page,
+                                                @RequestParam(defaultValue = "10", name = "limit") int limit,
+                                                @RequestParam(required = false) String sort,
+                                                @RequestParam(required = false) String[] order) {
+        return ApiResponse.builder()
+                .message("List of Orders")
+                .data(orderService.searchBySpecification(PageRequest.of(page -1, limit), sort, order))
+                .build();
+    }
 
     @PreAuthorize("hasRole('ROLE_ADMIN')")
     @GetMapping
@@ -35,6 +48,14 @@ public class OrderController {
                 .build();
     }
 
+    @GetMapping("/count/status")
+    public ApiResponse<CountOrderByStatus> getCountByStatusOrder() {
+        return ApiResponse.<CountOrderByStatus>builder()
+                .message("Get Count By Status Order")
+                .data(orderService.getCountByStatusOrder())
+                .build();
+    }
+
     @PreAuthorize("hasRole('ROLE_ADMIN')")
     @RequestMapping(method = RequestMethod.POST, path = "search")
     public ApiResponse<?> getAllOrders(@RequestBody SearchBody search) {
@@ -44,7 +65,7 @@ public class OrderController {
                 .build();
     }
 
-    @RequestMapping(method = RequestMethod.GET, path = "{id}")
+    @RequestMapping(method = RequestMethod.GET, path = "/{id}")
     public ApiResponse<?> getOrderById(@PathVariable String id) {
         return ApiResponse.builder()
                 .message("Get Order by Id")
@@ -52,19 +73,22 @@ public class OrderController {
                 .build();
     }
 
-    @GetMapping("user/{id}")
-    public ApiResponse<?> getCartByUserId(@PathVariable Long id) {
-        return ApiResponse.builder()
-                .message("Get Cart by User Id")
-                .data(orderService.findCartByUserId(id))
-                .build();
-    }
 
     @PostMapping("user/{id}")
     public ApiResponse<?> getOrderByUserId(@PathVariable Long id, @RequestBody SearchBody search) {
         return ApiResponse.builder()
                 .message("Get Order by User Id")
                 .data(orderService.findByUserId(id, search))
+                .build();
+    }
+
+    @GetMapping("/user/{userId}/status")
+    public ApiResponse<?> getOrderByUserIdAndStatus(@PathVariable Long userId, @RequestParam OrderSimpleStatus status,
+                                                    @RequestParam(defaultValue = "1", name = "page") int page,
+                                                    @RequestParam(defaultValue = "10", name = "limit") int limit) {
+        return ApiResponse.builder()
+                .message("Get Order by user Id and status")
+                .data(orderService.findOrderByUserIdAndStatus(userId, status, PageRequest.of(page - 1, limit, Sort.Direction.DESC, "createdAt")))
                 .build();
     }
 

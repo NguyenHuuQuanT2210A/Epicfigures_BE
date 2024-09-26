@@ -2,11 +2,12 @@ package com.example.paymentService;
 
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
+import org.springframework.cloud.client.discovery.EnableDiscoveryClient;
 import org.springframework.cloud.openfeign.EnableFeignClients;
 
 @SpringBootApplication
 @EnableFeignClients
-//@EnacleDiscoveryClient
+@EnableDiscoveryClient
 public class PaymentServiceApplication {
 
 	public static void main(String[] args) {

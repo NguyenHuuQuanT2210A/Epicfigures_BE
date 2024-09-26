@@ -1,12 +1,11 @@
 package com.example.productservice.services.impl;
 
-import com.example.productservice.dto.ProductImageDTO;
 import com.example.productservice.dto.UserAndProductId;
 import com.example.productservice.dto.request.CartItemRequest;
 import com.example.productservice.dto.response.CartItemResponse;
+import com.example.productservice.dto.response.ProductImageResponse;
 import com.example.productservice.mapper.CartMapper;
 import com.example.productservice.services.CartRedisService;
-import com.example.productservice.services.ProductServiceImpl;
 import com.example.productservice.statics.enums.CartStatus;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import lombok.RequiredArgsConstructor;
@@ -15,7 +14,6 @@ import org.springframework.stereotype.Service;
 import java.math.BigDecimal;
 import java.util.LinkedHashMap;
 import java.util.List;
-import java.util.Set;
 import java.util.stream.Collectors;
 
 import static com.example.productservice.constant.CommonDefine.*;
@@ -86,7 +84,7 @@ public class CartRedisServiceImpl implements CartRedisService {
             cartItemResponse.setProductName(product.getName());
             cartItemResponse.setProductPrice(product.getPrice());
             cartItemResponse.setUnitPrice(BigDecimal.valueOf(cartItemResponse.getQuantity()).multiply(product.getPrice()));
-            cartItemResponse.setProductImages(product.getImages().stream().map(ProductImageDTO::getImageUrl).collect(Collectors.toSet()));
+            cartItemResponse.setProductImages(product.getImages().stream().map(ProductImageResponse::getImageUrl).collect(Collectors.toSet()));
         }
 
         baseRedisService.hashSet(key, field, cartItemResponse);

@@ -1,8 +1,8 @@
 package com.example.orderservice.service;
 
-import com.example.common.dto.ProductDTO;
 import com.example.orderservice.config.AuthenticationRequestInterceptor;
 import com.example.orderservice.dto.response.ApiResponse;
+import com.example.orderservice.dto.response.ProductResponse;
 import org.springframework.cloud.openfeign.FeignClient;
 import org.springframework.web.bind.annotation.*;
 
@@ -14,10 +14,10 @@ import java.util.Set;
 public interface ProductServiceClient {
 
     @GetMapping("/id/{id}")
-    ApiResponse<ProductDTO> getProductById(@PathVariable("id") Long id);
+    ApiResponse<ProductResponse> getProductById(@PathVariable("id") Long id);
 
     @PostMapping("/list")
-    ApiResponse<List<ProductDTO>> getProductsByIds(@RequestBody Set<Long> productIds);
+    ApiResponse<List<ProductResponse>> getProductsByIds(@RequestBody Set<Long> productIds);
 
     @PutMapping("/updateQuantity/{id}")
     void updateStockQuantity(@PathVariable Long id, @RequestParam Integer quantity);

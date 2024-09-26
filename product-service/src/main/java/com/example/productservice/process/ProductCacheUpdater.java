@@ -1,6 +1,6 @@
 package com.example.productservice.process;
 
-import com.example.productservice.dto.ProductDTO;
+import com.example.productservice.dto.response.ProductResponse;
 import com.example.productservice.services.ProductService;
 import com.example.productservice.services.RedisCacheService;
 import com.example.productservice.services.impl.BaseRedisServiceImpl;
@@ -34,12 +34,12 @@ public class ProductCacheUpdater {
         for (int i = 1; i <= totalPages; i++) {
             int pageIndex = i;
             executor.submit(() -> {
-                Page<ProductDTO> products = productService.getAllProducts(PageRequest.of(pageIndex -1, pageSize));
+                Page<ProductResponse> products = productService.getAllProducts(PageRequest.of(pageIndex -1, pageSize));
 
                 String key = String.format(GET_ALL_PRODUCTS, pageIndex -1, pageSize);
                 baseRedisService.delete(key);
 
-                for (ProductDTO product : products) {
+                for (ProductResponse product : products) {
                     baseRedisService.rightPush(key, product);
                     baseRedisService.hashSetAll(PRODUCT_ID + product.getProductId(), product);
                 }

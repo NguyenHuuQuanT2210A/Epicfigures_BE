@@ -1,19 +1,17 @@
 package com.example.notificationService.kafka;
 
-import com.example.common.event.CreateEventToForgotPassword;
-import com.example.common.event.CreateEventToNotification;
+import com.example.notificationService.event.CreateEventToForgotPassword;
+import com.example.notificationService.event.CreateEventToNotification;
 import com.example.notificationService.service.NotificationService;
 import lombok.RequiredArgsConstructor;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.kafka.annotation.KafkaListener;
 import org.springframework.stereotype.Service;
 
+@Slf4j
 @Service
 @RequiredArgsConstructor
 public class NotificationConsumer {
-    public static final Logger LOGGER = LoggerFactory.getLogger(NotificationConsumer.class);
-
     private final NotificationService notificationService;
 
     @KafkaListener(
@@ -21,10 +19,10 @@ public class NotificationConsumer {
             groupId = "${spring.kafka.consumer.group-id}"
     )
     public void consume(CreateEventToNotification orderSendMail){
-        LOGGER.info(String.format("Event message recieved -> %s", orderSendMail.toString()));
+        log.info(String.format("Event message recieved -> %s", orderSendMail.toString()));
         try {
             notificationService.sendMailOrder(orderSendMail);
-            LOGGER.info(String.format("Send Email successfully! ", orderSendMail.getEmail()));
+            log.info(String.format("Send Email successfully! ", orderSendMail.getEmail()));
         }catch (Exception e){
             e.printStackTrace();
         }
@@ -35,10 +33,10 @@ public class NotificationConsumer {
             groupId = "forgotPassword"
     )
     public void forgotPassword(CreateEventToForgotPassword forgotPasswordEvent){
-        LOGGER.info(String.format("Event message recieved -> %s", forgotPasswordEvent.toString()));
+        log.info(String.format("Event message recieved -> %s", forgotPasswordEvent.toString()));
         try {
             notificationService.sendMailForgotPassword(forgotPasswordEvent);
-            LOGGER.info(String.format("Send Email successfully! ", forgotPasswordEvent.getEmail()));
+            log.info(String.format("Send Email successfully! ", forgotPasswordEvent.getEmail()));
         }catch (Exception e){
             e.printStackTrace();
         }

@@ -30,9 +30,13 @@ public class SecurityConfig {
             "/api/v1/products/id/**",
             "/api/v1/categories/getAll/**",
             "/api/v1/categories/id/**",
+            "/api/v1/categories/parentCategory/{parentCategoryId}",
+            "/api/v1/categories/parentCategoryIsNull",
             "/api/v1/categories/name/**",
             "/api/v1/product-images/productId/**",
-            "/api/v1/product-images/imagesPost/**"
+            "/api/v1/product-images/imagesPost/**",
+            "/api/v1/product-images/getAll",
+            "/api/v1/product-images/isProductImagesExist",
     };
 
     @Bean

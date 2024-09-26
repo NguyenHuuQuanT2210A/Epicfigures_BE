@@ -1,8 +1,8 @@
 package com.example.productservice.controllers;
 
 import com.example.productservice.dto.FileUploadedDTO;
-import com.example.productservice.dto.ProductImageDTO;
 import com.example.productservice.dto.response.ApiResponse;
+import com.example.productservice.dto.response.ProductImageResponse;
 import com.example.productservice.exception.CustomException;
 import com.example.productservice.services.FileStorageService;
 import com.example.productservice.services.FileUploadService;
@@ -29,8 +29,8 @@ public class ProductImageController {
     private final FileUploadService fileUploadService;
 
     @GetMapping("/productId/{productId}")
-    ApiResponse<List<ProductImageDTO>> getProductImages(@PathVariable Long productId) {
-        return ApiResponse.<List<ProductImageDTO>>builder()
+    ApiResponse<List<ProductImageResponse>> getProductImages(@PathVariable Long productId) {
+        return ApiResponse.<List<ProductImageResponse>>builder()
                 .message("Get all Product Images By Product ID")
                 .data(productImageSevice.getProductImages(productId))
                 .build();
@@ -55,16 +55,16 @@ public class ProductImageController {
             MediaType.APPLICATION_FORM_URLENCODED_VALUE,
             MediaType.APPLICATION_JSON_VALUE},
             produces = MediaType.APPLICATION_JSON_VALUE)
-    ApiResponse<List<ProductImageDTO>> saveProductImage(@RequestParam Long productId, @RequestParam("files") List<MultipartFile> imageFiles){
-        return ApiResponse.<List<ProductImageDTO>>builder()
+    ApiResponse<List<ProductImageResponse>> saveProductImage(@RequestParam Long productId, @RequestParam("files") List<MultipartFile> imageFiles){
+        return ApiResponse.<List<ProductImageResponse>>builder()
                 .message("Create a new Product Image")
                 .data(productImageSevice.saveProductImage(productId, imageFiles))
                 .build();
     }
 
     @PutMapping
-    ApiResponse<List<ProductImageDTO>> updateProductImage(@RequestParam Long productId, @RequestParam List<Long> productImageIds, @RequestParam("files") List<MultipartFile> imageFiles) {
-        return ApiResponse.<List<ProductImageDTO>>builder()
+    ApiResponse<List<ProductImageResponse>> updateProductImage(@RequestParam Long productId, @RequestParam List<Long> productImageIds, @RequestParam("files") List<MultipartFile> imageFiles) {
+        return ApiResponse.<List<ProductImageResponse>>builder()
                 .message("Update Product Image")
                 .data(productImageSevice.updateProductImage(productId, productImageIds, imageFiles))
                 .build();

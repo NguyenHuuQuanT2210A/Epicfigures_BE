@@ -1,8 +1,7 @@
 package com.example.paymentService.controller;
 
-import com.example.common.dto.OrderDTO;
-import com.example.paymentService.dto.ApiResponse;
-import com.example.paymentService.dto.PaymentRequest;
+import com.example.paymentService.dto.response.ApiResponse;
+import com.example.paymentService.dto.request.PaymentRequest;
 import com.example.paymentService.entity.Payment;
 import com.example.paymentService.service.PaymentService;
 import com.example.paymentService.service.PaypalService;
@@ -12,11 +11,9 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
-import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 
 import java.io.UnsupportedEncodingException;
-import java.util.*;
 
 @RestController
 @RequiredArgsConstructor

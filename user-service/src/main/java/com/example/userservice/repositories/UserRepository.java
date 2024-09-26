@@ -1,6 +1,7 @@
 package com.example.userservice.repositories;
 
 import com.example.userservice.dtos.response.Statistics;
+import com.example.userservice.entities.Role;
 import com.example.userservice.entities.User;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
@@ -12,10 +13,13 @@ import org.springframework.stereotype.Repository;
 
 import java.util.List;
 import java.util.Optional;
+import java.util.Set;
 
 @Repository
 public interface UserRepository extends JpaRepository<User, Long>, JpaSpecificationExecutor<User> {
     Page<User> findAll(Pageable pageable);
+
+    Page<User> findAllByRoles(Set<Role> roles, Pageable pageable);
 
 //    @Procedure(procedureName = "find_user_by_username")
     Optional<User> findByUsername(String username);

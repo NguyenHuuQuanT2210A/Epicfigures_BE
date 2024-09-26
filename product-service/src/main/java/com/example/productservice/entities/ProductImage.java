@@ -7,6 +7,9 @@ import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
+import org.hibernate.annotations.CreationTimestamp;
+
+import java.time.LocalDateTime;
 
 @Getter
 @Setter
@@ -26,4 +29,7 @@ public class ProductImage {
 
     @Column(nullable = false)
     private String imageUrl;
+
+    @CreationTimestamp
+    private LocalDateTime createdAt;
 }

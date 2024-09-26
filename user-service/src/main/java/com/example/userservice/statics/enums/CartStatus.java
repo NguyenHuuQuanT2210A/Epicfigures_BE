@@ -6,5 +6,6 @@ public enum CartStatus {
     DISCONTINUED,    // Sản phẩm ngừng kinh doanh
     EXPIRED,         // Giỏ hàng hoặc sản phẩm đã hết hạn
     PRICE_CHANGED,   // Giá của sản phẩm đã thay đổi
-    UNAVAILABLE      // Sản phẩm không khả dụng vì lý do khác
+    UNAVAILABLE,    // Sản phẩm không khả dụng vì lý do khác
+    EXCEEDED_AVAILABLE_STOCK  // Số lượng sản phẩm trong giỏ hàng vượt quá số lượng sản phẩm có sẵn
 }

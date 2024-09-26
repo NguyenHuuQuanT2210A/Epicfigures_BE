@@ -1,23 +1,16 @@
 package com.example.orderservice.entities.seeder;
 
-import com.example.common.dto.ProductDTO;
-import com.example.common.dto.UserDTO;
 import com.example.orderservice.dto.response.ApiResponse;
+import com.example.orderservice.dto.response.ProductResponse;
 import com.example.orderservice.entities.*;
 import com.example.orderservice.repositories.*;
-import com.example.common.enums.ERole;
-import com.example.common.enums.OrderSimpleStatus;
-import com.example.common.enums.ProductSimpleStatus;
-import com.example.orderservice.service.ProductServiceClient;
-import com.example.orderservice.service.ProductServiceClientImpl;
-import com.example.orderservice.service.UserServiceClientImpl;
-import com.example.orderservice.util.StringHelper;
+import com.example.orderservice.enums.OrderSimpleStatus;
+import com.example.orderservice.service.impl.ProductServiceClientImpl;
+import com.example.orderservice.service.impl.UserServiceClientImpl;
 import com.github.javafaker.Faker;
 import org.springframework.boot.CommandLineRunner;
-import org.springframework.stereotype.Component;
 
 import java.math.BigDecimal;
-import java.time.LocalDateTime;
 import java.util.*;
 
 //@Component
@@ -71,7 +64,7 @@ public class OrderSeeder implements CommandLineRunner {
                     continue;
                 }
                 OrderDetail orderDetail = new OrderDetail();
-                ApiResponse<ProductDTO> product = productServiceClient.getProductById((long) productId);
+                ApiResponse<ProductResponse> product = productServiceClient.getProductById((long) productId);
                 orderDetail.setId(new OrderDetailId(order.getId(), product.getData().getProductId()));
                 int quantity = faker.number().numberBetween(1, 5);
                 orderDetail.setOrder(order);

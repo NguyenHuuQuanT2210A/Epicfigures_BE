@@ -1,7 +1,7 @@
 package com.example.paymentService.config;
 
-import com.example.common.event.CreateEventToNotification;
-import com.example.common.event.RequestUpdateStatusOrder;
+import com.example.paymentService.event.CreateEventToNotification;
+import com.example.paymentService.event.RequestUpdateStatusOrder;
 import com.example.paymentService.event.PaymentCreatedEvent;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;

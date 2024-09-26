@@ -1,6 +1,6 @@
 package com.example.inventoryservice.exception;
 
-import com.example.inventoryservice.dto.ApiResponse;
+import com.example.inventoryservice.dto.response.ApiResponse;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.HttpStatusCode;

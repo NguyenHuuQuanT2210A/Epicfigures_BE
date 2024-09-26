@@ -1,7 +1,8 @@
 package com.example.productservice.controllers;
 
-import com.example.productservice.dto.CategoryDTO;
+import com.example.productservice.dto.request.CategoryRequest;
 import com.example.productservice.dto.response.ApiResponse;
+import com.example.productservice.dto.response.CategoryResponse;
 import com.example.productservice.exception.CategoryNotFoundException;
 import com.example.productservice.services.CategoryService;
 import jakarta.validation.Valid;
@@ -25,9 +26,9 @@ public class CategoryController {
     private final CategoryService categoryService;
 
     @GetMapping("/getAll")
-    ApiResponse<Page<CategoryDTO>> getAllCategory(@RequestParam(defaultValue = "1", name = "page") int page, @RequestParam(defaultValue = "10", name = "limit") int limit) {
-        Page<CategoryDTO> categoryDTOS = categoryService.getAllCategory(PageRequest.of(page - 1, limit));
-        return ApiResponse.<Page<CategoryDTO>>builder()
+    ApiResponse<Page<CategoryResponse>> getAllCategory(@RequestParam(defaultValue = "1", name = "page") int page, @RequestParam(defaultValue = "10", name = "limit") int limit) {
+        Page<CategoryResponse> categoryDTOS = categoryService.getAllCategory(PageRequest.of(page - 1, limit));
+        return ApiResponse.<Page<CategoryResponse>>builder()
                 .message("Get all Category")
                 .data(categoryDTOS)
                 .build();
@@ -42,32 +43,48 @@ public class CategoryController {
     }
 
     @GetMapping("/id/{id}")
-    ApiResponse<CategoryDTO> getCategoryById(@PathVariable Long id) {
-        CategoryDTO category = categoryService.getCategoryById(id);
+    ApiResponse<CategoryResponse> getCategoryById(@PathVariable Long id) {
+        CategoryResponse category = categoryService.getCategoryById(id);
         if (category == null) {
             throw new CategoryNotFoundException("Category not found with id: " + id);
         }
-        return ApiResponse.<CategoryDTO>builder()
+        return ApiResponse.<CategoryResponse>builder()
                 .message("Get Category By Id")
                 .data(category)
                 .build();
     }
 
     @GetMapping("/name/{name}")
-    ApiResponse<List<CategoryDTO>> getCategoryByName(@PathVariable String name) {
-        List<CategoryDTO> category = categoryService.getCategoryByName(name);
+    ApiResponse<List<CategoryResponse>> getCategoryByName(@PathVariable String name) {
+        List<CategoryResponse> category = categoryService.getCategoryByName(name);
         if (category == null) {
             throw new CategoryNotFoundException("Category not found with name: " + name);
         }
-        return ApiResponse.<List<CategoryDTO>>builder()
+        return ApiResponse.<List<CategoryResponse>>builder()
                 .message("Get Category By Name")
                 .data(category)
                 .build();
     }
 
+    @GetMapping("/parentCategory/{parentCategoryId}")
+    ApiResponse<List<CategoryResponse>> getCategoryByParentCategoryId(@PathVariable Long parentCategoryId) {
+        return ApiResponse.<List<CategoryResponse>>builder()
+                .message("Get Category By Parent Category Id")
+                .data(categoryService.getCategoryByParentCategoryId(parentCategoryId))
+                .build();
+    }
+
+    @GetMapping("/parentCategoryIsNull")
+    ApiResponse<List<CategoryResponse>> getCategoryByParentCategoryIsNull() {
+        return ApiResponse.<List<CategoryResponse>>builder()
+                .message("Get Category By Parent Category IS Null")
+                .data(categoryService.getCategoriesByParentCategoryIsNull())
+                .build();
+    }
+
     @PostMapping
     @PreAuthorize("hasAnyRole('ROLE_ADMIN')")
-    ResponseEntity<?> addCategory(@Valid @RequestBody CategoryDTO categoryDTO, BindingResult result) {
+    ResponseEntity<?> addCategory(@Valid @RequestBody CategoryRequest request, BindingResult result) {
         if (result.hasErrors()) {
             Map<String, String> errors = result.getFieldErrors().stream()
                     .collect(Collectors.toMap(fieldError -> fieldError.getField(), fieldError -> fieldError.getDefaultMessage()));
@@ -79,12 +96,12 @@ public class CategoryController {
         return ResponseEntity.ok(ApiResponse.builder()
                 .code(HttpStatus.CREATED.value())
                 .message("Created Category Successfully")
-                .data(categoryService.addCategory(categoryDTO))
+                .data(categoryService.addCategory(request))
                 .build());
     }
 
     @PutMapping("/{id}")
-    ResponseEntity<?> updateCategory(@PathVariable Long id, @Valid @RequestBody CategoryDTO categoryDTO, BindingResult result) {
+    ResponseEntity<?> updateCategory(@PathVariable Long id, @Valid @RequestBody CategoryRequest request, BindingResult result) {
         if (result.hasErrors()) {
             Map<String, String> errors = result.getFieldErrors().stream()
                     .collect(Collectors.toMap(fieldError -> fieldError.getField(), fieldError -> fieldError.getDefaultMessage()));
@@ -93,7 +110,7 @@ public class CategoryController {
                     .data(ResponseEntity.status(HttpStatus.BAD_REQUEST).body(errors))
                     .build());
         }
-        categoryService.updateCategory(id, categoryDTO);
+        categoryService.updateCategory(id, request);
         return ResponseEntity.ok(ApiResponse.builder()
                 .message("Update Category Successfully")
                 .build());

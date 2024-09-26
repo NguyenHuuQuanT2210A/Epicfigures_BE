@@ -1,8 +1,8 @@
 package com.example.inventoryservice.controllers;
 
-import com.example.inventoryservice.dto.ApiResponse;
-import com.example.inventoryservice.dto.InventoryRequest;
-import com.example.inventoryservice.dto.InventoryResponse;
+import com.example.inventoryservice.dto.response.ApiResponse;
+import com.example.inventoryservice.dto.request.InventoryRequest;
+import com.example.inventoryservice.dto.response.InventoryResponse;
 import com.example.inventoryservice.services.InventoryService;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;

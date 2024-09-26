@@ -1,12 +1,11 @@
 package com.example.inventoryservice.mapper;
 
-import com.example.inventoryservice.dto.InventoryRequest;
-import com.example.inventoryservice.dto.InventoryResponse;
+import com.example.inventoryservice.dto.request.InventoryRequest;
+import com.example.inventoryservice.dto.response.InventoryResponse;
 import com.example.inventoryservice.entities.Inventory;
 import org.mapstruct.Mapper;
 import org.mapstruct.Mapping;
 import org.mapstruct.MappingTarget;
-import org.mapstruct.factory.Mappers;
 
 @Mapper(componentModel = "spring")
 public interface InventoryMapper {

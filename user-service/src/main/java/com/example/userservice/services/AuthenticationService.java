@@ -74,6 +74,7 @@ public class AuthenticationService {
                     .id(userDetails.getId())
                     .username(userDetails.getUsername())
                     .email(userDetails.getEmail())
+                    .phoneNumber(userDetails.getPhoneNumber())
                     .roles(roles)
                     .build();
     }

@@ -1,6 +1,6 @@
 package com.example.orderservice.specification;
 
-import com.example.common.enums.OrderSimpleStatus;
+import com.example.orderservice.enums.OrderSimpleStatus;
 import jakarta.persistence.EnumType;
 import jakarta.persistence.Enumerated;
 import lombok.AllArgsConstructor;

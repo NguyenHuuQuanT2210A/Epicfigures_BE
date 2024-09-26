@@ -1,9 +1,9 @@
 package com.example.orderservice.controller;
 
-import com.example.orderservice.dto.OrderDetailDTO;
 import com.example.orderservice.dto.response.ApiResponse;
+import com.example.orderservice.dto.response.OrderDetailResponse;
 import com.example.orderservice.entities.OrderDetailId;
-import com.example.orderservice.service.OrderDetailService;
+import com.example.orderservice.service.impl.OrderDetailService;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -21,9 +21,9 @@ public class OrderDetailController {
     private final OrderDetailService orderDetailService;
 
     @GetMapping("/orderAndProduct")
-    public ApiResponse<OrderDetailDTO> getOrderDetailByOrderIdAndProductId(@RequestBody OrderDetailId orderDetailId) {
-        OrderDetailDTO orderDetailDTO = orderDetailService.findOrderDetailById(orderDetailId);
-        return ApiResponse.<OrderDetailDTO>builder()
+    public ApiResponse<OrderDetailResponse> getOrderDetailByOrderIdAndProductId(@RequestBody OrderDetailId orderDetailId) {
+        OrderDetailResponse orderDetailDTO = orderDetailService.findOrderDetailById(orderDetailId);
+        return ApiResponse.<OrderDetailResponse>builder()
                 .message("Get Order Detail by OrderId And ProductId")
                 .data(orderDetailDTO)
                 .build();
@@ -31,7 +31,7 @@ public class OrderDetailController {
 
     @GetMapping("/isOrderDetailExist")
     public ResponseEntity<Boolean> isOrderDetailExist(@RequestBody OrderDetailId orderDetailId) {
-        OrderDetailDTO orderDetailDTO = orderDetailService.findOrderDetailById(orderDetailId);
+        OrderDetailResponse orderDetailDTO = orderDetailService.findOrderDetailById(orderDetailId);
         if (orderDetailDTO == null) {
             return ResponseEntity.ok(false);
         }else {
@@ -40,18 +40,18 @@ public class OrderDetailController {
     }
 
     @GetMapping("/order/{orderId}")
-    public ApiResponse<List<OrderDetailDTO>> getOrderDetailsByOrderId(@PathVariable String orderId) {
-        List<OrderDetailDTO> orderDetailDTOs = orderDetailService.findOrderDetailByOrderId(orderId);
-        return ApiResponse.<List<OrderDetailDTO>>builder()
+    public ApiResponse<List<OrderDetailResponse>> getOrderDetailsByOrderId(@PathVariable String orderId) {
+        List<OrderDetailResponse> orderDetailDTOs = orderDetailService.findOrderDetailByOrderId(orderId);
+        return ApiResponse.<List<OrderDetailResponse>>builder()
                 .message("Get Order Detail by OrderId")
                 .data(orderDetailDTOs)
                 .build();
     }
 
     @PutMapping("/updateQuantity")
-    public ApiResponse<OrderDetailDTO> updateQuantity(@RequestBody OrderDetailId orderDetailId, @RequestParam Integer quantity) {
-        OrderDetailDTO orderDetailDTO = orderDetailService.updateQuantity(orderDetailId, quantity);
-        return ApiResponse.<OrderDetailDTO>builder()
+    public ApiResponse<OrderDetailResponse> updateQuantity(@RequestBody OrderDetailId orderDetailId, @RequestParam Integer quantity) {
+        OrderDetailResponse orderDetailDTO = orderDetailService.updateQuantity(orderDetailId, quantity);
+        return ApiResponse.<OrderDetailResponse>builder()
                 .message("Update quantity of Order Detail")
                 .data(orderDetailDTO)
                 .build();
