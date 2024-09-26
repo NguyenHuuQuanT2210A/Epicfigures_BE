@@ -4,10 +4,11 @@ import lombok.*;
 
 import java.math.BigDecimal;
 
+@Getter
+@Setter
+@Builder
 @NoArgsConstructor
 @AllArgsConstructor
-@Data
-@Builder
 public class CartItemRequest {
     private Long productId;
     private Long userId; // to find shopping cart

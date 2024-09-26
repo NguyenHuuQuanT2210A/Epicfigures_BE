@@ -4,7 +4,8 @@ import com.example.common.enums.ERole;
 import jakarta.persistence.*;
 import lombok.*;
 
-@Data
+@Getter
+@Setter
 @ToString
 @Builder
 @NoArgsConstructor

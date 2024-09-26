@@ -2,7 +2,8 @@ package com.example.common.event;
 
 import lombok.*;
 
-@Data
+@Getter
+@Setter
 @NoArgsConstructor
 @AllArgsConstructor
 public class CreateEventToForgotPassword {

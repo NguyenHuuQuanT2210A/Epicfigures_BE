@@ -3,13 +3,12 @@ package com.example.paymentService.dto.response;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
-import lombok.AllArgsConstructor;
-import lombok.Data;
-import lombok.NoArgsConstructor;
+import lombok.*;
 
-@Data
-@AllArgsConstructor
+@Getter
+@Setter
 @NoArgsConstructor
+@AllArgsConstructor
 public class ProductImageResponse {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)

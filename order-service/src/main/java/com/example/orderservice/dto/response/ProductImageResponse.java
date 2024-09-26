@@ -1,12 +1,11 @@
 package com.example.orderservice.dto.response;
 
-import lombok.AllArgsConstructor;
-import lombok.Data;
-import lombok.NoArgsConstructor;
+import lombok.*;
 
-@Data
-@AllArgsConstructor
+@Getter
+@Setter
 @NoArgsConstructor
+@AllArgsConstructor
 public class ProductImageResponse {
     private Long imageId;
     private String imageUrl;

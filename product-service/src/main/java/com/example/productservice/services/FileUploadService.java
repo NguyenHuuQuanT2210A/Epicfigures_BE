@@ -5,6 +5,7 @@ import com.cloudinary.utils.ObjectUtils;
 import com.example.productservice.dto.FileUploadedDTO;
 import lombok.AllArgsConstructor;
 import lombok.extern.log4j.Log4j2;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
 
@@ -15,7 +16,7 @@ import java.util.Map;
 
 @Service
 @AllArgsConstructor
-@Log4j2
+@Slf4j
 public class FileUploadService {
     private final Cloudinary cloudinary;
 

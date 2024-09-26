@@ -5,8 +5,8 @@ import jakarta.persistence.EnumType;
 import jakarta.persistence.Enumerated;
 import lombok.*;
 
-@Data
-@ToString
+@Getter
+@Setter
 @Builder
 @NoArgsConstructor
 @AllArgsConstructor

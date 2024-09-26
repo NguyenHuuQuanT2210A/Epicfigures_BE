@@ -1,14 +1,13 @@
 package com.example.paymentService.dto.response;
 
-import lombok.AllArgsConstructor;
-import lombok.Data;
-import lombok.NoArgsConstructor;
+import lombok.*;
 
 import java.math.BigDecimal;
 
-@Data
-@AllArgsConstructor
+@Getter
+@Setter
 @NoArgsConstructor
+@AllArgsConstructor
 public class OrderDetailResponse {
     private OrderDetailId id = new OrderDetailId();
     private Integer quantity;
