@@ -2,6 +2,7 @@ package com.example.userservice.securities.jwt;
 
 import com.example.userservice.exceptions.CustomException;
 import com.example.userservice.securities.services.UserDetailsImpl;
+import com.example.userservice.statics.enums.Platform;
 import com.example.userservice.statics.enums.TokenType;
 import io.jsonwebtoken.*;
 import io.jsonwebtoken.io.Decoders;
@@ -50,24 +51,28 @@ public class JwtUtils {
         };
     }
 
-    public String generateAccessToken(UserDetailsImpl userDetails) {
+    public String generateAccessToken(UserDetailsImpl userDetails, String platform, String version) {
         return Jwts.builder()
                 .setSubject((userDetails.getUsername()))
                 .claim("roles", userDetails.getAuthorities().stream()
                         .map(GrantedAuthority::getAuthority)
                         .collect(Collectors.joining(",")))
+                .claim("platform", platform)
+                .claim("version", version)
                 .setIssuedAt(new Date())
                 .setExpiration(new Date(System.currentTimeMillis() + 86400000))
                 .signWith(getKey(ACCESS_TOKEN), SignatureAlgorithm.HS256)
                 .compact();
     }
 
-    public String generateRefreshToken(UserDetailsImpl userDetails) {
+    public String generateRefreshToken(UserDetailsImpl userDetails, String platform, String version) {
         return Jwts.builder()
                 .setSubject((userDetails.getUsername()))
                 .claim("roles", userDetails.getAuthorities().stream()
                         .map(GrantedAuthority::getAuthority)
                         .collect(Collectors.joining(",")))
+                .claim("platform", platform)
+                .claim("version", version)
                 .setIssuedAt(new Date())
                 .setExpiration(new Date(System.currentTimeMillis() + 86400000 * 7))
                 .signWith(getKey(REFRESH_TOKEN), SignatureAlgorithm.HS256)
@@ -108,6 +113,14 @@ public class JwtUtils {
 
     public String getUserNameFromJwtToken(String token, TokenType type) {
         return extractClaim(token, type, Claims::getSubject);
+    }
+
+    public String getPlatform(String token, TokenType type) {
+        return extractClaim(token, type, claims -> claims.get("platform", String.class));
+    }
+
+    public String getVersion(String token, TokenType type) {
+        return extractClaim(token, type, claims -> claims.get("version", String.class));
     }
 
     private <T> T extractClaim(String token, TokenType type, Function<Claims, T> claimsResolver){

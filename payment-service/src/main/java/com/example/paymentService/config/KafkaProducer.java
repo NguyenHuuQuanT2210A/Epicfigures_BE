@@ -1,8 +1,8 @@
 package com.example.paymentService.config;
 
+
 import com.example.paymentService.event.CreateEventToNotification;
 import com.example.paymentService.event.RequestUpdateStatusOrder;
-import com.example.paymentService.event.PaymentCreatedEvent;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;

@@ -1,7 +1,7 @@
 package com.example.userservice.services;
 
-import com.example.userservice.dtos.request.CreateEventToForgotPassword;
 import com.example.userservice.configs.KafkaProducer;
+import com.example.userservice.dtos.request.CreateEventToForgotPassword;
 import com.example.userservice.dtos.request.ResetPasswordDto;
 import com.example.userservice.entities.Role;
 import com.example.userservice.entities.User;
@@ -61,8 +61,8 @@ public class AuthenticationService {
 
             UserDetailsImpl userDetails = (UserDetailsImpl) authentication.getPrincipal();
 
-            String accessToken = jwtUtils.generateAccessToken(userDetails);
-            String refreshToken = jwtUtils.generateRefreshToken(userDetails);
+            String accessToken = jwtUtils.generateAccessToken(userDetails, loginRequest.getPlatform().toString(), loginRequest.getVersion());
+            String refreshToken = jwtUtils.generateRefreshToken(userDetails, loginRequest.getPlatform().toString(), loginRequest.getVersion());
 
             List<String> roles = userDetails.getAuthorities().stream()
                     .map(GrantedAuthority::getAuthority)
@@ -75,6 +75,8 @@ public class AuthenticationService {
                     .username(userDetails.getUsername())
                     .email(userDetails.getEmail())
                     .phoneNumber(userDetails.getPhoneNumber())
+                    .platform(loginRequest.getPlatform())
+                    .version(loginRequest.getVersion())
                     .roles(roles)
                     .build();
     }
@@ -113,7 +115,8 @@ public class AuthenticationService {
 
         var userDetail = UserDetailsImpl.build(getUser(token, REFRESH_TOKEN));
 
-        String accessToken = jwtUtils.generateAccessToken(userDetail);
+
+        String accessToken = jwtUtils.generateAccessToken(userDetail, jwtUtils.getPlatform(token, REFRESH_TOKEN), jwtUtils.getVersion(token, REFRESH_TOKEN));
 
         return JwtResponse.builder()
                 .accessToken(accessToken)

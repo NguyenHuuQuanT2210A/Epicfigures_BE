@@ -6,6 +6,7 @@ import com.example.orderservice.enums.OrderSimpleStatus;
 import com.example.orderservice.dto.request.OrderRequest;
 import com.example.orderservice.dto.response.CountOrderByStatus;
 import com.example.orderservice.specification.SearchBody;
+import jakarta.servlet.http.HttpServletRequest;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 
@@ -15,7 +16,7 @@ public interface OrderService {
     Page<OrderResponse> getAll(Pageable pageable);
     Page<OrderResponse> findAllAndSorting(SearchBody searchBody);
     OrderResponse findById(String id);
-    String createOrder(OrderRequest request);
+    String createOrder(OrderRequest request, HttpServletRequest httpServletRequest);
     Object updateOrder(OrderRequest request);
     Object deleteOrder(String id);
     Page<OrderResponse> findByUserId(Long userId, SearchBody searchBody);

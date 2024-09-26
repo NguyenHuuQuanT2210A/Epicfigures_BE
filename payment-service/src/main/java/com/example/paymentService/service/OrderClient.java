@@ -2,6 +2,7 @@ package com.example.paymentService.service;
 
 import com.example.paymentService.config.AuthenticationRequestInterceptor;
 import com.example.paymentService.dto.response.ApiResponse;
+import com.example.paymentService.dto.response.OrderResponse;
 import org.springframework.cloud.openfeign.FeignClient;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
@@ -10,5 +11,5 @@ import org.springframework.web.bind.annotation.PathVariable;
         configuration = { AuthenticationRequestInterceptor.class })
 public interface OrderClient {
     @GetMapping("/{id}")
-    ApiResponse<?> getOrderById(@PathVariable String id);
+    ApiResponse<OrderResponse> getOrderById(@PathVariable String id);
 }

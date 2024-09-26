@@ -1,5 +1,6 @@
 package com.example.userservice.models.response;
 
+import com.example.userservice.statics.enums.Platform;
 import lombok.*;
 
 import java.util.List;
@@ -18,5 +19,7 @@ public class JwtResponse {
     private String username;
     private String email;
     private String phoneNumber;
+    private Platform platform;
+    private String version;
     private List<String> roles;
 }

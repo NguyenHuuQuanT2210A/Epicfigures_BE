@@ -26,6 +26,8 @@ public class Order extends BaseEntity {
     private String id;
     private Long userId;
 
+    private Long addressOrderId;
+
     private String firstName;
     private String lastName;
     private String email;

@@ -1,8 +1,8 @@
 package com.example.notificationService.kafka;
 
-import com.example.notificationService.event.CreateEventToForgotPassword;
-import com.example.notificationService.event.CreateEventToNotification;
 import com.example.notificationService.service.NotificationService;
+import com.example.paymentService.event.CreateEventToNotification;
+import com.example.userservice.dtos.request.CreateEventToForgotPassword;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.kafka.annotation.KafkaListener;

@@ -1,5 +1,6 @@
 package com.example.orderservice.security;
 
+import com.example.orderservice.enums.Platform;
 import io.jsonwebtoken.Claims;
 import io.jsonwebtoken.Jwts;
 import io.jsonwebtoken.io.Decoders;
@@ -26,5 +27,12 @@ public class JwtTokenUtil {
     }
     public Claims getAllClaimsFromToken(String token) {
         return Jwts.parser().setSigningKey(getSecretKey()).parseClaimsJws(token).getBody();
+    }
+    public String getPlatform(String token) {
+        return Jwts.parser().setSigningKey(getSecretKey()).parseClaimsJws(token).getBody().get("platform", String.class);
+    }
+
+    public String getVersion(String token) {
+        return Jwts.parser().setSigningKey(getSecretKey()).parseClaimsJws(token).getBody().get("version", String.class);
     }
 }

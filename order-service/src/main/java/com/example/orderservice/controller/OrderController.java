@@ -7,6 +7,7 @@ import com.example.orderservice.dto.response.CountOrderByStatus;
 import com.example.orderservice.service.OrderService;
 import com.example.orderservice.specification.SearchBody;
 import io.swagger.v3.oas.annotations.tags.Tag;
+import jakarta.servlet.http.HttpServletRequest;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Sort;
@@ -93,10 +94,10 @@ public class OrderController {
     }
 
     @PostMapping()
-    public ApiResponse<?> createOrder(@RequestBody OrderRequest request) {
+    public ApiResponse<?> createOrder(@RequestBody OrderRequest request, HttpServletRequest httpServletRequest) {
         return ApiResponse.builder()
                 .message("Create Order")
-                .data(orderService.createOrder(request))
+                .data(orderService.createOrder(request, httpServletRequest))
                 .build();
     }
 

@@ -3,11 +3,11 @@ package com.example.notificationService.service;
 import com.example.notificationService.dto.response.ApiResponse;
 import com.example.notificationService.dto.response.UserResponse;
 import com.example.notificationService.enums.OrderSimpleStatus;
-import com.example.notificationService.event.CreateEventToForgotPassword;
-import com.example.notificationService.event.CreateEventToNotification;
-import com.example.notificationService.event.RequestUpdateStatusOrder;
 import com.example.notificationService.email.EmailService;
 
+import com.example.paymentService.event.CreateEventToNotification;
+import com.example.paymentService.event.RequestUpdateStatusOrder;
+import com.example.userservice.dtos.request.CreateEventToForgotPassword;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;

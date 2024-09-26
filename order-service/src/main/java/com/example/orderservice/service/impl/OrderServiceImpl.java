@@ -5,6 +5,7 @@ import com.example.orderservice.dto.response.*;
 import com.example.orderservice.enums.OrderSimpleStatus;
 import com.example.orderservice.entities.Order;
 import com.example.orderservice.entities.OrderDetailId;
+import com.example.orderservice.enums.Platform;
 import com.example.orderservice.exception.CustomException;
 import com.example.orderservice.helper.LocalDatetimeConverter;
 import com.example.orderservice.mapper.FeedbackMapper;
@@ -13,11 +14,13 @@ import com.example.orderservice.mapper.OrderMapper;
 import com.example.orderservice.repositories.FeedbackRepository;
 import com.example.orderservice.repositories.OrderRepository;
 import com.example.orderservice.repositories.specification.SpecSearchCriteria;
+import com.example.orderservice.security.JwtTokenUtil;
 import com.example.orderservice.service.*;
 import com.example.orderservice.specification.OrderSpecification;
 import com.example.orderservice.specification.SearchBody;
 import com.example.orderservice.specification.SearchCriteria;
 import com.example.orderservice.specification.SearchCriteriaOperator;
+import jakarta.servlet.http.HttpServletRequest;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
@@ -54,6 +57,8 @@ public class OrderServiceImpl implements OrderService {
     private final PaymentClient paymentClient;
     private final CartClient cartClient;
     private final CartRedisClient cartRedisClient;
+    private final JwtTokenUtil jwtTokenUtil;
+    private final AddressOrderClient addressOrderClient;
 
     Specification<jakarta.persistence.criteria.Order> specification = Specification.where(null);
 
@@ -141,17 +146,28 @@ public class OrderServiceImpl implements OrderService {
         return orderResponse;
     }
 
-    public String createOrder(OrderRequest request){
+    public String createOrder(OrderRequest request, HttpServletRequest httpServletRequest){
+        String token = httpServletRequest.getHeader("Authorization").substring(7);
         try {
             Order newOrder;
+            newOrder = orderMapper.toOrder(request);
             String paymentResponse;
 
             ApiResponse<UserResponse> user = userService.getUserById(request.getUserId());
             if (user.getData() == null) {
                 throw new CustomException("User not found", HttpStatus.BAD_REQUEST);
             }
+            if (jwtTokenUtil.getPlatform(token).equals(Platform.MOBILE.name())){
+                if (addressOrderClient.getAddressOrderById(request.getAddressOrderId()) == null) {
+                    throw new CustomException("Address not found", HttpStatus.BAD_REQUEST);
+                }else {
+                    newOrder.setAddressOrderId(request.getAddressOrderId());
+                }
+            }else if (jwtTokenUtil.getPlatform(token).equals(Platform.WEB.name())){
+                newOrder.setAddressOrderId(null);
+            }
+
             try {
-                newOrder = orderMapper.toOrder(request);
                 newOrder.setTotalPrice(request.getTotalPrice());
                 newOrder.setStatus(OrderSimpleStatus.CREATED);
                 newOrder.setPaymentMethod(request.getPaymentMethod().toUpperCase());

@@ -15,6 +15,7 @@ import java.util.Set;
 public class OrderRequest {
     private String id;
     private Long userId;
+    private Long addressOrderId;
     private BigDecimal totalPrice;
     private String firstName;
     private String lastName;
