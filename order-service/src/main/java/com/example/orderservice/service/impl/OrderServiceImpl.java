@@ -326,10 +326,8 @@ public class OrderServiceImpl implements OrderService {
             throw new CustomException("Cannot change status " + order.getStatus(), HttpStatus.BAD_REQUEST);
         }
 
-        if (status == OrderSimpleStatus.CANCEL &&
-                (order.getStatus() == OrderSimpleStatus.CREATED ||
-                        order.getStatus() == OrderSimpleStatus.PENDING ||
-                        order.getStatus() == OrderSimpleStatus.PROCESSING)) {
+        if (order.getStatus() == OrderSimpleStatus.CREATED &&
+                (status == OrderSimpleStatus.PENDING)) {
             order.setStatus(status);
         } else if (order.getStatus().ordinal() + 1 != status.ordinal()) {
             throw new CustomException("Cannot change status from " + order.getStatus() + " to " + status, HttpStatus.BAD_REQUEST);

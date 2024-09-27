@@ -38,7 +38,7 @@ public class NotificationService {
             orderClient.changeStatus(requestUpdateStatusOrder.getOrderId(), OrderSimpleStatus.PENDING);
             log.info("Order status is pending");
         }else {
-            orderClient.changeStatus(requestUpdateStatusOrder.getOrderId(), OrderSimpleStatus.CANCEL);
+            orderClient.changeStatus(requestUpdateStatusOrder.getOrderId(), OrderSimpleStatus.PAYMENT_FAILED);
             log.info("Order status is cancel");
         }
     }
