@@ -1,8 +1,10 @@
 package com.example.paymentService.controller;
 
+import com.example.paymentService.dto.request.PaypalExecute;
 import com.example.paymentService.dto.response.ApiResponse;
 import com.example.paymentService.dto.request.PaymentRequest;
 import com.example.paymentService.entity.Payment;
+import com.example.paymentService.enums.PaymentType;
 import com.example.paymentService.service.PaymentService;
 import com.example.paymentService.service.PaypalService;
 import com.paypal.base.rest.PayPalRESTException;
@@ -22,24 +24,12 @@ public class PaymentController {
     private final PaymentService paymentService;
     private final PaypalService paypalService;
 
+//    public static final String BASE_URL = "http://localhost:3000/thankyou";
+
     @PostMapping("/create_payment")
     String creatPayment(@RequestBody PaymentRequest request) throws UnsupportedEncodingException, PayPalRESTException {
-        String baseUrl = "http://localhost:3000/thankyou";
-
-        String url = "";
-        if (request.getPaymentMethod().equalsIgnoreCase("VNPAY")){
-            url = paymentService.creatPayment( baseUrl, request.getOrderId(), request.getPaymentMethod());
-            paymentService.savePayment(request.getOrderId());
-        }else if(request.getPaymentMethod().equalsIgnoreCase("PAYPAL")){
-            url = paymentService.creatPayment( baseUrl, request.getOrderId(), request.getPaymentMethod());
-            paymentService.savePayment(request.getOrderId());
-        }if (request.getPaymentMethod().equalsIgnoreCase("COD")){
-            paymentService.savePayment(request.getOrderId());
-            paymentService.updateStatusPayment(true, request.getOrderId());
-            paymentService.UpdateStatusOrder(true, request.getOrderId());
-            url = "http://localhost:3000/thankyou";
-        }
-        return url;
+        String url = "http://localhost:3000/thankyou";
+        return paymentService.creatPayment(request, url);
     }
 
     @GetMapping("/vnPayReturn/{orderId}")
@@ -51,13 +41,13 @@ public class PaymentController {
             if ("00".equals(responseCode)) {
                 // Giao dịch thành công
                 paymentService.updateStatusPayment(true, orderId);
-                paymentService.UpdateStatusOrder(true, orderId);
+                paymentService.updateStatusOrder(true, orderId);
 
                 return ResponseEntity.ok("Payment Successfully!");
             } else {
                 // Giao dịch không thành công
                 paymentService.updateStatusPayment(false,orderId);
-                paymentService.UpdateStatusOrder(false,orderId);
+                paymentService.updateStatusOrder(false,orderId);
                 return ResponseEntity.status(HttpStatus.BAD_REQUEST).body("Payment Failed!");
             }
     }
@@ -95,21 +85,22 @@ public class PaymentController {
     }
 
     @GetMapping("/executePaypal")
-    public ResponseEntity<String> executePayment(@RequestParam("paymentId") String paymentId, @RequestParam("PayerID") String payerId, @RequestParam("orderId") String orderId) {
+    public ResponseEntity<String> executePaymentPaypal(@RequestBody PaypalExecute paypalExecute) {
         try {
-            var payment = paypalService.executePayment(paymentId, payerId);
-            if (payment.getState().equals("approved")) {
-                paymentService.updateStatusPayment(true, orderId);
-                paymentService.UpdateStatusOrder(true, orderId);
+            var payment = paypalService.executePayment(paypalExecute.getPaymentId(), paypalExecute.getPayerId());
+            if (paypalExecute.getIsSuccess().equals("true") && payment.getState().equals("approved")) {
+                paymentService.updateStatusPayment(true, paypalExecute.getOrderId());
+                paymentService.updateStatusOrder(true, paypalExecute.getOrderId());
                 return ResponseEntity.ok("Payment Successfully!");
-            }else {
-                paymentService.updateStatusPayment(false,orderId);
-                paymentService.UpdateStatusOrder(false,orderId);
+            } else {
+                paymentService.updateStatusPayment(false, paypalExecute.getOrderId());
+                paymentService.updateStatusOrder(false, paypalExecute.getOrderId());
                 return ResponseEntity.status(HttpStatus.BAD_REQUEST).body("Payment Failed!");
             }
+
         } catch (Exception e) {
             e.printStackTrace();
-            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body("Payment Faileddd!");
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(e.toString());
         }
     }
 }

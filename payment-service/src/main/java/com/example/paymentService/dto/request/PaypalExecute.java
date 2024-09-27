@@ -1,6 +1,5 @@
 package com.example.paymentService.dto.request;
 
-import com.example.paymentService.enums.PaymentType;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
@@ -8,9 +7,9 @@ import lombok.NoArgsConstructor;
 @Getter
 @NoArgsConstructor
 @AllArgsConstructor
-public class PaymentRequest {
+public class PaypalExecute {
+    private String paymentId;
+    private String payerId;
     private String orderId;
-    private String paymentMethod;
-    private PaymentType paymentType;
-//    private String baseUrl;
+    private String isSuccess;
 }

@@ -5,6 +5,7 @@ import com.example.orderservice.dto.response.*;
 import com.example.orderservice.enums.OrderSimpleStatus;
 import com.example.orderservice.entities.Order;
 import com.example.orderservice.entities.OrderDetailId;
+import com.example.orderservice.enums.PaymentType;
 import com.example.orderservice.enums.Platform;
 import com.example.orderservice.exception.CustomException;
 import com.example.orderservice.helper.LocalDatetimeConverter;
@@ -205,7 +206,7 @@ public class OrderServiceImpl implements OrderService {
                 throw new CustomException("Error while creating order", HttpStatus.BAD_REQUEST);
             }
 
-            paymentResponse = paymentClient.creatPayment(new PaymentRequest(newOrder.getId(), request.getPaymentMethod()));
+            paymentResponse = paymentClient.creatPayment(new PaymentRequest(newOrder.getId(), request.getPaymentMethod(), PaymentType.PAYMENT));
 
             return paymentResponse;
         } catch (Exception e) {
@@ -326,8 +327,11 @@ public class OrderServiceImpl implements OrderService {
             throw new CustomException("Cannot change status " + order.getStatus(), HttpStatus.BAD_REQUEST);
         }
 
-        if (order.getStatus() == OrderSimpleStatus.CREATED &&
-                (status == OrderSimpleStatus.PENDING)) {
+        if (order.getStatus() == OrderSimpleStatus.CREATED && status == OrderSimpleStatus.PENDING) {
+            order.setStatus(status);
+        } else if ((order.getStatus() == OrderSimpleStatus.PAYMENT_FAILED
+                || order.getStatus() == OrderSimpleStatus.PENDING)
+                && status == OrderSimpleStatus.CANCEL) {
             order.setStatus(status);
         } else if (order.getStatus().ordinal() + 1 != status.ordinal()) {
             throw new CustomException("Cannot change status from " + order.getStatus() + " to " + status, HttpStatus.BAD_REQUEST);
@@ -344,6 +348,13 @@ public class OrderServiceImpl implements OrderService {
         }
         orderRepository.save(order);
         return orderMapper.toOrderResponse(order);
+    }
+
+    @Override
+    public OrderResponse changePaymentMethod(String id, String paymentMethod) {
+        var order = findOrderById(id);
+        order.setPaymentMethod(paymentMethod);
+        return orderMapper.toOrderResponse(orderRepository.save(order));
     }
 
     @Override

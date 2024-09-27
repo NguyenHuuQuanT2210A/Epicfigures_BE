@@ -117,6 +117,14 @@ public class OrderController {
                 .build();
     }
 
+    @PutMapping("/changePaymentMethod/{id}")
+    public ApiResponse<?> changePaymentMethod(@PathVariable String id, @RequestParam String paymentMethod) {
+        return ApiResponse.builder()
+                .message("Change Payment Method of Order")
+                .data(orderService.changePaymentMethod(id, paymentMethod))
+                .build();
+    }
+
     @DeleteMapping("/{id}")
     public ApiResponse<?> deleteOrder(@PathVariable String id) {
         orderService.deleteOrder(id);

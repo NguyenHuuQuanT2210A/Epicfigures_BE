@@ -30,6 +30,8 @@ public interface OrderService {
     Page<OrderResponse> findOrderByUserIdAndStatus(Long userId, OrderSimpleStatus status, Pageable pageable);
 
     CountOrderByStatus getCountByStatusOrder();
+
+    OrderResponse changePaymentMethod(String id, String paymentMethod);
 }
 
 

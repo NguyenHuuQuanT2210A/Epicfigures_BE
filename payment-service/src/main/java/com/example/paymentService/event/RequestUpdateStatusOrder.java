@@ -9,4 +9,5 @@ import lombok.*;
 public class RequestUpdateStatusOrder {
     Boolean status;
     String orderId;
+    String paymentMethod;
 }

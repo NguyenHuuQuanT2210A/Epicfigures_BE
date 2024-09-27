@@ -1,11 +1,13 @@
 package com.example.paymentService.service;
 
+import com.example.paymentService.dto.request.PaymentRequest;
 import com.example.paymentService.dto.response.OrderResponse;
 import com.example.paymentService.config.KafkaProducer;
 import com.example.paymentService.dto.response.ApiResponse;
 import com.example.paymentService.dto.response.UserResponse;
 import com.example.paymentService.entity.Payment;
 import com.example.paymentService.enums.PaymentStatus;
+import com.example.paymentService.enums.PaymentType;
 import com.example.paymentService.event.CreateEventToNotification;
 import com.example.paymentService.event.PaymentCreatedEvent;
 
@@ -16,6 +18,7 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
+import org.springframework.http.ResponseEntity;
 import org.springframework.kafka.core.KafkaTemplate;
 import org.springframework.stereotype.Service;
 import org.springframework.web.client.RestTemplate;
@@ -37,16 +40,25 @@ public class PaymentService {
     private final OrderClient orderClient;
     private final UserClient userClient;
 
-    public String creatPayment( String urlReturn, String orderId, String paymentMethod) throws UnsupportedEncodingException, PayPalRESTException {
-        ApiResponse<OrderResponse> orderResponse = orderClient.getOrderById(orderId);
+    public String creatPayment( PaymentRequest request, String baseUrl) throws UnsupportedEncodingException, PayPalRESTException {
+        ApiResponse<OrderResponse> orderResponse = orderClient.getOrderById(request.getOrderId());
 
-        if (paymentMethod.equalsIgnoreCase("PAYPAL")){
-            return paypalService.createPayment(orderId, orderResponse.getData(), urlReturn);
+        if (request.getPaymentType().equals(PaymentType.PAYMENT)){
+            savePayment(request.getOrderId());
+        }else if (request.getPaymentType().equals(PaymentType.REPAYMENT)){
+            orderResponse = orderClient.changePaymentMethod(request.getOrderId(), request.getPaymentMethod());
         }
-        else if (paymentMethod.equalsIgnoreCase("VNPAY")){
-            return vnPayService.createPaymentVnPay(orderId, orderResponse.getData(), urlReturn);
+
+        if (request.getPaymentMethod().equalsIgnoreCase("PAYPAL")){
+            return paypalService.createPayment(request.getOrderId(), orderResponse.getData(), baseUrl);
         }
-        return null;
+        else if (request.getPaymentMethod().equalsIgnoreCase("VNPAY")){
+            return vnPayService.createPaymentVnPay(request.getOrderId(), orderResponse.getData(), baseUrl);
+        }else {
+            updateStatusPayment(true, request.getOrderId());
+            updateStatusOrder(true, request.getOrderId());
+            return baseUrl;
+        }
     }
 
     public Page<Payment> getByUsername(Pageable pageable, Long userId){
@@ -63,6 +75,7 @@ public class PaymentService {
                 .orderId(orderId)
                 .status(PaymentStatus.PENDING).build());
     }
+
     public void updateStatusPayment(Boolean isDone, String orderId){
         Payment payment = paymentRepository.findByOrderId(orderId);
         if(isDone){
@@ -74,7 +87,7 @@ public class PaymentService {
         paymentRepository.save(payment);
     }
 
-    public void UpdateStatusOrder(Boolean a, String orderId){
+    public void updateStatusOrder(Boolean a, String orderId){
         ApiResponse<OrderResponse> orderResponse = orderClient.getOrderById(orderId);
         ApiResponse<UserResponse> userResponse = userClient.getUserById(orderResponse.getData().getUserId());
 
@@ -98,5 +111,4 @@ public class PaymentService {
     public Payment getByOrderId(String id){
         return paymentRepository.findByOrderId(id);
     }
-
 }
