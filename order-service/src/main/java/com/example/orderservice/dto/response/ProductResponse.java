@@ -36,5 +36,5 @@ public class ProductResponse {
     private LocalDateTime updatedAt;
 
     private LocalDateTime deletedAt;
-    private Set<ProductImageResponse> productImageDTOs;
+    private Set<ProductImageResponse> images;
 }

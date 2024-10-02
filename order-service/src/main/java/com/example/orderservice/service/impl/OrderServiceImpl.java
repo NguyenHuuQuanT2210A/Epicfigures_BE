@@ -137,13 +137,19 @@ public class OrderServiceImpl implements OrderService {
         return ordersPage;
     }
 
-    public OrderResponse findById(String id){
+    public OrderResponse findById(String id) {
         var orderResponse = orderMapper.toOrderResponse(findOrderById(id));
-        orderResponse.getOrderDetails().forEach(orderDetailResponse -> {
-            var data = productService.getProductById(orderDetailResponse.getId().getProductId());
-            orderDetailResponse.setProduct(data.getData());
-        });
-
+        if (orderResponse != null) {
+            orderResponse.getOrderDetails().forEach(orderDetailResponse -> {
+                var productResponse = productService.getProductById(orderDetailResponse.getId().getProductId());
+                if (productResponse != null && productResponse.getData() != null) {
+                    orderDetailResponse.setProduct(productResponse.getData());
+                    if (productResponse.getData().getImages() != null) {
+                        orderDetailResponse.getProduct().setImages(productResponse.getData().getImages());
+                    }
+                }
+            });
+        }
         return orderResponse;
     }
 
