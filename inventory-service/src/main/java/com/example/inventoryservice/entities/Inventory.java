@@ -1,7 +1,6 @@
 package com.example.inventoryservice.entities;
 
 import com.example.inventoryservice.entities.base.BaseEntity;
-import com.example.inventoryservice.enums.InventoryStatus;
 import jakarta.persistence.*;
 import lombok.*;
 
@@ -19,8 +18,11 @@ public class Inventory extends BaseEntity {
     private Long id;
     private Long productId;
     private Integer quantity;
-    @Enumerated(EnumType.STRING)
-    private InventoryStatus status;
+
     private String reason;
     private LocalDateTime date;
+
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "inventory_status_id", referencedColumnName = "id", nullable = false)
+    private InventoryStatus inventoryStatus;
 }

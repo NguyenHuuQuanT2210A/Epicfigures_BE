@@ -3,12 +3,15 @@ package com.example.inventoryservice.controllers;
 import com.example.inventoryservice.dto.response.ApiResponse;
 import com.example.inventoryservice.dto.request.InventoryRequest;
 import com.example.inventoryservice.dto.response.InventoryResponse;
+import com.example.inventoryservice.entities.InventoryStatus;
 import com.example.inventoryservice.services.InventoryService;
+import jakarta.servlet.http.HttpServletRequest;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Sort;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
@@ -21,10 +24,10 @@ public class InventoryController {
     private final InventoryService inventoryService;
 
     @PostMapping
-    ApiResponse<InventoryResponse> createInventory(@RequestBody @Valid InventoryRequest request) {
-        return ApiResponse.<InventoryResponse>builder()
+    ApiResponse<Long> createInventory(@RequestBody @Valid InventoryRequest request, HttpServletRequest httpServletRequest) {
+        return ApiResponse.<Long>builder()
                 .message("Create Inventory")
-                .data(inventoryService.addInventory(request))
+                .data(inventoryService.addInventory(request, httpServletRequest))
                 .build();
     }
 
@@ -34,7 +37,7 @@ public class InventoryController {
             @RequestParam(defaultValue = "10", name = "limit") int limit) {
         return ApiResponse.<Page<InventoryResponse>>builder()
                 .message("Get All Inventories")
-                .data(inventoryService.getAllInventories(PageRequest.of(page -1, limit)))
+                .data(inventoryService.getAllInventories(PageRequest.of(page -1, limit, Sort.Direction.DESC, "createdAt")))
                 .build();
     }
 
@@ -47,10 +50,23 @@ public class InventoryController {
     }
 
     @GetMapping("/product/{productId}")
-    ApiResponse<List<InventoryResponse>> getInventoryByProductId(@PathVariable("productId") Long productId) {
-        return ApiResponse.<List<InventoryResponse>>builder()
+    ApiResponse<Page<InventoryResponse>> getInventoryByProductId(@PathVariable("productId") Long productId,
+                                                                 @RequestParam(defaultValue = "1", name = "page") int page,
+                                                                 @RequestParam(defaultValue = "10", name = "limit") int limit) {
+        return ApiResponse.<Page<InventoryResponse>>builder()
                 .message("Get Inventory By Product Id")
-                .data(inventoryService.getInventoryByProductId(productId))
+                .data(inventoryService.getInventoryByProductId(productId, PageRequest.of(page -1, limit, Sort.Direction.DESC, "createdAt")))
+                .build();
+    }
+
+
+    @GetMapping("/status/{inventoryStatusId}")
+    ApiResponse<Page<InventoryResponse>> getInventoryByStatusId(@PathVariable("inventoryStatusId") Integer inventoryStatusId,
+                                                                @RequestParam(defaultValue = "1", name = "page") int page,
+                                                                @RequestParam(defaultValue = "10", name = "limit") int limit) {
+        return ApiResponse.<Page<InventoryResponse>>builder()
+                .message("Get InventoryStatus By Status Id")
+                .data(inventoryService.getInventoryByStatusId(inventoryStatusId, PageRequest.of(page -1, limit, Sort.Direction.DESC, "createdAt")))
                 .build();
     }
 
@@ -63,10 +79,10 @@ public class InventoryController {
     }
 
     @PutMapping("/{id}")
-    ApiResponse<InventoryResponse> updateInventory(@PathVariable Long id, @RequestBody InventoryRequest request) {
-        return ApiResponse.<InventoryResponse>builder()
-                .message("Update Inventory")
-                .data(inventoryService.updateInventory(id, request))
+    ApiResponse<?> updateInventory(@PathVariable Long id, @RequestBody InventoryRequest request, HttpServletRequest httpServletRequest) {
+        inventoryService.updateInventory(id, request, httpServletRequest);
+        return ApiResponse.builder()
+                .message("Update Inventory Successfully!")
                 .build();
     }
 

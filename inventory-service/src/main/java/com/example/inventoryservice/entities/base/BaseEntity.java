@@ -1,5 +1,6 @@
 package com.example.inventoryservice.entities.base;
 
+import com.fasterxml.jackson.annotation.JsonFormat;
 import jakarta.persistence.MappedSuperclass;
 import lombok.*;
 import org.hibernate.annotations.CreationTimestamp;

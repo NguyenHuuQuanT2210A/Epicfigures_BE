@@ -1,44 +1,26 @@
-package com.example.orderservice.dto.response;
+package com.example.inventoryservice.dto.response;
 
 import com.fasterxml.jackson.annotation.JsonFormat;
-import lombok.*;
+import lombok.AllArgsConstructor;
+import lombok.Getter;
+import lombok.NoArgsConstructor;
+import lombok.Setter;
 
-import java.math.BigDecimal;
 import java.time.LocalDateTime;
-import java.util.Set;
 
 @Getter
 @Setter
 @NoArgsConstructor
 @AllArgsConstructor
-public class ProductResponse {
-    private Long productId;
-
+public class InventoryStatusResponse {
+    private int id;
     private String name;
-
     private String description;
-
-    private BigDecimal price;
-
-    private Long categoryId;
-
-    private CategoryResponse category;
-
-    private Integer stockQuantity;
-
-    private String manufacturer;
-
-    private String size;
-
-    private String weight;
-
+    private boolean isAddAction;
     @JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "dd-MM-yyyy HH:mm:ss")
     private LocalDateTime createdAt;
-
     @JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "dd-MM-yyyy HH:mm:ss")
     private LocalDateTime updatedAt;
-
     @JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "dd-MM-yyyy HH:mm:ss")
     private LocalDateTime deletedAt;
-    private Set<ProductImageResponse> images;
 }

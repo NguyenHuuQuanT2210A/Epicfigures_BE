@@ -10,7 +10,9 @@ import java.util.List;
 
 @Repository
 public interface InventoryRepository extends JpaRepository<Inventory, Long> {
-    List<Inventory> findInventoryByProductId(Long productId);
+    Page<Inventory> findInventoryByProductId(Long productId, Pageable pageable);
     Page<Inventory> findByDeletedAtIsNull(Pageable pageable);
     Page<Inventory> findByDeletedAtIsNotNull(Pageable pageable);
+    Page<Inventory> findInventoryByInventoryStatusId(Integer inventoryStatusId, Pageable pageable);
+
 }

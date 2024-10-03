@@ -109,6 +109,13 @@ spring:
           filters:
             - JwtAuthenticationFilter
 
+        - id: inventory-status-service
+          uri: http://localhost:8888
+          predicates:
+            - Path=/api/v1/inventory_status/**
+          filters:
+            - JwtAuthenticationFilter
+
 #        payment-service
         - id: payment-service
           uri: http://localhost:8086
