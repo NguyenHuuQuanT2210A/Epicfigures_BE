@@ -14,10 +14,13 @@ import java.util.Set;
 public class ProductResponse {
     private Long productId;
 
+    private String codeProduct;
+
     private String name;
 
     private String description;
 
+//    @JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "#,###.00")
     private BigDecimal price;
 
     private Long categoryId;

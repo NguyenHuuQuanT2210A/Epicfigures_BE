@@ -26,6 +26,9 @@ public class Order extends BaseEntity {
     private String id;
     private Long userId;
 
+    @Column(nullable = false, unique = true)
+    private String codeOrder;
+
     private Long addressOrderId;
 
     private String firstName;

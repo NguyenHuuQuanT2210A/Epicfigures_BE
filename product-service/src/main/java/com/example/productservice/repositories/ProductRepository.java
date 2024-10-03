@@ -20,4 +20,5 @@ public interface ProductRepository extends JpaRepository<Product, Long>, JpaSpec
     Page<Product> findByDeletedAtIsNull(Pageable pageable);
     boolean existsByName(String name);
     List<Product> findByProductIdIn(Set<Long> productIds);
+    boolean existsByCodeProduct(String codeProduct);
 }

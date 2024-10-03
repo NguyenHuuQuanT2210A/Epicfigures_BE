@@ -16,6 +16,7 @@ import com.example.productservice.repositories.specification.SpecSearchCriteria;
 import com.example.productservice.services.CategoryService;
 import com.example.productservice.services.ProductImageService;
 import com.example.productservice.services.ProductService;
+import com.example.productservice.util.GenerateUniqueCode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -139,6 +140,10 @@ public class ProductServiceImpl implements ProductService {
         Product product = productMapper.INSTANCE.toProduct(request);
 
         product.setCategory(categoryMapper.INSTANCE.categoryResponsetoCategory(categoryDTO));
+
+        do {
+            product.setCodeProduct(GenerateUniqueCode.generateProductCode());
+        } while (productRepository.existsByCodeProduct(product.getCodeProduct()));
 
         productRepository.save(product);
 

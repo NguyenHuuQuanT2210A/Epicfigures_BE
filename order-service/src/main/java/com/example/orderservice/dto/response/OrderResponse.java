@@ -13,6 +13,7 @@ import java.util.Set;
 @AllArgsConstructor
 public class OrderResponse {
     private String id;
+    private String codeOrder;
     private Long userId;
     private BigDecimal totalPrice;
     private String firstName;

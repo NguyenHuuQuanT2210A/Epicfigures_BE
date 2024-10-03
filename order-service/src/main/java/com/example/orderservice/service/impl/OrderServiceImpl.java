@@ -21,6 +21,7 @@ import com.example.orderservice.specification.OrderSpecification;
 import com.example.orderservice.specification.SearchBody;
 import com.example.orderservice.specification.SearchCriteria;
 import com.example.orderservice.specification.SearchCriteriaOperator;
+import com.example.orderservice.util.GenerateUniqueCode;
 import jakarta.servlet.http.HttpServletRequest;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
@@ -175,6 +176,10 @@ public class OrderServiceImpl implements OrderService {
             }
 
             try {
+                do {
+                    newOrder.setCodeOrder(GenerateUniqueCode.generateOrderCode());
+                } while (orderRepository.existsByCodeOrder(newOrder.getCodeOrder()));
+
                 newOrder.setTotalPrice(request.getTotalPrice());
                 newOrder.setStatus(OrderSimpleStatus.CREATED);
                 newOrder.setPaymentMethod(request.getPaymentMethod().toUpperCase());

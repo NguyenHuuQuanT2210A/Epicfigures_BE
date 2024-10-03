@@ -4,6 +4,7 @@ import com.example.productservice.entities.*;
 import com.example.productservice.helper.LocalDatetimeConverter;
 import com.example.productservice.repositories.*;
 import com.example.productservice.statics.enums.ProductSimpleStatus;
+import com.example.productservice.util.GenerateUniqueCode;
 import com.example.productservice.util.StringHelper;
 import com.github.javafaker.Faker;
 import org.springframework.boot.CommandLineRunner;
@@ -73,6 +74,10 @@ public class ProductSeeder implements CommandLineRunner {
             ProductSimpleStatus status = ProductSimpleStatus.ACTIVE;
             Product product = new Product();
             product.setName(productName);
+            do {
+                product.setCodeProduct(GenerateUniqueCode.generateProductCode());
+            } while (productRepository.existsByCodeProduct(product.getCodeProduct()));
+
             product.setCategory(categories.get(faker.number().numberBetween(0, 6)));
             product.setStockQuantity(faker.number().numberBetween(1, 100));
 //            product.setSlug(slug);
