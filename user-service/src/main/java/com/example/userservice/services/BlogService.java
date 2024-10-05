@@ -9,6 +9,7 @@ import org.springframework.web.multipart.MultipartFile;
 public interface BlogService {
     Page<BlogResponse> getAllBlogs(Pageable pageable);
     BlogResponse getBlogById(Long id);
+    Page<BlogResponse> getBlogByTitle(String title, Pageable pageable);
     BlogResponse updateBlog(Long id, BlogRequest inventoryRequest, MultipartFile imageFile);
     BlogResponse addBlog(BlogRequest inventoryRequest, MultipartFile imageFile);
     void deleteBlog(Long id);

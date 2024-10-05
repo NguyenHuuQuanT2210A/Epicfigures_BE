@@ -42,6 +42,10 @@ public class BlogServiceImpl implements BlogService {
         return blogMapper.toBlogResponse(findBlogById(id));
     }
 
+    @Override
+    public Page<BlogResponse> getBlogByTitle(String title, Pageable pageable) {
+        return blogRepository.findBlogByTitleLikeAndDeletedAtIsNull(title, pageable).map(blogMapper::toBlogResponse);
+    }
 
     @Override
     public BlogResponse updateBlog(Long id, BlogRequest blogRequest, MultipartFile imageFile) {

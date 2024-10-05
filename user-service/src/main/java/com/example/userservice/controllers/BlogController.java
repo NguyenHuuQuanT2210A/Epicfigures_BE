@@ -11,6 +11,7 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.core.io.Resource;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Sort;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
@@ -34,7 +35,8 @@ public class BlogController {
                                                 @RequestParam(defaultValue = "10", name = "limit") int limit) {
         return ApiResponse.<Page<BlogResponse>>builder()
                 .message("Get all Blogs")
-                .data(blogService.getAllBlogs(PageRequest.of(page - 1, limit)))
+                .data(blogService.getAllBlogs(PageRequest.of(page - 1, limit, Sort.by("createdAt").descending()))
+                )
                 .build();
     }
 
@@ -43,6 +45,16 @@ public class BlogController {
         return ApiResponse.<BlogResponse>builder()
                 .message("Get Blog by Id")
                 .data(blogService.getBlogById(id))
+                .build();
+    }
+
+    @GetMapping("/title")
+    ApiResponse<Page<BlogResponse>> getBlogsByTitle(@RequestParam(defaultValue = "1", name = "page") int page,
+                                                    @RequestParam(defaultValue = "10", name = "limit") int limit,
+                                                    @RequestParam String title) {
+        return ApiResponse.<Page<BlogResponse>>builder()
+                .message("Get Blog by Title")
+                .data(blogService.getBlogByTitle(title, PageRequest.of(page - 1, limit, Sort.by("createdAt").descending())))
                 .build();
     }
 
@@ -107,5 +119,30 @@ public class BlogController {
                 .header(HttpHeaders.CONTENT_DISPOSITION,"attachment;filename=\""
                         + resource.getFilename() + "\"")
                 .body(resource);
+    }
+
+    @DeleteMapping("/in-trash/{id}")
+    ApiResponse<?> moveToTrash(@PathVariable Long id) {
+        blogService.moveToTrash(id);
+        return ApiResponse.builder()
+                .code(HttpStatus.NO_CONTENT.value())
+                .message("Move to trash blog successfully")
+                .build();
+    }
+
+    @GetMapping("/trash")
+    ApiResponse<?> getInTrashBlog(@RequestParam(name = "page", defaultValue = "1") int page, @RequestParam(name = "limit", defaultValue = "10") int limit){
+        return ApiResponse.builder()
+                .message("Get in trash blog")
+                .data(blogService.getInTrash(PageRequest.of(page -1, limit)))
+                .build();
+    }
+
+    @PutMapping("/restore/{id}")
+    ApiResponse<?> restoreBlog(@PathVariable Long id) {
+        blogService.restoreBlog(id);
+        return ApiResponse.builder()
+                .message("Restore blog successfully")
+                .build();
     }
 }

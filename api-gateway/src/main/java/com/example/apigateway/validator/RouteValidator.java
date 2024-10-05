@@ -34,7 +34,8 @@ public class RouteValidator {
             "/api/v1/feedback/product.*",
             "/api/v1/blogs/getAll.*",
             "/api/v1/blogs/id.*",
-            "/api/v1/blogs/blog.*"
+            "/api/v1/blogs/blog.*",
+            "/api/v1/blogs/title.*"
     );
 
     public Predicate<ServerHttpRequest> isSecured =
