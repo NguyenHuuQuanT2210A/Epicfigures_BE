@@ -20,5 +20,5 @@ public interface UserService {
 
     Object countUsers();
 
-    Page<UserResponse> findByRoleId(Long roleId);
+    Page<UserResponse> findByRoleId(Long roleId, Pageable pageable);
 }

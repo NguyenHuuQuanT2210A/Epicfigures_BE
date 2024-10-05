@@ -85,11 +85,11 @@ public class AuthenticationService {
 
 
     public void register(SignupRequest signUpRequest) {
-        if (userRepository.existsByUsername(signUpRequest.getUsername())) {
+        if (userRepository.existsByUsernameAndDeletedAtIsNull(signUpRequest.getUsername())) {
             throw new CustomException("Error: Username is already taken!", HttpStatus.BAD_REQUEST);
         }
 
-        if (userRepository.existsByEmail(signUpRequest.getEmail())) {
+        if (userRepository.existsByEmailAndDeletedAtIsNull(signUpRequest.getEmail())) {
             throw new CustomException("Error: Email is already in use!", HttpStatus.BAD_REQUEST);
         }
         
@@ -147,7 +147,7 @@ public class AuthenticationService {
         log.info("---------- forgotPassword ----------");
 
         // check email exists or not
-        User user = userRepository.findByEmail(request.getEmail()).orElseThrow(() -> new CustomException("User not found", HttpStatus.NOT_FOUND));
+        User user = userRepository.findByEmailAndDeletedAtIsNull(request.getEmail()).orElseThrow(() -> new CustomException("User not found", HttpStatus.NOT_FOUND));
 
         // generate reset token
         String resetToken = jwtUtils.generateResetToken(UserDetailsImpl.build(user));
@@ -198,7 +198,7 @@ public class AuthenticationService {
     private User getUser(String secretKey, TokenType type){
         final String userName= jwtUtils.getUserNameFromJwtToken(secretKey, type);
 
-        var user = userRepository.findByUsername(userName).orElseThrow(() -> new CustomException("User not found", HttpStatus.NOT_FOUND));
+        var user = userRepository.findByUsernameAndDeletedAtIsNull(userName).orElseThrow(() -> new CustomException("User not found", HttpStatus.NOT_FOUND));
 
         var userDetail = UserDetailsImpl.build(user);
 
@@ -206,7 +206,7 @@ public class AuthenticationService {
             throw new CustomException("User is not active", HttpStatus.BAD_REQUEST);
         }
 
-        if (!jwtUtils.validateJwtToken(secretKey, REFRESH_TOKEN)){
+        if (!jwtUtils.validateJwtToken(secretKey, RESET_TOKEN)){
             throw new CustomException("Not allow access with this token", HttpStatus.BAD_REQUEST);
         }
         return user;

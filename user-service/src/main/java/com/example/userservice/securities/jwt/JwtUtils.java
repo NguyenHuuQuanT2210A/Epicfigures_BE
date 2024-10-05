@@ -22,8 +22,7 @@ import java.util.Date;
 import java.util.function.Function;
 import java.util.stream.Collectors;
 
-import static com.example.userservice.statics.enums.TokenType.ACCESS_TOKEN;
-import static com.example.userservice.statics.enums.TokenType.REFRESH_TOKEN;
+import static com.example.userservice.statics.enums.TokenType.*;
 
 @Component
 @Slf4j
@@ -88,7 +87,7 @@ public class JwtUtils {
                         .collect(Collectors.joining(",")))
                 .setIssuedAt(new Date())
                 .setExpiration(new Date(System.currentTimeMillis() + 3600000))
-                .signWith(getKey(REFRESH_TOKEN), SignatureAlgorithm.HS256)
+                .signWith(getKey(RESET_TOKEN), SignatureAlgorithm.HS256)
                 .compact();
     }
 

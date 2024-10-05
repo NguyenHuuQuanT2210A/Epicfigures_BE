@@ -12,6 +12,7 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.core.io.Resource;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Sort;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
@@ -33,7 +34,7 @@ public class UserController {
     ApiResponse<?> getAllUsers(@RequestParam(name = "page") int page, @RequestParam(name = "limit") int limit) {
         return ApiResponse.builder()
                 .message("Get all users")
-                .data(userService.getAll(PageRequest.of(page - 1, limit)))
+                .data(userService.getAll(PageRequest.of(page - 1, limit, Sort.by("createdAt").descending())))
                 .build();
     }
 
@@ -55,10 +56,12 @@ public class UserController {
     }
 
     @GetMapping(path = "/role/{roleId}")
-    ApiResponse<Page<UserResponse>> getUserByRoleId(@PathVariable(name = "roleId") Long roleId) {
+    ApiResponse<Page<UserResponse>> getUserByRoleId(@RequestParam(name = "page") int page,
+                                                    @RequestParam(name = "limit") int limit,
+                                                    @PathVariable(name = "roleId") Long roleId) {
         return ApiResponse.<Page<UserResponse>>builder()
                 .message("Get user by Role Id")
-                .data(userService.findByRoleId(roleId))
+                .data(userService.findByRoleId(roleId, PageRequest.of(page - 1, limit, Sort.by("createdAt").descending())))
                 .build();
     }
 
@@ -67,7 +70,7 @@ public class UserController {
     ApiResponse<?> getInTrashUsers(@RequestParam(name = "page") int page, @RequestParam(name = "limit") int limit) {
         return ApiResponse.builder()
                 .message("Get in trash users")
-                .data(userService.getInTrash(PageRequest.of(page - 1, limit)))
+                .data(userService.getInTrash(PageRequest.of(page - 1, limit, Sort.by("createdAt").descending())))
                 .build();
     }
 
@@ -82,10 +85,9 @@ public class UserController {
 
     @GetMapping(path = "/email")
     ApiResponse<UserResponse> getUserByEmail(@RequestParam(name = "email") String email) {
-        UserResponse user = userService.findByEmail(email);
         return ApiResponse.<UserResponse>builder()
                 .message("Get user by email")
-                .data(user)
+                .data(userService.findByEmail(email))
                 .build();
     }
 

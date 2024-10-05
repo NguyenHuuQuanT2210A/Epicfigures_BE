@@ -57,14 +57,14 @@ public class UserServiceImpl implements UserService {
     }
 
     @Override
-    public Page<UserResponse> findByRoleId(Long roleId) {
+    public Page<UserResponse> findByRoleId(Long roleId, Pageable pageable) {
         Set<Role> roles = new HashSet<>();
         Optional<Role> role = roleRepository.findById(roleId);
         if (!role.isPresent()) {
             throw new CustomException("Role not found", HttpStatus.NOT_FOUND);
         }
         roles.add(role.get());
-        return userRepository.findAllByRoles(roles, PageRequest.of(0, 10)).map(UserMapper.INSTANCE::toUserResponse);
+        return userRepository.findAllByRolesAndDeletedAtIsNull(roles, pageable).map(UserMapper.INSTANCE::toUserResponse);
     }
 
     public Page<UserResponse> getAll(Pageable pageable) {
@@ -83,7 +83,7 @@ public class UserServiceImpl implements UserService {
     }
 
     public UserResponse findByUsername(String username) {
-        User user = userRepository.findByUsername(username).orElse(null);
+        User user = userRepository.findByUsernameAndDeletedAtIsNull(username).orElse(null);
         if (user == null) {
             throw new CustomException("Cannot find this username: " + username, HttpStatus.NOT_FOUND);
         }
@@ -92,7 +92,7 @@ public class UserServiceImpl implements UserService {
 
     @Override
     public UserResponse findByEmail(String email) {
-        return UserMapper.INSTANCE.toUserResponse(userRepository.findByEmail(email).orElseThrow(() -> new UsernameNotFoundException("User Not Found with email: " + email)));
+        return UserMapper.INSTANCE.toUserResponse(userRepository.findByEmailAndDeletedAtIsNull(email).orElseThrow(() -> new UsernameNotFoundException("User Not Found with email: " + email)));
     }
 
     public void moveToTrash(Long id) {
@@ -107,11 +107,11 @@ public class UserServiceImpl implements UserService {
         User user = new User();
         BeanUtils.copyProperties(userRequest, user);
 
-        if (userRepository.existsByUsername(user.getUsername())) {
+        if (userRepository.existsByUsernameAndDeletedAtIsNull(user.getUsername())) {
             throw new CustomException("Error: Username is already taken!", HttpStatus.BAD_REQUEST);
         }
 
-        if (userRepository.existsByEmail(user.getEmail())) {
+        if (userRepository.existsByEmailAndDeletedAtIsNull(user.getEmail())) {
             throw new CustomException("Error: Email is already in use!", HttpStatus.BAD_REQUEST);
         }
 
@@ -155,14 +155,14 @@ public class UserServiceImpl implements UserService {
     public UserResponse updateUser(Long id, UserRequest userRequest) {
         User user = findUserById(id);
         if (userRequest.getUsername() != null){
-            var userDTO = userRepository.findByUsername(userRequest.getUsername());
+            var userDTO = userRepository.findByUsernameAndDeletedAtIsNull(userRequest.getUsername());
             if (userDTO.isPresent() && !user.getUsername().equals(userRequest.getUsername())) {
                 throw new CustomException("User name already exists", HttpStatus.BAD_REQUEST);
             }
         }
 
         if (userRequest.getEmail() != null) {
-            var emailDTO = userRepository.findByEmail(userRequest.getEmail());
+            var emailDTO = userRepository.findByEmailAndDeletedAtIsNull(userRequest.getEmail());
             if (emailDTO.isPresent() && !userRequest.getEmail().equals(user.getEmail())) {
                 throw new CustomException("User already exists with email: " + userRequest.getEmail(), HttpStatus.BAD_REQUEST);
             }

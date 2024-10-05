@@ -19,14 +19,14 @@ import java.util.Set;
 public interface UserRepository extends JpaRepository<User, Long>, JpaSpecificationExecutor<User> {
     Page<User> findAll(Pageable pageable);
 
-    Page<User> findAllByRoles(Set<Role> roles, Pageable pageable);
+    Page<User> findAllByRolesAndDeletedAtIsNull(Set<Role> roles, Pageable pageable);
 
 //    @Procedure(procedureName = "find_user_by_username")
-    Optional<User> findByUsername(String username);
-    @Query("SELECT u FROM User u WHERE u.email = ?1")
-    Optional<User> findByEmail(String email);
-    Boolean existsByUsername(String username);
-    Boolean existsByEmail(String email);
+    Optional<User> findByUsernameAndDeletedAtIsNull(String username);
+    @Query("SELECT u FROM User u WHERE u.email = ?1 AND u.deletedAt IS NULL")
+    Optional<User> findByEmailAndDeletedAtIsNull(String email);
+    Boolean existsByUsernameAndDeletedAtIsNull(String username);
+    Boolean existsByEmailAndDeletedAtIsNull(String email);
     Page<User> findByDeletedAtIsNull(Pageable pageable);
     Page<User> findByDeletedAtIsNotNull(Pageable pageable);
 
