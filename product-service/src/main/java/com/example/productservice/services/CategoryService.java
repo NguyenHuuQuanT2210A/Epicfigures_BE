@@ -10,14 +10,14 @@ import java.util.List;
 
 @Service
 public interface CategoryService {
-    Page<CategoryResponse> getAllCategory(Pageable pageable);
+    Page<CategoryResponse> getAllCategories(Pageable pageable);
     CategoryResponse getCategoryById(Long id);
-    List<CategoryResponse> getCategoryByParentCategoryId(Long parentCategoryId);
-    List<CategoryResponse> getCategoriesByParentCategoryIsNull();
+    Page<CategoryResponse> getCategoryByParentCategoryId(Long parentCategoryId, Pageable pageable);
+    Page<CategoryResponse> getCategoriesByParentCategoryIsNull(Pageable pageable);
     CategoryResponse addCategory(CategoryRequest request);
     void updateCategory(Long id, CategoryRequest request);
     void deleteCategory(Long id);
-    List<CategoryResponse> getCategoryByName(String name);
+    Page<CategoryResponse> getCategoryByName(String name, Pageable pageable);
     void moveToTrash(Long id);
     Page<CategoryResponse> getInTrash(Pageable pageable);
 

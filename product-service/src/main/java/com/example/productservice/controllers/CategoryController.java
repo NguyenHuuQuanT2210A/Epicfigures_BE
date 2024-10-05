@@ -9,6 +9,7 @@ import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Sort;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
@@ -27,7 +28,7 @@ public class CategoryController {
 
     @GetMapping("/getAll")
     ApiResponse<Page<CategoryResponse>> getAllCategory(@RequestParam(defaultValue = "1", name = "page") int page, @RequestParam(defaultValue = "10", name = "limit") int limit) {
-        Page<CategoryResponse> categoryDTOS = categoryService.getAllCategory(PageRequest.of(page - 1, limit));
+        Page<CategoryResponse> categoryDTOS = categoryService.getAllCategories(PageRequest.of(page - 1, limit, Sort.by("createdAt").descending()));
         return ApiResponse.<Page<CategoryResponse>>builder()
                 .message("Get all Category")
                 .data(categoryDTOS)
@@ -55,30 +56,31 @@ public class CategoryController {
     }
 
     @GetMapping("/name/{name}")
-    ApiResponse<List<CategoryResponse>> getCategoryByName(@PathVariable String name) {
-        List<CategoryResponse> category = categoryService.getCategoryByName(name);
-        if (category == null) {
-            throw new CategoryNotFoundException("Category not found with name: " + name);
-        }
-        return ApiResponse.<List<CategoryResponse>>builder()
-                .message("Get Category By Name")
-                .data(category)
+    ApiResponse<Page<CategoryResponse>> getCategoryByName(@RequestParam(defaultValue = "1", name = "page") int page,
+                                                          @RequestParam(defaultValue = "10", name = "limit") int limit,
+                                                          @PathVariable String name) {
+        return ApiResponse.<Page<CategoryResponse>>builder()
+                .message("Get Categories By Name")
+                .data(categoryService.getCategoryByName(name, PageRequest.of(page - 1, limit, Sort.by("createdAt").descending())))
                 .build();
     }
 
     @GetMapping("/parentCategory/{parentCategoryId}")
-    ApiResponse<List<CategoryResponse>> getCategoryByParentCategoryId(@PathVariable Long parentCategoryId) {
-        return ApiResponse.<List<CategoryResponse>>builder()
+    ApiResponse<Page<CategoryResponse>> getCategoryByParentCategoryId(@RequestParam(defaultValue = "1", name = "page") int page,
+                                                                      @RequestParam(defaultValue = "10", name = "limit") int limit,
+                                                                      @PathVariable Long parentCategoryId) {
+        return ApiResponse.<Page<CategoryResponse>>builder()
                 .message("Get Category By Parent Category Id")
-                .data(categoryService.getCategoryByParentCategoryId(parentCategoryId))
+                .data(categoryService.getCategoryByParentCategoryId(parentCategoryId, PageRequest.of(page - 1, limit, Sort.by("createdAt").descending())))
                 .build();
     }
 
     @GetMapping("/parentCategoryIsNull")
-    ApiResponse<List<CategoryResponse>> getCategoryByParentCategoryIsNull() {
-        return ApiResponse.<List<CategoryResponse>>builder()
+    ApiResponse<Page<CategoryResponse>> getCategoryByParentCategoryIsNull(@RequestParam(defaultValue = "1", name = "page") int page,
+                                                                          @RequestParam(defaultValue = "10", name = "limit") int limit) {
+        return ApiResponse.<Page<CategoryResponse>>builder()
                 .message("Get Category By Parent Category IS Null")
-                .data(categoryService.getCategoriesByParentCategoryIsNull())
+                .data(categoryService.getCategoriesByParentCategoryIsNull(PageRequest.of(page - 1, limit, Sort.by("createdAt").descending())))
                 .build();
     }
 

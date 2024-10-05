@@ -13,6 +13,7 @@ import org.springframework.data.domain.PageRequest;
 
 import com.example.productservice.exception.NotFoundException;
 import jakarta.validation.Valid;
+import org.springframework.data.domain.Sort;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
@@ -52,7 +53,7 @@ public class ProductController {
             @RequestParam(defaultValue = "10", name = "limit") int limit) {
         return ApiResponse.<Page<ProductResponse>>builder()
                 .message("Get all Products")
-                .data(productService.getAllProducts(PageRequest.of(page -1, limit)))
+                .data(productService.getAllProducts(PageRequest.of(page - 1, limit, Sort.by("createdAt").descending())))
                 .build();
     }
 
@@ -96,13 +97,23 @@ public class ProductController {
                 .build();
     }
 
+    @GetMapping("/name/like/{name}")
+    ApiResponse<?> getProductByNameLike(@RequestParam(defaultValue = "1", name = "page") int page,
+                                        @RequestParam(defaultValue = "10", name = "limit") int limit,
+                                        @PathVariable String name) {
+        return ApiResponse.builder()
+                .message("Get product by Name")
+                .data(productService.getProductByNameLike(name, PageRequest.of(page - 1, limit, Sort.by("createdAt").descending())))
+                .build();
+    }
+
     @GetMapping("/category/{categoryId}")
     ApiResponse<Page<ProductResponse>> findByCategory( @RequestParam(defaultValue = "1") int page,
                                             @RequestParam(defaultValue = "10") int limit,
                                             @PathVariable Long categoryId) {
         return ApiResponse.<Page<ProductResponse>>builder()
                 .message("Get products by Category")
-                .data(productService.findByCategory(PageRequest.of(page -1, limit), categoryId))
+                .data(productService.findByCategory(PageRequest.of(page - 1, limit, Sort.by("createdAt").descending()), categoryId))
                 .build();
     }
 
@@ -164,7 +175,7 @@ public class ProductController {
     ApiResponse<?> getInTrashProduct(@RequestParam(name = "page", defaultValue = "1") int page, @RequestParam(name = "limit", defaultValue = "10") int limit){
         return ApiResponse.builder()
                 .message("Get in trash Product")
-                .data(productService.getInTrash(PageRequest.of(page -1, limit)))
+                .data(productService.getInTrash(PageRequest.of(page - 1, limit, Sort.by("createdAt").descending())))
                 .build();
     }
 

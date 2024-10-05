@@ -76,7 +76,7 @@ public class ProductSeeder implements CommandLineRunner {
             product.setName(productName);
             do {
                 product.setCodeProduct(GenerateUniqueCode.generateProductCode());
-            } while (productRepository.existsByCodeProduct(product.getCodeProduct()));
+            } while (productRepository.existsByCodeProductAndDeletedAtIsNull(product.getCodeProduct()));
 
             product.setCategory(categories.get(faker.number().numberBetween(0, 6)));
             product.setStockQuantity(faker.number().numberBetween(1, 100));

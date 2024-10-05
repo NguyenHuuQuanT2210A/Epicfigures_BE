@@ -102,6 +102,11 @@ public class ProductServiceImpl implements ProductService {
     }
 
     @Override
+    public Page<ProductResponse> getProductByNameLike(String name, Pageable pageable) {
+        return productRepository.findByNameLikeAndDeletedAtIsNull(name, pageable).map(productMapper.INSTANCE::toProductResponse);
+    }
+
+    @Override
     public ProductResponse getProductById(Long id) {
 //        if (redisService.keyExists(PRODUCT_ID + id)) {
 //            Object object =  redisService.getField(PRODUCT_ID + id);
@@ -116,7 +121,7 @@ public class ProductServiceImpl implements ProductService {
 
     @Override
     public List<ProductResponse> getProductsByIds(Set<Long> productIds) {
-        List<Product> products = productRepository.findByProductIdIn(productIds);
+        List<Product> products = productRepository.findByProductIdInAndDeletedAtIsNull(productIds);
         products.forEach(product -> {
             if (product.getProductId() == null) {
                 throw new CustomException("Product is not found", HttpStatus.NOT_FOUND);
@@ -128,7 +133,7 @@ public class ProductServiceImpl implements ProductService {
 
     @Override
     public void addProduct(ProductRequest request, List<MultipartFile> imageFiles) {
-        if (productRepository.existsByName(request.getName())) {
+        if (productRepository.existsByNameAndDeletedAtIsNull(request.getName())) {
             throw new CustomException("Product already exists with name: " + request.getName(), HttpStatus.CONFLICT);
         }
 
@@ -143,7 +148,7 @@ public class ProductServiceImpl implements ProductService {
 
         do {
             product.setCodeProduct(GenerateUniqueCode.generateProductCode());
-        } while (productRepository.existsByCodeProduct(product.getCodeProduct()));
+        } while (productRepository.existsByCodeProductAndDeletedAtIsNull(product.getCodeProduct()));
 
         productRepository.save(product);
 
@@ -187,7 +192,7 @@ public class ProductServiceImpl implements ProductService {
             existingProduct.setPrice(request.getPrice());
         }
         if (request.getName() != null) {
-            if (productRepository.existsByName(request.getName()) && !request.getName().equals(existingProduct.getName())) {
+            if (productRepository.existsByNameAndDeletedAtIsNull(request.getName()) && !request.getName().equals(existingProduct.getName())) {
                 throw new CustomException("Product already exists with name: " + request.getName(), HttpStatus.BAD_REQUEST);
             }
             existingProduct.setName(request.getName());

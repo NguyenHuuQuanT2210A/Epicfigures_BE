@@ -25,7 +25,7 @@ public class CategoryServiceImpl implements CategoryService {
     private final CategoryRepository categoryRepository;
 
     @Override
-    public Page<CategoryResponse> getAllCategory(Pageable pageable) {
+    public Page<CategoryResponse> getAllCategories(Pageable pageable) {
         Page<Category> categories = categoryRepository.findByDeletedAtIsNull(pageable);
         return categories.map(CategoryMapper.INSTANCE::toCategoryResponse);
     }
@@ -37,19 +37,19 @@ public class CategoryServiceImpl implements CategoryService {
     }
 
     @Override
-    public List<CategoryResponse> getCategoryByParentCategoryId(Long parentCategoryId) {
-        return categoryRepository.findByParentCategoryId(parentCategoryId).stream().map(CategoryMapper.INSTANCE::toCategoryResponse).toList();
+    public Page<CategoryResponse> getCategoryByParentCategoryId(Long parentCategoryId, Pageable pageable) {
+        return categoryRepository.findByParentCategoryIdAndDeletedAtIsNull(parentCategoryId, pageable).map(CategoryMapper.INSTANCE::toCategoryResponse);
     }
 
     @Override
-    public List<CategoryResponse> getCategoriesByParentCategoryIsNull() {
-        return categoryRepository.findByParentCategoryIsNull().stream().map(CategoryMapper.INSTANCE::toCategoryResponse).toList();
+    public Page<CategoryResponse> getCategoriesByParentCategoryIsNull(Pageable pageable) {
+        return categoryRepository.findByParentCategoryIsNullAndDeletedAtIsNull(pageable).map(CategoryMapper.INSTANCE::toCategoryResponse);
     }
 
     @Override
     public CategoryResponse addCategory(CategoryRequest request) {
 
-        if(categoryRepository.existsByCategoryName(request.getCategoryName())){
+        if(categoryRepository.existsByCategoryNameAndDeletedAtIsNull(request.getCategoryName())){
             throw new CustomException("Category already exists with name: " + request.getCategoryName(), HttpStatus.BAD_REQUEST);
         }
 
@@ -69,7 +69,7 @@ public class CategoryServiceImpl implements CategoryService {
             throw new CustomException("Category is in trash with id: " + id, HttpStatus.BAD_REQUEST);
         }
 
-        if (categoryRepository.existsByCategoryName(request.getCategoryName()) && !request.getCategoryName().equals(category.getCategoryName())) {
+        if (categoryRepository.existsByCategoryNameAndDeletedAtIsNull(request.getCategoryName()) && !request.getCategoryName().equals(category.getCategoryName())) {
             throw new CustomException("Category already exists with name: " + request.getCategoryName(), HttpStatus.BAD_REQUEST);
         }
 
@@ -90,17 +90,8 @@ public class CategoryServiceImpl implements CategoryService {
     }
 
     @Override
-    public List<CategoryResponse> getCategoryByName(String name) {
-        List<Category> categories = categoryRepository.findCategoriesByCategoryName(name);
-
-        if(categories.isEmpty()){
-                throw new CategoryNotFoundException("Category not found with name: " + name);
-            }
-        List<CategoryResponse> categoryDTOS = new ArrayList<>();
-        for (Category category : categories) {
-            categoryDTOS.add(CategoryMapper.INSTANCE.toCategoryResponse(category));
-        }
-        return categoryDTOS;
+    public Page<CategoryResponse> getCategoryByName(String name, Pageable pageable) {
+        return categoryRepository.findCategoriesByCategoryNameLikeAndDeletedAtIsNull(name, pageable).map(CategoryMapper.INSTANCE::toCategoryResponse);
     }
 
     public void moveToTrash(Long id) {

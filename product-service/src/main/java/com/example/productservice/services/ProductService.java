@@ -16,6 +16,7 @@ public interface ProductService {
     Long countProducts();
     Page<ProductResponse> getAllProducts(Pageable pageable);
     ProductResponse getProductByName(String name);
+    Page<ProductResponse> getProductByNameLike(String name, Pageable pageable);
     ProductResponse getProductById(Long id);
     Page<ProductResponse> findByCategory(Pageable pageable, Long categoryId);
     void addProduct(ProductRequest request, List<MultipartFile> imageFiles);

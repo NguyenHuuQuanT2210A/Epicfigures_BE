@@ -23,7 +23,7 @@ public class GenerateUniqueCode {
         String yearPart = yearFormat.format(now);
         String monthPart = monthFormat.format(now);
 
-        String prefix = "SPX";
+        String prefix = "ODR";
 
         String characters = "ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789";
         StringBuilder randomPart = new StringBuilder();

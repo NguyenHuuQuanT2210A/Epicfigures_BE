@@ -13,14 +13,15 @@ import java.util.List;
 
 @Repository
 public interface CategoryRepository extends JpaRepository<Category, Long>, JpaSpecificationExecutor<Category> {
-    List<Category> findCategoriesByCategoryName(String name);
+    @Query("SELECT c FROM Category c WHERE c.categoryName LIKE %:name% AND c.deletedAt IS NULL")
+    Page<Category> findCategoriesByCategoryNameLikeAndDeletedAtIsNull(String name, Pageable pageable);
     @Query(value = "SELECT * FROM Category WHERE c.name = :name",nativeQuery = true)
     List<Category> findByNameUsingQuery(@Param("name") String name);
     Page<Category> findByDeletedAtIsNotNull(Pageable pageable);
     Page<Category> findByDeletedAtIsNull(Pageable pageable);
-    boolean existsByCategoryName(String name);
+    boolean existsByCategoryNameAndDeletedAtIsNull(String name);
 
-    @Query("SELECT c FROM Category c WHERE c.parentCategory.categoryId = :parentCategoryId")
-    List<Category> findByParentCategoryId(@Param("parentCategoryId") Long parentCategoryId);
-    List<Category> findByParentCategoryIsNull();
+    @Query("SELECT c FROM Category c WHERE c.parentCategory.categoryId = :parentCategoryId AND c.deletedAt IS NULL")
+    Page<Category> findByParentCategoryIdAndDeletedAtIsNull(@Param("parentCategoryId") Long parentCategoryId, Pageable pageable);
+    Page<Category> findByParentCategoryIsNullAndDeletedAtIsNull(Pageable pageable);
 }
