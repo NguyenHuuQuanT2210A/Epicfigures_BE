@@ -77,6 +77,18 @@ public class ProductController {
                 .build();
     }
 
+    @GetMapping("/code/{code}")
+    ApiResponse<?> getProductByCode(@PathVariable String code) {
+        ProductResponse product = productService.getProductByCode(code);
+        if (product == null) {
+            throw new NotFoundException("Product not found with code: " + code);
+        }
+        return ApiResponse.builder()
+                .message("Get product by Id")
+                .data(product)
+                .build();
+    }
+
     @PostMapping("/list")
     ApiResponse<?> getProductsByIds(@RequestBody Set<Long> productIds) {
         return ApiResponse.builder()

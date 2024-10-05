@@ -132,6 +132,11 @@ public class ProductServiceImpl implements ProductService {
     }
 
     @Override
+    public ProductResponse getProductByCode(String code) {
+        return productMapper.toProductResponse(productRepository.findByCodeProductAndDeletedAtIsNull(code));
+    }
+
+    @Override
     public void addProduct(ProductRequest request, List<MultipartFile> imageFiles) {
         if (productRepository.existsByNameAndDeletedAtIsNull(request.getName())) {
             throw new CustomException("Product already exists with name: " + request.getName(), HttpStatus.CONFLICT);

@@ -32,6 +32,8 @@ public interface OrderService {
     CountOrderByStatus getCountByStatusOrder();
 
     OrderResponse changePaymentMethod(String id, String paymentMethod);
+
+    OrderResponse findByCode(String code);
 }
 
 

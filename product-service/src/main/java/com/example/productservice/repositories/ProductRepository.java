@@ -24,4 +24,5 @@ public interface ProductRepository extends JpaRepository<Product, Long>, JpaSpec
     boolean existsByNameAndDeletedAtIsNull(String name);
     List<Product> findByProductIdInAndDeletedAtIsNull(Set<Long> productIds);
     boolean existsByCodeProductAndDeletedAtIsNull(String codeProduct);
+    Product findByCodeProductAndDeletedAtIsNull(String codeProduct);
 }

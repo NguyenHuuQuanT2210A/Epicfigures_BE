@@ -1,5 +1,6 @@
 package com.example.orderservice.controller;
 
+import com.example.orderservice.dto.response.OrderResponse;
 import com.example.orderservice.enums.OrderSimpleStatus;
 import com.example.orderservice.dto.request.OrderRequest;
 import com.example.orderservice.dto.response.ApiResponse;
@@ -71,6 +72,14 @@ public class OrderController {
         return ApiResponse.builder()
                 .message("Get Order by Id")
                 .data(orderService.findById(id))
+                .build();
+    }
+
+    @GetMapping("/code/{code}")
+    public ApiResponse<?> getOrderByCode(@PathVariable String code) {
+        return ApiResponse.builder()
+                .message("Get Order by Code")
+                .data(orderService.findByCode(code))
                 .build();
     }
 

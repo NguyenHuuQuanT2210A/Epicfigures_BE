@@ -28,4 +28,6 @@ public interface ProductService {
     List<ProductResponse> getProductsByIds(Set<Long> productIds);
     void restoreProduct(Long id);
     Page<ProductResponse> searchBySpecification(Pageable pageable, String sort, String[] product, String category);
+
+    ProductResponse getProductByCode(String code);
 }

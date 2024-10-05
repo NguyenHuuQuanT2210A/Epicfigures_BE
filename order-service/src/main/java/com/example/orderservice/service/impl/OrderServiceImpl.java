@@ -369,6 +369,15 @@ public class OrderServiceImpl implements OrderService {
     }
 
     @Override
+    public OrderResponse findByCode(String code) {
+        var order = orderRepository.findByCodeOrder(code);
+        if (order == null) {
+            throw new CustomException("Order not found", HttpStatus.NOT_FOUND);
+        }
+        return orderMapper.toOrderResponse(order);
+    }
+
+    @Override
     public List<ProductResponse> findProductsByOrderId(String orderId) {
         var order = findOrderById(orderId);
         List<ProductResponse> products = new ArrayList<>();
