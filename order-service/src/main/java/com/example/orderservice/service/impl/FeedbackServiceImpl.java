@@ -11,13 +11,15 @@ import com.example.orderservice.mapper.FeedbackMapper;
 import com.example.orderservice.mapper.OrderDetailMapper;
 import com.example.orderservice.repositories.FeedbackRepository;
 import com.example.orderservice.service.FeedbackService;
+import com.example.orderservice.service.OrderService;
+import com.example.orderservice.service.ProductServiceClient;
+import com.example.orderservice.service.UserServiceClient;
 import lombok.RequiredArgsConstructor;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
-
-import java.util.ArrayList;
-import java.util.List;
 
 @Service
 @RequiredArgsConstructor
@@ -26,6 +28,9 @@ public class FeedbackServiceImpl implements FeedbackService {
     private final FeedbackMapper feedbackMapper;
     private final OrderDetailService orderDetailService;
     private final OrderDetailMapper orderDetailMapper;
+    private final OrderService orderService;
+    private final ProductServiceClient productServiceClient;
+    private final UserServiceClient userServiceClient;
 
     @Override
     public FeedbackResponse findById(Long id) {
@@ -40,32 +45,24 @@ public class FeedbackServiceImpl implements FeedbackService {
 
     @Override
     @Transactional
-    public List<FeedbackResponse> findByUserId(Long userId) {
-        List<FeedbackResponse> feedbackResponses = new ArrayList<>();
-
-        List<Feedback> feedbacks = feedbackRepository.findByUserId(userId);
-        for (Feedback feedback : feedbacks) {
-            feedbackResponses.add(feedbackMapper.toFeedbackResponse(feedback));
-        }
-
-        return feedbackResponses;
+    public Page<FeedbackResponse> findByUserId(Pageable pageable, Long userId) {
+        userServiceClient.getUserById(userId);
+        return feedbackRepository.findByUserId(userId, pageable).map(feedbackMapper::toFeedbackResponse);
     }
 
     @Override
     @Transactional
-    public List<FeedbackResponse> findByProductId(Long productId) {
-        List<FeedbackResponse> feedbackResponses = new ArrayList<>();
-        List<Feedback> feedbacks = feedbackRepository.findByProductId(productId);
-        for (Feedback feedback : feedbacks) {
-            feedbackResponses.add(feedbackMapper.toFeedbackResponse(feedback));
-        }
-        return feedbackResponses;
+    public Page<FeedbackResponse> findByProductId(Pageable pageable, Long productId) {
+        productServiceClient.getProductById(productId);
+        return feedbackRepository.findByProductId(productId, pageable).map(feedbackMapper::toFeedbackResponse);
     }
 
     @Override
     public void createFeedback(FeedbackRequest request) {
         try {
             Feedback feedback = feedbackMapper.toFeedback(request);
+            var oder = orderService.findById(request.getOrderDetail().getId().getOrderId());
+            feedback.setUserId(oder.getUserId());
             feedbackRepository.save(feedback);
         }catch (Exception e) {
             throw new CustomException("error while create feedback", HttpStatus.INTERNAL_SERVER_ERROR);
@@ -86,6 +83,15 @@ public class FeedbackServiceImpl implements FeedbackService {
     @Override
     public void deleteFeedback(Long id) {
         feedbackRepository.deleteById(id);
+    }
+
+    @Override
+    public Page<FeedbackResponse> findByProductIdAndRateStar(Pageable pageable, Long productId, Integer rateStar) {
+        productServiceClient.getProductById(productId);
+        if (rateStar == null){
+            return feedbackRepository.findByProductId(productId, pageable).map(feedbackMapper::toFeedbackResponse);
+        }
+        return feedbackRepository.findByProductIdAndRateStar(productId, rateStar, pageable).map(feedbackMapper::toFeedbackResponse);
     }
 
     private Feedback getFeedbackById(Long id){

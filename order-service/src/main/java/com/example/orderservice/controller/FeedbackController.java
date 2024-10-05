@@ -7,6 +7,9 @@ import com.example.orderservice.entities.OrderDetailId;
 import com.example.orderservice.service.FeedbackService;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import lombok.RequiredArgsConstructor;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Sort;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
@@ -35,18 +38,33 @@ public class FeedbackController {
     }
 
     @GetMapping("/user/{userId}")
-    ApiResponse<List<FeedbackResponse>> getFeedbackByUserId(@PathVariable Long userId) {
-        return ApiResponse.<List<FeedbackResponse>>builder()
+    ApiResponse<Page<FeedbackResponse>> getFeedbackByUserId(@RequestParam(defaultValue = "1", name = "page") int page,
+                                                            @RequestParam(defaultValue = "10", name = "limit") int limit,
+                                                            @PathVariable Long userId) {
+        return ApiResponse.<Page<FeedbackResponse>>builder()
                 .message("Get Feedback by User Id")
-                .data(feedbackService.findByUserId(userId))
+                .data(feedbackService.findByUserId(PageRequest.of(page -1, limit, Sort.by("createdAt")), userId))
                 .build();
     }
 
     @GetMapping("/product/{productId}")
-    ApiResponse<List<FeedbackResponse>> getFeedbackByProductId(@PathVariable Long productId) {
-        return ApiResponse.<List<FeedbackResponse>>builder()
+    ApiResponse<Page<FeedbackResponse>> getFeedbackByProductId(@RequestParam(defaultValue = "1", name = "page") int page,
+                                                               @RequestParam(defaultValue = "10", name = "limit") int limit,
+                                                               @PathVariable Long productId) {
+        return ApiResponse.<Page<FeedbackResponse>>builder()
                 .message("Get Feedback by Product Id")
-                .data(feedbackService.findByProductId(productId))
+                .data(feedbackService.findByProductId(PageRequest.of(page -1, limit, Sort.by("createdAt")), productId))
+                .build();
+    }
+
+    @GetMapping("/productIdAndRateStar")
+    ApiResponse<Page<FeedbackResponse>> getFeedbackByProductIdAndRateStar(@RequestParam(defaultValue = "1", name = "page") int page,
+                                                                          @RequestParam(defaultValue = "10", name = "limit") int limit,
+                                                                          @RequestParam Long productId,
+                                                                          @RequestParam(required = false) Integer rateStar) {
+        return ApiResponse.<Page<FeedbackResponse>>builder()
+                .message("Get Feedback by Product Id And Rate Star")
+                .data(feedbackService.findByProductIdAndRateStar(PageRequest.of(page -1, limit, Sort.by("createdAt")), productId, rateStar))
                 .build();
     }
 

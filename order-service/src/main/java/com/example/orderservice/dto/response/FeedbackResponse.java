@@ -14,6 +14,7 @@ public class FeedbackResponse {
     Long id;
     Integer rateStar;
     String comment;
+    Long userId;
     @JsonIgnore
     OrderDetailResponse orderDetail;
 }

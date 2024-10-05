@@ -350,13 +350,13 @@ public class OrderServiceImpl implements OrderService {
             order.setStatus(status);
         }
 
-        if (status == OrderSimpleStatus.COMPLETE){
-            for (var orderDetail : order.getOrderDetails()){
-                feedbackRepository.save(feedbackMapper.toFeedback(FeedbackRequest.builder()
-                        .orderDetail(orderDetail)
-                        .build()));
-            }
-        }
+//        if (status == OrderSimpleStatus.COMPLETE){
+//            for (var orderDetail : order.getOrderDetails()){
+//                feedbackRepository.save(feedbackMapper.toFeedback(FeedbackRequest.builder()
+//                        .orderDetail(orderDetail)
+//                        .build()));
+//            }
+//        }
         orderRepository.save(order);
         return orderMapper.toOrderResponse(order);
     }

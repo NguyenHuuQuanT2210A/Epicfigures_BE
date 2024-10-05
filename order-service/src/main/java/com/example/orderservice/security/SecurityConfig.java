@@ -25,6 +25,7 @@ public class SecurityConfig {
             "/api/v1/feedback/id/**",
             "/api/v1/feedback/orderDetail/**",
             "/api/v1/feedback/product/**",
+            "/api/v1/feedback/productIdAndRateStar/**",
             "/api/v1/orders/{id}",
             "/api/v1/orders/changeStatus/{id}"
     };
