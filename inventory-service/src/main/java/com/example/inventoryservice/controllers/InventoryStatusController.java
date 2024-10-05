@@ -47,6 +47,17 @@ public class InventoryStatusController {
                 .build();
     }
 
+    @GetMapping("/name")
+    ApiResponse<Page<InventoryStatusResponse>> getInventoryStatusByName(
+            @RequestParam(defaultValue = "1", name = "page") int page,
+            @RequestParam(defaultValue = "10", name = "limit") int limit,
+            @RequestParam String name) {
+        return ApiResponse.<Page<InventoryStatusResponse>>builder()
+                .message("Get InventoryStatus By Id")
+                .data(inventoryStatusService.getInventoryStatusByName(name, PageRequest.of(page -1, limit, Sort.by("createdAt").descending())))
+                .build();
+    }
+
     @DeleteMapping("/{id}")
     ApiResponse<String> deleteInventoryStatus(@PathVariable Integer id) {
         inventoryStatusService.deleteInventoryStatus(id);

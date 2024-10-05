@@ -35,6 +35,11 @@ public class InventoryStatusServiceImpl implements InventoryStatusService {
     }
 
     @Override
+    public Page<InventoryStatusResponse> getInventoryStatusByName(String name, Pageable pageable) {
+        return inventoryStatusRepository.findByNameLikeAndDeletedAtIsNull(name, pageable).map(inventoryStatusMapper::toInventoryStatusResponse);
+    }
+
+    @Override
     public void updateInventoryStatus(Integer id, InventoryStatusRequest request) {
         InventoryStatus inventoryStatus = findInventoryStatusById(id);
         inventoryStatusMapper.updatedInventoryStatus(inventoryStatus, request);

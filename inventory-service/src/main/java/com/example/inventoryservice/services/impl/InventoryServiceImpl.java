@@ -59,7 +59,7 @@ public class InventoryServiceImpl implements InventoryService {
     @Override
     public Page<InventoryResponse> getInventoryByProductId(long productId, Pageable pageable) {
         ApiResponse<ProductResponse> product = productClients.getProductById(productId);
-        return inventoryRepository.findInventoryByProductId(product.getData().getProductId(), pageable)
+        return inventoryRepository.findInventoryByProductIdAndDeletedAtIsNull(product.getData().getProductId(), pageable)
                 .map(inventory -> {
                     InventoryResponse inventoryResponse = inventoryMapper.toInventoryResponse(inventory);
                     inventoryResponse.setProductResponse(getProductById(inventory.getProductId()).getData());
@@ -70,7 +70,7 @@ public class InventoryServiceImpl implements InventoryService {
     @Override
     public Page<InventoryResponse> getInventoryByStatusId(Integer inventoryStatusId, Pageable pageable) {
         inventoryStatusRepository.findById(inventoryStatusId).orElseThrow(() -> new NotFoundException("Inventory Status not found"));
-        return inventoryRepository.findInventoryByInventoryStatusId(inventoryStatusId, pageable)
+        return inventoryRepository.findInventoryByInventoryStatusIdAndDeletedAtIsNull(inventoryStatusId, pageable)
                 .map(inventory -> {
                     InventoryResponse inventoryResponse = inventoryMapper.toInventoryResponse(inventory);
                     inventoryResponse.setProductResponse(getProductById(inventory.getProductId()).getData());
