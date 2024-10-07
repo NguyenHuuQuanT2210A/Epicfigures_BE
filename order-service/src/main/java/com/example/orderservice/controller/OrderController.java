@@ -38,7 +38,7 @@ public class OrderController {
     public ApiResponse<?> getAllOrder(@RequestParam(name = "page") int page, @RequestParam(name = "limit") int limit) {
         return ApiResponse.builder()
                 .message("Get All Orders with per page")
-                .data(orderService.getAll(PageRequest.of(page - 1, limit)))
+                .data(orderService.getAll(PageRequest.of(page - 1, limit, Sort.Direction.DESC, "createdAt")))
                 .build();
     }
 

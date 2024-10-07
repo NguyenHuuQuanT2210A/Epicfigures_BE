@@ -22,12 +22,10 @@ import com.example.orderservice.specification.SearchBody;
 import com.example.orderservice.specification.SearchCriteria;
 import com.example.orderservice.specification.SearchCriteriaOperator;
 import com.example.orderservice.util.GenerateUniqueCode;
+import jakarta.persistence.criteria.*;
 import jakarta.servlet.http.HttpServletRequest;
 import lombok.RequiredArgsConstructor;
-import org.springframework.data.domain.Page;
-import org.springframework.data.domain.PageRequest;
-import org.springframework.data.domain.Pageable;
-import org.springframework.data.domain.Sort;
+import org.springframework.data.domain.*;
 import org.springframework.data.jpa.domain.Specification;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -412,41 +410,84 @@ public class OrderServiceImpl implements OrderService {
                 .delivered(orderRepository.countOrdersByStatus(OrderSimpleStatus.DELIVERED))
                 .complete(orderRepository.countOrdersByStatus(OrderSimpleStatus.COMPLETE))
                 .cancel(orderRepository.countOrdersByStatus(OrderSimpleStatus.CANCEL))
+                .paymentFailed(orderRepository.countOrdersByStatus(OrderSimpleStatus.PAYMENT_FAILED))
                 .build();
     }
 
     @Override
     public Page<OrderResponse> searchBySpecification(Pageable pageable, String sort, String[] order) {
-        Pageable pageableSorted = pageable;
-        if (StringUtils.hasText(sort)){
-            Pattern patternSort = Pattern.compile(SORT_BY);
-            Matcher matcher = patternSort.matcher(sort);
-            if (matcher.find()) {
-                String columnName = matcher.group(1);
-                pageableSorted = matcher.group(3).equalsIgnoreCase("desc")
-                        ? PageRequest.of(pageable.getPageNumber(), pageable.getPageSize(), Sort.by(columnName).descending())
-                        : PageRequest.of(pageable.getPageNumber(), pageable.getPageSize(), Sort.by(columnName).ascending());
-            }
-        }
-
         List<SpecSearchCriteria> params = new ArrayList<>();
         Pattern pattern = Pattern.compile(SEARCH_SPEC_OPERATOR);
         if (order != null) {
             params.addAll(parseOrderCriteria(order, pattern));
         }
 
+        Specification<Order> statusAndCreatedAtSortSpecification = (root, query, criteriaBuilder) -> {
+            OrderSimpleStatus[] statuses = {
+                    OrderSimpleStatus.PENDING, OrderSimpleStatus.PROCESSING, OrderSimpleStatus.ONDELIVERY,
+                    OrderSimpleStatus.DELIVERED, OrderSimpleStatus.COMPLETE, OrderSimpleStatus.CANCEL,
+                    OrderSimpleStatus.CREATED, OrderSimpleStatus.PAYMENT_FAILED
+            };
+
+            CriteriaBuilder.Case<Integer> orderCase = criteriaBuilder.selectCase();
+            for (int i = 0; i < statuses.length; i++) {
+                orderCase = orderCase.when(criteriaBuilder.equal(root.get("status"), statuses[i]), i);
+            }
+
+            Predicate statusPredicate = root.get("status").in((Object[]) statuses);
+            List<String> validColumns = Arrays.asList(
+                    "id", "userId", "codeOrder", "addressOrderId", "firstName", "lastName", "email",
+                    "address", "phone", "country", "postalCode", "note", "paymentMethod", "totalPrice",
+                    "status", "createdAt", "updatedAt", "deletedAt", "createdBy", "updatedBy", "deletedBy"
+            );
+
+            if (StringUtils.hasText(sort)) {
+                Pattern patternSort = Pattern.compile(SORT_BY);
+                Matcher matcher = patternSort.matcher(sort);
+                if (matcher.find()) {
+                    String columnName = matcher.group(1);
+                    String orderType = matcher.group(3);
+                    if (!validColumns.contains(columnName)) throw new IllegalArgumentException("Invalid sort column: " + columnName);
+
+                    boolean isDesc = orderType.equalsIgnoreCase("desc");
+                    if (columnName.equals("createdAt")) {
+                        query.orderBy(
+                                criteriaBuilder.asc(orderCase),
+                                isDesc ? criteriaBuilder.desc(root.get(columnName)) : criteriaBuilder.asc(root.get(columnName))
+                        );
+                    } else {
+                        query.orderBy(
+                                criteriaBuilder.asc(orderCase),
+                                isDesc ? criteriaBuilder.desc(root.get(columnName)) : criteriaBuilder.asc(root.get(columnName)),
+                                criteriaBuilder.desc(root.get("createdAt"))
+                        );
+                    }
+                }
+            } else {
+                query.orderBy(criteriaBuilder.asc(orderCase), criteriaBuilder.desc(root.get("createdAt")));
+            }
+
+            return statusPredicate;
+        };
+
+        Specification<Order> result;
+
         if (params.isEmpty()) {
-            return orderRepository.findAll(pageableSorted).map(orderMapper.INSTANCE::toOrderResponse);
+            result = statusAndCreatedAtSortSpecification;
+        } else {
+            result = new com.example.orderservice.repositories.specification.OrderSpecification(params.get(0));
+            for (int i = 1; i < params.size(); i++) {
+                result = params.get(i).getOrPredicate()
+                        ? Specification.where(result).or(new com.example.orderservice.repositories.specification.OrderSpecification(params.get(i)))
+                        : Specification.where(result).and(new com.example.orderservice.repositories.specification.OrderSpecification(params.get(i)));
+            }
+
+            result = Specification.where(result).and(statusAndCreatedAtSortSpecification);
         }
 
-        Specification<Order> result = new com.example.orderservice.repositories.specification.OrderSpecification(params.get(0));
-        for (int i = 1; i < params.size(); i++) {
-            result = params.get(i).getOrPredicate()
-                    ? Specification.where(result).or(new com.example.orderservice.repositories.specification.OrderSpecification(params.get(i)))
-                    : Specification.where(result).and(new com.example.orderservice.repositories.specification.OrderSpecification(params.get(i)));
-        }
 
-        Page<Order> orders = orderRepository.findAll(Objects.requireNonNull(result), pageableSorted);
+        Page<Order> orders = orderRepository.findAll(Objects.requireNonNull(result), pageable);
+
         return orders.map(orderMapper.INSTANCE::toOrderResponse);
     }
 

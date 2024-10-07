@@ -1,5 +1,6 @@
 package com.example.orderservice.repositories.specification;
 
+import com.example.orderservice.enums.OrderSimpleStatus;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
@@ -34,6 +35,10 @@ public class SpecSearchCriteria {
         }
         this.key = key;
         this.operation = oper;
-        this.value = value;
+        if (key != null && key.equals("status")){
+            this.value = OrderSimpleStatus.valueOf(value.toUpperCase()).ordinal();
+        }else {
+            this.value = value;
+        }
     }
 }

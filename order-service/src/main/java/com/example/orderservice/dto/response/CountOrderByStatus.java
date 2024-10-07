@@ -15,4 +15,5 @@ public class CountOrderByStatus {
     private Long delivered;
     private Long complete;
     private Long cancel;
+    private Long paymentFailed;
 }
