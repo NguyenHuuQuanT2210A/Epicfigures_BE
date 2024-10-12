@@ -15,6 +15,6 @@ public class InventoryRequest {
     @Max(value = 500, message = "quantity must be less than or equal to 500")
     private Integer quantity;
     private Integer inventoryStatusId;
-    private String reason;
+    private String note;
     private String date;
 }

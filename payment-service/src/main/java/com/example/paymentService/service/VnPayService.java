@@ -15,6 +15,11 @@ import java.util.*;
 @Service
 @RequiredArgsConstructor
 public class VnPayService {
+    private static final BigDecimal EXCHANGE_RATE = new BigDecimal("25000");
+
+    public static BigDecimal convertVNDToUSD(BigDecimal amountVND) {
+        return amountVND.multiply(EXCHANGE_RATE);
+    }
 
     public String createPaymentVnPay(String orderId, OrderResponse orderResponse, String urlReturn) throws UnsupportedEncodingException {
         String vnp_Version = "2.1.0";
@@ -25,7 +30,7 @@ public class VnPayService {
         String orderType = "other";
         String bankCode = "NCB";
 
-        BigDecimal total = orderResponse.getTotalPrice();
+        BigDecimal total = convertVNDToUSD(orderResponse.getTotalPrice());
         Map<String, String> vnp_Params = new HashMap<>();
         vnp_Params.put("vnp_Version", vnp_Version);
         vnp_Params.put("vnp_Command", vnp_Command);

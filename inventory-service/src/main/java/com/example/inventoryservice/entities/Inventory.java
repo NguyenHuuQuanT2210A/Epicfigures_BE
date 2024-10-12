@@ -19,7 +19,7 @@ public class Inventory extends BaseEntity {
     private Long productId;
     private Integer quantity;
 
-    private String reason;
+    private String note;
     private LocalDateTime date;
 
     @ManyToOne(fetch = FetchType.LAZY)

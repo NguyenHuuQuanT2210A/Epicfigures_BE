@@ -17,16 +17,12 @@ import java.util.Locale;
 @RequiredArgsConstructor
 public class PaypalService {
     private final APIContext apiContext;
-    private static final BigDecimal EXCHANGE_RATE = new BigDecimal("23000");
 
-    public static BigDecimal convertVNDToUSD(BigDecimal amountVND) {
-        return amountVND.divide(EXCHANGE_RATE, 2, BigDecimal.ROUND_HALF_UP);
-    }
 
     public String createPayment(String orderId, OrderResponse orderResponse, String urlReturn) throws PayPalRESTException {
         Amount amount = new Amount();
         amount.setCurrency("USD");
-        amount.setTotal(String.format(Locale.forLanguageTag("USD"),"%.2f", convertVNDToUSD(orderResponse.getTotalPrice()).doubleValue()));
+        amount.setTotal(String.format(Locale.forLanguageTag("USD"),"%.2f", orderResponse.getTotalPrice()));
 
         Transaction transaction = new Transaction();
         transaction.setAmount(amount);

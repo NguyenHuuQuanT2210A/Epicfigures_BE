@@ -17,7 +17,7 @@ public class InventoryResponse implements Serializable {
     private Long id;
     private Integer quantity;
     private String status;
-    private String reason;
+    private String note;
     private ProductResponse productResponse;
     @JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "dd-MM-yyyy HH:mm:ss")
     private LocalDateTime date;
