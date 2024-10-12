@@ -20,6 +20,7 @@ import org.springframework.validation.BindingResult;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 
+import java.io.IOException;
 import java.util.Map;
 import java.util.stream.Collectors;
 
@@ -59,7 +60,7 @@ public class BlogController {
     }
 
     @DeleteMapping("/{id}")
-    ApiResponse<Void> deleteBlog(@PathVariable Long id) {
+    ApiResponse<Void> deleteBlog(@PathVariable Long id) throws IOException {
         blogService.deleteBlog(id);
         return ApiResponse.<Void>builder()
                 .message("Delete Blog Successfully")
@@ -68,7 +69,7 @@ public class BlogController {
 
     @PostMapping(consumes = MediaType.MULTIPART_FORM_DATA_VALUE,
             produces = MediaType.APPLICATION_JSON_VALUE)
-    ApiResponse<?> saveBlog(@RequestPart("blog") BlogRequest request, @RequestParam("file") MultipartFile imageFile, BindingResult result){
+    ApiResponse<?> saveBlog(@RequestPart("blog") BlogRequest request, @RequestParam("file") MultipartFile imageFile, BindingResult result) throws IOException {
         if (result.hasErrors()) {
             Map<String, String> errors = result.getFieldErrors().stream()
                     .collect(Collectors.toMap(fieldError -> fieldError.getField(), fieldError -> fieldError.getDefaultMessage()));
@@ -85,7 +86,7 @@ public class BlogController {
     }
 
     @PutMapping("/{id}")
-    ApiResponse<?> updateBlog(@PathVariable Long id, @RequestPart("blog")BlogRequest request, @RequestParam("file") MultipartFile imageFile, BindingResult result) {
+    ApiResponse<?> updateBlog(@PathVariable Long id, @RequestPart("blog")BlogRequest request, @RequestParam("file") MultipartFile imageFile, BindingResult result) throws IOException {
         if (result.hasErrors()) {
             Map<String, String> errors = result.getFieldErrors().stream()
                     .collect(Collectors.toMap(fieldError -> fieldError.getField(), fieldError -> fieldError.getDefaultMessage()));

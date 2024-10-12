@@ -27,6 +27,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.util.StringUtils;
 import org.springframework.web.multipart.MultipartFile;
 
+import java.io.IOException;
 import java.time.LocalDateTime;
 import java.util.*;
 import java.util.regex.Matcher;
@@ -137,7 +138,7 @@ public class ProductServiceImpl implements ProductService {
     }
 
     @Override
-    public void addProduct(ProductRequest request, List<MultipartFile> imageFiles) {
+    public void addProduct(ProductRequest request, List<MultipartFile> imageFiles) throws IOException {
         if (productRepository.existsByNameAndDeletedAtIsNull(request.getName())) {
             throw new CustomException("Product already exists with name: " + request.getName(), HttpStatus.CONFLICT);
         }
@@ -191,7 +192,7 @@ public class ProductServiceImpl implements ProductService {
     }
 
     @Override
-    public void updateProduct(long id, ProductRequest request, List<MultipartFile> imageFiles) {
+    public void updateProduct(long id, ProductRequest request, List<MultipartFile> imageFiles) throws IOException {
         Product existingProduct = findProductById(id);
         if (request.getPrice() != null) {
             existingProduct.setPrice(request.getPrice());

@@ -6,13 +6,15 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.web.multipart.MultipartFile;
 
+import java.io.IOException;
+
 public interface BlogService {
     Page<BlogResponse> getAllBlogs(Pageable pageable);
     BlogResponse getBlogById(Long id);
     Page<BlogResponse> getBlogByTitle(String title, Pageable pageable);
-    BlogResponse updateBlog(Long id, BlogRequest inventoryRequest, MultipartFile imageFile);
-    BlogResponse addBlog(BlogRequest inventoryRequest, MultipartFile imageFile);
-    void deleteBlog(Long id);
+    BlogResponse updateBlog(Long id, BlogRequest inventoryRequest, MultipartFile imageFile) throws IOException;
+    BlogResponse addBlog(BlogRequest inventoryRequest, MultipartFile imageFile) throws IOException;
+    void deleteBlog(Long id) throws IOException;
     void moveToTrash(Long id);
     Page<BlogResponse> getInTrash(Pageable pageable);
     void restoreBlog(Long id);

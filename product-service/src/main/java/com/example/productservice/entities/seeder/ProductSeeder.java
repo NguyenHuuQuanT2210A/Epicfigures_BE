@@ -40,7 +40,6 @@ public class ProductSeeder implements CommandLineRunner {
     }
 
     private void createProducts() {
-        List<ProductImage> productImages = new ArrayList<>();
 
         List<Category> categories = new ArrayList<>();
         for (int i = 0; i < 7; i++) {
@@ -70,7 +69,7 @@ public class ProductSeeder implements CommandLineRunner {
             }
             String slug = StringHelper.toSlug(productName);
             String description = "Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua.";
-            double price = (faker.number().randomNumber(5, true));
+            double price = (faker.number().randomNumber(2, true));
             ProductSimpleStatus status = ProductSimpleStatus.ACTIVE;
             Product product = new Product();
             product.setName(productName);
@@ -96,14 +95,16 @@ public class ProductSeeder implements CommandLineRunner {
         }
         productRepository.saveAll(products);
 
-        for (int j = 0; j < 30; j++) {
-            ProductImage productImage = new ProductImage();
-            productImage.setProduct(products.get(faker.number().numberBetween(0, 19)));
-            productImage.setImageUrl("img-url-" + j + ".jpg");
-            productImages.add(productImage);
-        }
+//        List<ProductImage> productImages = new ArrayList<>();
 
-        productImageRepository.saveAll(productImages);
+//        for (int j = 0; j < 30; j++) {
+//            ProductImage productImage = new ProductImage();
+//            productImage.setProduct(products.get(faker.number().numberBetween(0, 19)));
+//            productImage.setImageUrl("img-url-" + j + ".jpg");
+//            productImages.add(productImage);
+//        }
+
+//        productImageRepository.saveAll(productImages);
     }
 
 }

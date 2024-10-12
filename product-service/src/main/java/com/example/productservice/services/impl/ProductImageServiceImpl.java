@@ -1,5 +1,6 @@
 package com.example.productservice.services.impl;
 
+import com.example.productservice.configs.FirebaseStorageProperties;
 import com.example.productservice.dto.response.ProductImageResponse;
 import com.example.productservice.dto.response.ProductResponse;
 import com.example.productservice.entities.Product;
@@ -11,6 +12,7 @@ import com.example.productservice.mapper.ProductMapper;
 import com.example.productservice.repositories.ProductImageRepository;
 import com.example.productservice.repositories.ProductRepository;
 import com.example.productservice.services.FileStorageService;
+import com.example.productservice.services.FirebaseService;
 import com.example.productservice.services.ProductImageService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
@@ -18,6 +20,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.multipart.MultipartFile;
 
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.List;
@@ -31,7 +34,9 @@ public class ProductImageServiceImpl implements ProductImageService {
     private final ProductRepository productRepository;
     private final ProductImageMapper productImageMapper;
     private final ProductMapper productMapper;
-    private final FileStorageService fileStorageService;
+//    private final FileStorageService fileStorageService;
+    private final FirebaseService firebaseService;
+    private final FirebaseStorageProperties firebaseStorageProperties;
 
     @Override
     public List<ProductImageResponse> getProductImages(Long productId) {
@@ -102,7 +107,7 @@ public class ProductImageServiceImpl implements ProductImageService {
 
     @Override
     @Transactional
-    public List<ProductImageResponse> saveProductImage(Long productId, List<MultipartFile> imageFiles) {
+    public List<ProductImageResponse> saveProductImage(Long productId, List<MultipartFile> imageFiles) throws IOException {
         ProductResponse product = getProductById(productId);
         if (imageFiles == null || imageFiles.isEmpty()) {
             throw new CustomException("Image files are required", HttpStatus.BAD_REQUEST);
@@ -115,7 +120,9 @@ public class ProductImageServiceImpl implements ProductImageService {
         List<ProductImageResponse> productImageDTOs = new ArrayList<>();
         for (MultipartFile imageFile : imageFiles) {
             ProductImage productImageEntity = new ProductImage();
-            productImageEntity.setImageUrl(fileStorageService.storeProductImageFile(imageFile));
+//            productImageEntity.setImageUrl(fileStorageService.storeProductImageFile(imageFile));
+            productImageEntity.setImageUrl(firebaseService.upload(imageFile, firebaseStorageProperties.getUploadProductImage()));
+
             productImageEntity.setProduct(productMapper.INSTANCE.productResponsetoProduct(product));
             productImageRepository.save(productImageEntity);
             productImageDTOs.add(productImageMapper.INSTANCE.toProductImageResponse(productImageEntity));
@@ -125,7 +132,7 @@ public class ProductImageServiceImpl implements ProductImageService {
 
     @Override
     @Transactional
-    public List<ProductImageResponse> updateProductImage(Long productId, List<Long> productImageIds, List<MultipartFile> imageFiles) {
+    public List<ProductImageResponse> updateProductImage(Long productId, List<Long> productImageIds, List<MultipartFile> imageFiles) throws IOException {
         ProductResponse product = getProductById(productId);
 
         if (product == null) {
@@ -140,7 +147,7 @@ public class ProductImageServiceImpl implements ProductImageService {
             if (!productImageRepository.findById(productImageId).get().getProduct().getProductId().equals(productId)) {
                 throw new CustomException("Product image not found with id: " + productImageId + " for product id: " + productId, HttpStatus.BAD_REQUEST);
             }
-            productImageRepository.deleteById(productImageId);
+            deleteProductImage(productImageId);
         }
 
         // Add new product images
@@ -154,7 +161,9 @@ public class ProductImageServiceImpl implements ProductImageService {
         for (MultipartFile imageFile : imageFiles) {
             ProductImage productImageEntity = new ProductImage();
             productImageEntity.setProduct(productMapper.INSTANCE.productResponsetoProduct(product));
-            productImageEntity.setImageUrl(fileStorageService.storeProductImageFile(imageFile));
+//            productImageEntity.setImageUrl(fileStorageService.storeProductImageFile(imageFile));
+            productImageEntity.setImageUrl(firebaseService.upload(imageFile, firebaseStorageProperties.getUploadProductImage()));
+
             ProductImage updatedProductImage = productImageRepository.save(productImageEntity);
             updatedImages.add(productImageMapper.INSTANCE.toProductImageResponse(updatedProductImage));
         }
@@ -162,32 +171,34 @@ public class ProductImageServiceImpl implements ProductImageService {
     }
 
     @Override
-    public void deleteProductImage(Long id) {
+    public void deleteProductImage(Long id) throws IOException {
         var productImage = productImageRepository.findById(id);
         if (productImage.isEmpty()) {
             throw new CustomException("Product image not found with id: " + id, HttpStatus.BAD_REQUEST);
         }
-        fileStorageService.deleteProductImageFile(productImage.get().getImageUrl());
+//        fileStorageService.deleteProductImageFile(productImage.get().getImageUrl());
         productImageRepository.deleteById(id);
+        firebaseService.delete(productImage.get().getImageUrl());
     }
 
     @Override
     @Transactional
-    public void deleteProductImages(Long productId) {
+    public void deleteProductImages(Long productId) throws IOException {
         ProductResponse product = getProductById(productId);
         if (product == null) {
             throw new CustomException("Product not found with id: " + productId, HttpStatus.BAD_REQUEST);
         }
         List<ProductImage> productImages = productImageRepository.findByProductProductId(productId);
         for (ProductImage productImage : productImages) {
-            fileStorageService.deleteProductImageFile(productImage.getImageUrl());
+//            fileStorageService.deleteProductImageFile(productImage.getImageUrl());
+            firebaseService.delete(productImage.getImageUrl());
         }
         productImageRepository.deleteAllImagesByProductId(productId);
     }
 
     @Override
     @Transactional
-    public void deleteProductImages(List<Long> productIds) {
+    public void deleteProductImages(List<Long> productIds) throws IOException {
         for (Long productId : productIds) {
             ProductResponse product = getProductById(productId);
             if (product == null) {
@@ -198,7 +209,8 @@ public class ProductImageServiceImpl implements ProductImageService {
                 if (!productImage.getProduct().getProductId().equals(productId)) {
                     throw new CustomException("Product image not found with id: " + productImage.getImageId() + " for product id: " + productId, HttpStatus.BAD_REQUEST);
                 }
-                fileStorageService.deleteProductImageFile(productImage.getImageUrl());
+//                fileStorageService.deleteProductImageFile(productImage.getImageUrl());
+                firebaseService.delete(productImage.getImageUrl());
             }
         }
         productImageRepository.deleteAllImagesByProductIds(productIds);

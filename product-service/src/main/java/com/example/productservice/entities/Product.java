@@ -48,7 +48,8 @@ public class Product extends BaseEntity {
     private String weight;
 
     @ColumnDefault("0")
-    private Long soldQuantity;
+    @Column(nullable = false)
+    private Long soldQuantity = 0L;
 
     public Product(long l, String s, int i) {
         this.productId = l;

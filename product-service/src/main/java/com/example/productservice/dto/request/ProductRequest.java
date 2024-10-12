@@ -31,6 +31,4 @@ public class ProductRequest {
     private String size;
 
     private String weight;
-
-    private Long soldQuantity;
 }

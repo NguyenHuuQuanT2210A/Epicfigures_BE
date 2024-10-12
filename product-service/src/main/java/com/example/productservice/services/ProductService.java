@@ -8,6 +8,7 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
 
+import java.io.IOException;
 import java.util.List;
 import java.util.Set;
 
@@ -19,8 +20,8 @@ public interface ProductService {
     Page<ProductResponse> getProductByNameLike(String name, Pageable pageable);
     ProductResponse getProductById(Long id);
     Page<ProductResponse> findByCategory(Pageable pageable, Long categoryId);
-    void addProduct(ProductRequest request, List<MultipartFile> imageFiles);
-    void updateProduct(long id, ProductRequest request, List<MultipartFile> imageFiles);
+    void addProduct(ProductRequest request, List<MultipartFile> imageFiles) throws IOException;
+    void updateProduct(long id, ProductRequest request, List<MultipartFile> imageFiles) throws IOException;
     void updateStockQuantity(long id, Integer stockQuantity);
     void deleteProduct(long id);
     void moveToTrash(Long id);
@@ -30,4 +31,6 @@ public interface ProductService {
     Page<ProductResponse> searchBySpecification(Pageable pageable, String sort, String[] product, String category);
 
     ProductResponse getProductByCode(String code);
+
+    void updateSoldQuantity(Long id, Integer quantity);
 }

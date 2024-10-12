@@ -6,6 +6,7 @@ import com.example.productservice.dto.response.ProductImageResponse;
 import com.example.productservice.exception.CustomException;
 import com.example.productservice.services.FileStorageService;
 import com.example.productservice.services.FileUploadService;
+import com.example.productservice.services.FirebaseService;
 import com.example.productservice.services.ProductImageService;
 import jakarta.servlet.http.HttpServletRequest;
 import lombok.RequiredArgsConstructor;
@@ -18,6 +19,7 @@ import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 
+import java.io.IOException;
 import java.util.List;
 
 @RestController
@@ -27,6 +29,7 @@ public class ProductImageController {
     private final ProductImageService productImageSevice;
     private final FileStorageService fileStorageService;
     private final FileUploadService fileUploadService;
+    private final FirebaseService firebaseService;
 
     @GetMapping("/productId/{productId}")
     ApiResponse<List<ProductImageResponse>> getProductImages(@PathVariable Long productId) {
@@ -37,17 +40,17 @@ public class ProductImageController {
     }
 
     @DeleteMapping("/{id}")
-    void deleteProductImage(@PathVariable Long id) {
+    void deleteProductImage(@PathVariable Long id) throws IOException {
         productImageSevice.deleteProductImage(id);
     }
 
     @DeleteMapping("/product/{productId}")
-    void deleteProductImages(@PathVariable Long productId) {
+    void deleteProductImages(@PathVariable Long productId) throws IOException {
         productImageSevice.deleteProductImages(productId);
     }
 
     @DeleteMapping("/products")
-    void deleteProductImages(@RequestParam List<Long> productIds) {
+    void deleteProductImages(@RequestParam List<Long> productIds) throws IOException {
         productImageSevice.deleteProductImages(productIds);
     }
 
@@ -55,7 +58,7 @@ public class ProductImageController {
             MediaType.APPLICATION_FORM_URLENCODED_VALUE,
             MediaType.APPLICATION_JSON_VALUE},
             produces = MediaType.APPLICATION_JSON_VALUE)
-    ApiResponse<List<ProductImageResponse>> saveProductImage(@RequestParam Long productId, @RequestParam("files") List<MultipartFile> imageFiles){
+    ApiResponse<List<ProductImageResponse>> saveProductImage(@RequestParam Long productId, @RequestParam("files") List<MultipartFile> imageFiles) throws IOException {
         return ApiResponse.<List<ProductImageResponse>>builder()
                 .message("Create a new Product Image")
                 .data(productImageSevice.saveProductImage(productId, imageFiles))
@@ -63,7 +66,7 @@ public class ProductImageController {
     }
 
     @PutMapping
-    ApiResponse<List<ProductImageResponse>> updateProductImage(@RequestParam Long productId, @RequestParam List<Long> productImageIds, @RequestParam("files") List<MultipartFile> imageFiles) {
+    ApiResponse<List<ProductImageResponse>> updateProductImage(@RequestParam Long productId, @RequestParam List<Long> productImageIds, @RequestParam("files") List<MultipartFile> imageFiles) throws IOException {
         return ApiResponse.<List<ProductImageResponse>>builder()
                 .message("Update Product Image")
                 .data(productImageSevice.updateProductImage(productId, productImageIds, imageFiles))
@@ -102,5 +105,20 @@ public class ProductImageController {
     @PostMapping("/upload")
     FileUploadedDTO uploadImageCloudinary(@RequestParam("file") MultipartFile file) throws Exception {
         return fileUploadService.uploadFile(file);
+    }
+
+    @PostMapping("/upload-firebase")
+    String uploadImageFirebase(@RequestParam("file") MultipartFile file) throws IOException {
+        return firebaseService.upload(file, "products/");
+    }
+
+    @GetMapping("/image-firebase")
+    ResponseEntity<?> getImage(@RequestParam String imageName) {
+        return ResponseEntity.ok(firebaseService.getImageUrl(imageName));
+    }
+
+    @DeleteMapping("/delete-firebase")
+    void deleteImageFirebase(@RequestParam String imageName) throws IOException {
+        firebaseService.delete(imageName);
     }
 }
