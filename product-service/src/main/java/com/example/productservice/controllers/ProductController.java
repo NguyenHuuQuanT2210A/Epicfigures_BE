@@ -192,7 +192,15 @@ public class ProductController {
                 .build();
     }
 
-    @PutMapping("/updateQuantity/{id}")
+    @PutMapping("/updateSoldQuantity/{id}")
+    ApiResponse<?> updateSoldQuantity(@PathVariable Long id, @RequestParam Integer quantity) {
+        productService.updateSoldQuantity(id, quantity);
+        return ApiResponse.builder()
+                .message("Update sold quantity successfully")
+                .build();
+    }
+
+    @PutMapping("/updateStockQuantity/{id}")
     ApiResponse<?> updateStockQuantity(@PathVariable Long id, @RequestParam Integer quantity) {
         productService.updateStockQuantity(id, quantity);
         return ApiResponse.builder()

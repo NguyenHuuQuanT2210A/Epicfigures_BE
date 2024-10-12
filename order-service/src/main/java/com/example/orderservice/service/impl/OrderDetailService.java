@@ -52,7 +52,7 @@ public class OrderDetailService {
         var product = productServiceClient.getProductById(orderDetail.getId().getProductId());
         Integer stockQuantity = product.getData().getStockQuantity() - orderDetail.getQuantity();
 
-        productServiceClient.updateStockQuantity(product.getData().getProductId(), stockQuantity);
+        productServiceClient.updateSoldQuantity(product.getData().getProductId(), stockQuantity);
 
         return orderDetailMapper.INSTANCE.toOrderDetailResponse(orderDetail);
     }
