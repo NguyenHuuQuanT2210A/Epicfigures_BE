@@ -10,6 +10,7 @@
         <module name="inventory-service" />
         <module name="payment-service" />
         <module name="common" />
+        <module name="coupon-service" />
         <module name="demo-spring-kafka" />
         <module name="api-gateway" />
         <module name="demo-http-microservices" />
@@ -25,6 +26,7 @@
     <option name="ADDITIONAL_OPTIONS_OVERRIDE">
       <module name="api-gateway" options="-parameters" />
       <module name="common" options="-parameters" />
+      <module name="coupon-service" options="-parameters" />
       <module name="demo-http-microservices" options="-parameters" />
       <module name="demo-spring-kafka" options="-parameters" />
       <module name="eureka-server" options="-parameters" />

@@ -1,4 +1,4 @@
-package com.example.inventoryservice.helper;
+package com.example.couponservice.util;
 
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
