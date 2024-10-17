@@ -38,8 +38,8 @@ public class Product extends BaseEntity {
     @OneToMany(mappedBy = "product", fetch = FetchType.EAGER, cascade = CascadeType.ALL)
     private Set<ProductImage> images;
 
-    @Column(nullable = false)
-    private Integer stockQuantity;
+//    @Column(nullable = false)
+//    private Integer stockQuantity;
 
     private String manufacturer;
 
@@ -47,9 +47,12 @@ public class Product extends BaseEntity {
 
     private String weight;
 
-    @ColumnDefault("0")
-    @Column(nullable = false)
-    private Long soldQuantity = 0L;
+//    @ColumnDefault("0")
+//    @Column(nullable = false)
+//    private Long soldQuantity = 0L;
+
+    @OneToOne(mappedBy = "product")
+    private ProductQuantity productQuantity;
 
     public Product(long l, String s, int i) {
         this.productId = l;
@@ -88,7 +91,7 @@ public class Product extends BaseEntity {
                 ", name='" + name + '\'' +
                 ", description='" + description + '\'' +
                 ", price=" + price +
-                ", stockQuantity=" + stockQuantity +
+//                ", stockQuantity=" + stockQuantity +
                 ", manufacturer='" + manufacturer + '\'' +
                 ", size='" + size + '\'' +
                 ", weight='" + weight + '\'' +

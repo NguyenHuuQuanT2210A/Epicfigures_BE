@@ -29,7 +29,9 @@ public class ProductResponse {
 
     private Set<ProductImageResponse> images;
 
-    private Integer stockQuantity;
+//    private Integer stockQuantity;
+//private Long soldQuantity;
+    private ProductQuantityResponse productQuantity;
 
     private String manufacturer;
 
@@ -37,7 +39,6 @@ public class ProductResponse {
 
     private String weight;
 
-    private Long soldQuantity;
 
     @JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "dd-MM-yyyy HH:mm:ss")
     private LocalDateTime createdAt;

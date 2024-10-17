@@ -19,6 +19,6 @@ public interface ProductServiceClient {
     @PostMapping("/list")
     ApiResponse<List<ProductResponse>> getProductsByIds(@RequestBody Set<Long> productIds);
 
-    @PutMapping("/updateSoldQuantity/{id}")
-    void updateSoldQuantity(@PathVariable Long id, @RequestParam Integer quantity);
+//    @PutMapping("/updateSoldQuantity/{id}")
+//    void updateSoldQuantity(@PathVariable Long id, @RequestParam Integer quantity);
 }

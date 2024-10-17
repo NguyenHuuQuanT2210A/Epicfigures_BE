@@ -1,11 +1,10 @@
 package com.example.inventoryservice.dto.response;
 
-import com.example.inventoryservice.entities.InventoryStatus;
 import com.fasterxml.jackson.annotation.JsonFormat;
 import lombok.*;
-import org.hibernate.annotations.UpdateTimestamp;
 
 import java.io.Serializable;
+import java.math.BigDecimal;
 import java.time.LocalDateTime;
 
 @Getter
@@ -16,6 +15,8 @@ import java.time.LocalDateTime;
 public class InventoryResponse implements Serializable {
     private Long id;
     private Integer quantity;
+    private BigDecimal unitPrice;
+    private BigDecimal totalCost;
     private String status;
     private String note;
     private ProductResponse productResponse;

@@ -1,5 +1,6 @@
 package com.example.productservice.services.impl;
 
+import com.example.productservice.dto.request.ProductQuantityRequest;
 import com.example.productservice.dto.request.ProductRequest;
 import com.example.productservice.dto.response.CategoryResponse;
 import com.example.productservice.dto.response.ProductImageResponse;
@@ -15,6 +16,7 @@ import com.example.productservice.repositories.specification.ProductSpecificatio
 import com.example.productservice.repositories.specification.SpecSearchCriteria;
 import com.example.productservice.services.CategoryService;
 import com.example.productservice.services.ProductImageService;
+import com.example.productservice.services.ProductQuantityService;
 import com.example.productservice.services.ProductService;
 import com.example.productservice.util.GenerateUniqueCode;
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -47,6 +49,7 @@ public class ProductServiceImpl implements ProductService {
     private final ProductMapper productMapper;
     private final CategoryMapper categoryMapper;
     private final ProductImageService productImageService;
+    private final ProductQuantityService productQuantityService;
 //    private final BaseRedisServiceImpl<String, String, Object> redisService;
     private final ObjectMapper objectMapper;
 
@@ -160,6 +163,9 @@ public class ProductServiceImpl implements ProductService {
 
         productImageService.saveProductImage(product.getProductId(), imageFiles);
 
+        //add product quantity
+        productQuantityService.addProductQuantity(ProductQuantityRequest.builder().productId(product.getProductId()).build());
+
         //redis
 //        redisService.getKeyPrefixes("get_products" + "*").forEach(redisService::delete);
     }
@@ -238,7 +244,7 @@ public class ProductServiceImpl implements ProductService {
             existingProduct.setCategory(category);
         }
 
-        existingProduct.setStockQuantity(existingProduct.getStockQuantity());
+//        existingProduct.setStockQuantity(existingProduct.getStockQuantity());
         productRepository.save(existingProduct);
 
         List<Long> productImageIds = new ArrayList<>();
@@ -257,26 +263,26 @@ public class ProductServiceImpl implements ProductService {
 //        redisService.getKeyPrefixes("get_products" + "*").forEach(redisService::delete);
     }
 
-    @Override
-    public void updateStockQuantity(long id, Integer stockQuantity) {
-        Product product = findProductById(id);
-//        redisService.delete(PRODUCT_ID + id);
+//    @Override
+//    public void updateStockQuantity(long id, Integer stockQuantity) {
+//        Product product = findProductById(id);
+////        redisService.delete(PRODUCT_ID + id);
+//
+//        product.setStockQuantity(stockQuantity);
+//        productRepository.save(product);
+//
+//        //redis
+////        redisService.hashSetAll(PRODUCT_ID + id, productMapper.INSTANCE.productToProductDTO(product));
+//    }
 
-        product.setStockQuantity(stockQuantity);
-        productRepository.save(product);
-
-        //redis
-//        redisService.hashSetAll(PRODUCT_ID + id, productMapper.INSTANCE.productToProductDTO(product));
-    }
-
-    @Override
-    public void updateSoldQuantity(Long id, Integer stockQuantity) {
-        Product product = findProductById(id);
-
-        product.setSoldQuantity(product.getSoldQuantity() + (product.getStockQuantity() - stockQuantity));
-        product.setStockQuantity(stockQuantity);
-        productRepository.save(product);
-    }
+//    @Override
+//    public void updateSoldQuantity(Long id, Integer stockQuantity) {
+//        Product product = findProductById(id);
+//
+//        product.setSoldQuantity(product.getSoldQuantity() + (product.getStockQuantity() - stockQuantity));
+//        product.setStockQuantity(stockQuantity);
+//        productRepository.save(product);
+//    }
 
     @Override
     public void deleteProduct(long id) {

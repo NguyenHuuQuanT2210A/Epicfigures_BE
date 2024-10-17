@@ -15,6 +15,6 @@ public interface ProductClients {
     @GetMapping("/id/{id}")
     ApiResponse<ProductResponse> getProductById(@PathVariable("id") Long id);
 
-    @PutMapping("/updateStockQuantity/{id}")
-    void updateStockQuantity(@PathVariable Long id, @RequestParam Integer quantity);
+//    @PutMapping("/updateStockQuantity/{id}")
+//    void updateStockQuantity(@PathVariable Long id, @RequestParam Integer quantity);
 }

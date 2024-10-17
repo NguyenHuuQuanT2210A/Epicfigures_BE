@@ -22,7 +22,7 @@ public interface ProductService {
     Page<ProductResponse> findByCategory(Pageable pageable, Long categoryId);
     void addProduct(ProductRequest request, List<MultipartFile> imageFiles) throws IOException;
     void updateProduct(long id, ProductRequest request, List<MultipartFile> imageFiles) throws IOException;
-    void updateStockQuantity(long id, Integer stockQuantity);
+//    void updateStockQuantity(long id, Integer stockQuantity);
     void deleteProduct(long id);
     void moveToTrash(Long id);
     Page<ProductResponse> getInTrash(Pageable pageable);
@@ -32,5 +32,5 @@ public interface ProductService {
 
     ProductResponse getProductByCode(String code);
 
-    void updateSoldQuantity(Long id, Integer quantity);
+//    void updateSoldQuantity(Long id, Integer quantity);
 }

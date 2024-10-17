@@ -50,6 +50,7 @@ public class OrderServiceImpl implements OrderService {
     private final OrderDetailService orderDetailService;
     private final UserServiceClientImpl userService;
     private final ProductServiceClientImpl productService;
+    private final ProductQuantityClient productQuantityClient;
     private final OrderMapper orderMapper;
     private final OrderDetailMapper orderDetailMapper;
     private final FeedbackRepository feedbackRepository;
@@ -326,26 +327,16 @@ public class OrderServiceImpl implements OrderService {
 
     @Override
     @Transactional
-    public OrderResponse changeStatus(String id, OrderSimpleStatus status) {
+    public OrderResponse changeStatus(String id, OrderSimpleStatus newStatus) {
         var order = findOrderById(id);
+        var currentStatus = order.getStatus();
 
-        if (order.getStatus() == OrderSimpleStatus.COMPLETE && status == OrderSimpleStatus.CANCEL) {
-            throw new CustomException("Cannot change status from COMPLETE to CANCEL", HttpStatus.BAD_REQUEST);
-        }
-        if (order.getStatus().equals(OrderSimpleStatus.CANCEL)){
-            throw new CustomException("Cannot change status " + order.getStatus(), HttpStatus.BAD_REQUEST);
-        }
+        validateStatusTransition(currentStatus, newStatus);
 
-        if (order.getStatus() == OrderSimpleStatus.CREATED && status == OrderSimpleStatus.PENDING) {
-            order.setStatus(status);
-        } else if ((order.getStatus() == OrderSimpleStatus.PAYMENT_FAILED
-                || order.getStatus() == OrderSimpleStatus.PENDING)
-                && status == OrderSimpleStatus.CANCEL) {
-            order.setStatus(status);
-        } else if (order.getStatus().ordinal() + 1 != status.ordinal()) {
-            throw new CustomException("Cannot change status from " + order.getStatus() + " to " + status, HttpStatus.BAD_REQUEST);
-        } else {
-            order.setStatus(status);
+        order.setStatus(newStatus);
+
+        if (newStatus == OrderSimpleStatus.ONDELIVERY) {
+            updateProductQuantities(order);
         }
 
 //        if (status == OrderSimpleStatus.COMPLETE){
@@ -355,8 +346,42 @@ public class OrderServiceImpl implements OrderService {
 //                        .build()));
 //            }
 //        }
+
         orderRepository.save(order);
+
         return orderMapper.toOrderResponse(order);
+    }
+
+    private void validateStatusTransition(OrderSimpleStatus currentStatus, OrderSimpleStatus newStatus) {
+        if (currentStatus == OrderSimpleStatus.COMPLETE && newStatus == OrderSimpleStatus.CANCEL) {
+            throw new CustomException("Cannot change status from COMPLETE to CANCEL", HttpStatus.BAD_REQUEST);
+        }
+
+        if (currentStatus == OrderSimpleStatus.CANCEL) {
+            throw new CustomException("Cannot change status from " + currentStatus, HttpStatus.BAD_REQUEST);
+        }
+
+        boolean isSpecialTransition = (currentStatus == OrderSimpleStatus.PAYMENT_FAILED || currentStatus == OrderSimpleStatus.PENDING) && newStatus == OrderSimpleStatus.CANCEL;
+        boolean isCreatedToPending = currentStatus == OrderSimpleStatus.CREATED && newStatus == OrderSimpleStatus.PENDING;
+        boolean isSequentialTransition = currentStatus.ordinal() + 1 == newStatus.ordinal();
+
+        if (!isSequentialTransition && !isSpecialTransition && !isCreatedToPending) {
+            throw new CustomException("Cannot change status from " + currentStatus + " to " + newStatus, HttpStatus.BAD_REQUEST);
+        }
+    }
+
+    private void updateProductQuantities(Order order) {
+        order.getOrderDetails().forEach(orderDetail -> {
+            var productQuantity = productQuantityClient.getProductQuantityByProductId(orderDetail.getId().getProductId()).getData();
+            productQuantityClient.updateProductQuantity(
+                    productQuantity.getId(),
+                    ProductQuantityRequest.builder()
+                            .stockQuantity(productQuantity.getStockQuantity() - orderDetail.getQuantity())
+                            .reservedQuantity(productQuantity.getReservedQuantity() - orderDetail.getQuantity())
+                            .soldQuantity(productQuantity.getSoldQuantity() + orderDetail.getQuantity())
+                            .build()
+            );
+        });
     }
 
     @Override

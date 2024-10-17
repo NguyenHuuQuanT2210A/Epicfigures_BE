@@ -1,6 +1,7 @@
 package com.example.orderservice.service.impl;
 
 import com.example.orderservice.dto.request.OrderDetailRequest;
+import com.example.orderservice.dto.request.ProductQuantityRequest;
 import com.example.orderservice.dto.response.ApiResponse;
 import com.example.orderservice.dto.response.OrderDetailResponse;
 import com.example.orderservice.dto.response.ProductResponse;
@@ -10,6 +11,7 @@ import com.example.orderservice.exception.CustomException;
 import com.example.orderservice.mapper.OrderDetailMapper;
 
 import com.example.orderservice.repositories.OrderDetailRepository;
+import com.example.orderservice.service.ProductQuantityClient;
 import com.example.orderservice.service.ProductServiceClient;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
@@ -25,6 +27,7 @@ public class OrderDetailService {
     private final OrderDetailRepository orderDetailRepository;
     private final OrderDetailMapper orderDetailMapper;
     private final ProductServiceClient productServiceClient;
+    private final ProductQuantityClient productQuantityClient;
 
     public List<OrderDetailResponse> findOrderDetailByOrderId(String id) {
         return orderDetailRepository.findOrderDetailsByOrder_Id(id).stream().map(orderDetailMapper.INSTANCE::toOrderDetailResponse).collect(Collectors.toList());
@@ -49,11 +52,10 @@ public class OrderDetailService {
         orderDetail.setQuantity(request.getQuantity());
         orderDetailRepository.save(orderDetail);
 
-        var product = productServiceClient.getProductById(orderDetail.getId().getProductId());
-        Integer stockQuantity = product.getData().getStockQuantity() - orderDetail.getQuantity();
+        var productQuantity = productQuantityClient.getProductQuantityByProductId(orderDetail.getId().getProductId()).getData();
+        Long stockQuantity = productQuantity.getReservedQuantity() + orderDetail.getQuantity();
 
-        productServiceClient.updateSoldQuantity(product.getData().getProductId(), stockQuantity);
-
+        productQuantityClient.updateProductQuantity(productQuantity.getId(), ProductQuantityRequest.builder().reservedQuantity(stockQuantity).build());
         return orderDetailMapper.INSTANCE.toOrderDetailResponse(orderDetail);
     }
 

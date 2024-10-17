@@ -22,9 +22,7 @@ public class ProductResponse {
 
     private Long categoryId;
 
-    private Integer stockQuantity;
-
-    private Integer soldQuantity;
+    private ProductQuantityResponse productQuantity;
 
     private String manufacturer;
 

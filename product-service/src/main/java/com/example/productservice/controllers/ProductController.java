@@ -2,9 +2,7 @@ package com.example.productservice.controllers;
 
 import com.example.productservice.dto.request.ProductRequest;
 import com.example.productservice.dto.response.ApiResponse;
-import com.example.productservice.dto.response.CategoryResponse;
 import com.example.productservice.dto.response.ProductResponse;
-import com.example.productservice.services.CategoryService;
 import com.example.productservice.services.ProductService;
 import lombok.NonNull;
 import lombok.RequiredArgsConstructor;
@@ -33,8 +31,6 @@ import java.util.stream.Collectors;
 @RequestMapping("/api/v1/products")
 public class ProductController {
     private final ProductService productService;
-
-    private final CategoryService categoryService;
 
     @GetMapping("/search-by-specification")
     ApiResponse<?> advanceSearchBySpecification(@RequestParam(defaultValue = "1", name = "page") int page,
@@ -192,21 +188,21 @@ public class ProductController {
                 .build();
     }
 
-    @PutMapping("/updateSoldQuantity/{id}")
-    ApiResponse<?> updateSoldQuantity(@PathVariable Long id, @RequestParam Integer quantity) {
-        productService.updateSoldQuantity(id, quantity);
-        return ApiResponse.builder()
-                .message("Update sold quantity successfully")
-                .build();
-    }
+//    @PutMapping("/updateSoldQuantity/{id}")
+//    ApiResponse<?> updateSoldQuantity(@PathVariable Long id, @RequestParam Integer quantity) {
+//        productService.updateSoldQuantity(id, quantity);
+//        return ApiResponse.builder()
+//                .message("Update sold quantity successfully")
+//                .build();
+//    }
 
-    @PutMapping("/updateStockQuantity/{id}")
-    ApiResponse<?> updateStockQuantity(@PathVariable Long id, @RequestParam Integer quantity) {
-        productService.updateStockQuantity(id, quantity);
-        return ApiResponse.builder()
-                .message("Update stock quantity successfully")
-                .build();
-    }
+//    @PutMapping("/updateStockQuantity/{id}")
+//    ApiResponse<?> updateStockQuantity(@PathVariable Long id, @RequestParam Integer quantity) {
+//        productService.updateStockQuantity(id, quantity);
+//        return ApiResponse.builder()
+//                .message("Update stock quantity successfully")
+//                .build();
+//    }
 
     @PutMapping("/restore/{id}")
     ApiResponse<?> restoreProduct(@PathVariable Long id) {

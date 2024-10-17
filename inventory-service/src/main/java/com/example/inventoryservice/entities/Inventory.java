@@ -4,6 +4,7 @@ import com.example.inventoryservice.entities.base.BaseEntity;
 import jakarta.persistence.*;
 import lombok.*;
 
+import java.math.BigDecimal;
 import java.time.LocalDateTime;
 
 @Getter
@@ -18,6 +19,8 @@ public class Inventory extends BaseEntity {
     private Long id;
     private Long productId;
     private Integer quantity;
+    private BigDecimal unitPrice;
+    private BigDecimal totalCost;
 
     private String note;
     private LocalDateTime date;

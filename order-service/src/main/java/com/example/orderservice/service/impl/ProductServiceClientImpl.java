@@ -22,7 +22,7 @@ public class ProductServiceClientImpl {
         return productServiceClient.getProductsByIds(productIds);
     }
 
-    public void updateSoldQuantity(Long id, Integer quantity){
-        productServiceClient.updateSoldQuantity(id, quantity);
-    }
+//    public void updateSoldQuantity(Long id, Integer quantity){
+//        productServiceClient.updateSoldQuantity(id, quantity);
+//    }
 }

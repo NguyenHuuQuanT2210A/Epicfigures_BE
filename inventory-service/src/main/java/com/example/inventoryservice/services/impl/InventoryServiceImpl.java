@@ -1,5 +1,6 @@
 package com.example.inventoryservice.services.impl;
 
+import com.example.inventoryservice.dto.request.ProductQuantityRequest;
 import com.example.inventoryservice.dto.response.ApiResponse;
 import com.example.inventoryservice.dto.request.InventoryRequest;
 import com.example.inventoryservice.dto.response.InventoryResponse;
@@ -15,6 +16,7 @@ import com.example.inventoryservice.security.JwtTokenUtil;
 import com.example.inventoryservice.services.InventoryService;
 import com.example.inventoryservice.services.InventoryStatusService;
 import com.example.inventoryservice.services.ProductClients;
+import com.example.inventoryservice.services.ProductQuantityClient;
 import jakarta.servlet.http.HttpServletRequest;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -23,6 +25,7 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 
+import java.math.BigDecimal;
 import java.time.LocalDateTime;
 import java.util.Comparator;
 import java.util.List;
@@ -34,6 +37,7 @@ public class InventoryServiceImpl implements InventoryService {
     private final InventoryRepository inventoryRepository;
     private final InventoryMapper inventoryMapper;
     private final ProductClients productClients;
+    private final ProductQuantityClient productQuantityClient;
     private final InventoryStatusRepository inventoryStatusRepository;
     private final JwtTokenUtil jwtTokenUtil;
 
@@ -88,37 +92,38 @@ public class InventoryServiceImpl implements InventoryService {
         inventory.setUpdatedBy(getUserNameFromToken(httpServletRequest));
         inventory.setInventoryStatus(inventoryStatus);
 
-        int stockQuantity;
-        if (inventoryStatus.isAddAction()) {
-            stockQuantity = product.getData().getStockQuantity() + request.getQuantity();
-        } else {
-            stockQuantity = product.getData().getStockQuantity() - request.getQuantity();
-        }
+//        int stockQuantity;
+//        if (inventoryStatus.isAddAction()) {
+//            stockQuantity = product.getData().getStockQuantity() + request.getQuantity();
+//        } else {
+//            stockQuantity = product.getData().getStockQuantity() - request.getQuantity();
+//        }
 
-        productClients.updateStockQuantity(product.getData().getProductId(), stockQuantity);
+//        productClients.updateStockQuantity(product.getData().getProductId(), stockQuantity);
 
         inventoryRepository.save(inventory);
     }
 
     @Override
     public Long addInventory(InventoryRequest request, HttpServletRequest httpServletRequest) {
-        ApiResponse<ProductResponse> product = getProductById(request.getProductId());
+        var productQuantity = productQuantityClient.getProductQuantityByProductId(request.getProductId()).getData();
         var inventoryStatus = inventoryStatusRepository.findById(request.getInventoryStatusId()).orElseThrow(() -> new NotFoundException("Inventory Status not found"));
 
         Inventory inventory = inventoryMapper.toInventory(request);
+        inventory.setTotalCost(request.getUnitPrice().multiply(BigDecimal.valueOf(request.getQuantity())));
         inventory.setDate(LocalDatetimeConverter.toLocalDateTime(request.getDate()));
         inventory.setCreatedBy(getUserNameFromToken(httpServletRequest));
         inventory.setInventoryStatus(inventoryStatus);
         inventoryRepository.save(inventory);
 
-        int stockQuantity;
+        long stockQuantity;
         if (inventoryStatus.isAddAction()) {
-            stockQuantity = product.getData().getStockQuantity() + request.getQuantity();
+            stockQuantity = productQuantity.getStockQuantity() + request.getQuantity();
         } else {
-            stockQuantity = product.getData().getStockQuantity() - request.getQuantity();
+            stockQuantity = productQuantity.getStockQuantity() - request.getQuantity();
         }
 
-        productClients.updateStockQuantity(product.getData().getProductId(), stockQuantity);
+        productQuantityClient.updateProductQuantity(productQuantity.getId(), ProductQuantityRequest.builder().stockQuantity(stockQuantity).build());
 
         return inventory.getId();
     }

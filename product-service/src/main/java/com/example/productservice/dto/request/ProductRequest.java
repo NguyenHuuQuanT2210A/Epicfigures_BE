@@ -24,7 +24,7 @@ public class ProductRequest {
 
     private Set<ProductImageRequest> images;
 
-    private Integer stockQuantity;
+//    private Integer stockQuantity;
 
     private String manufacturer;
 
