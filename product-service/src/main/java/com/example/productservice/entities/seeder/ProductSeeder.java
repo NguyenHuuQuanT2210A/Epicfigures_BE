@@ -69,7 +69,7 @@ public class ProductSeeder implements CommandLineRunner {
             }
             String slug = StringHelper.toSlug(productName);
             String description = "Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua.";
-            double price = (faker.number().randomNumber(2, true));
+//            double price = (faker.number().randomNumber(2, true));
             ProductSimpleStatus status = ProductSimpleStatus.ACTIVE;
             Product product = new Product();
             product.setName(productName);
@@ -78,11 +78,18 @@ public class ProductSeeder implements CommandLineRunner {
             } while (productRepository.existsByCodeProductAndDeletedAtIsNull(product.getCodeProduct()));
 
             product.setCategory(categories.get(faker.number().numberBetween(0, 6)));
-//            product.setStockQuantity(faker.number().numberBetween(1, 100));
+            product.setStockQuantity(faker.number().numberBetween(10, 200));
+            product.setReservedQuantity(0);
+            product.setSoldQuantity(0);
+
 //            product.setSlug(slug);
             product.setDescription(description);
 //            product.setThumbnails("demo-img.jpg");
-            product.setPrice(BigDecimal.valueOf(price));
+            product.setPrice(BigDecimal.valueOf(faker.number().randomNumber(2, true)));
+//            product.setPurchasePrice(BigDecimal.valueOf(faker.number().randomNumber(2, true)));
+//            product.setListPrice(BigDecimal.valueOf(0));
+//            product.setSellingPrice(BigDecimal.valueOf(0));
+
 //            product.setStatus(status);
             product.setManufacturer(faker.company().name());
             product.setSize(faker.food().measurement());

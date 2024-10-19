@@ -1,5 +1,6 @@
 package com.example.productservice.controllers;
 
+import com.example.productservice.dto.request.ProductQuantityRequest;
 import com.example.productservice.dto.request.ProductRequest;
 import com.example.productservice.dto.response.ApiResponse;
 import com.example.productservice.dto.response.ProductResponse;
@@ -37,7 +38,7 @@ public class ProductController {
                                                        @RequestParam(defaultValue = "10", name = "limit") int limit,
                                                         @RequestParam(required = false) String sort,
                                                         @RequestParam(required = false) String[] product,
-                                                        @RequestParam(required = false) String category) {
+                                                        @RequestParam(required = false) String[] category) {
         return ApiResponse.builder()
                 .message("List of Products")
                 .data(productService.searchBySpecification(PageRequest.of(page -1, limit), sort, product, category))
@@ -196,13 +197,21 @@ public class ProductController {
 //                .build();
 //    }
 
-//    @PutMapping("/updateStockQuantity/{id}")
+//    @PutMapping("/updateStockQuantityAndPurchasePrice/{id}")
 //    ApiResponse<?> updateStockQuantity(@PathVariable Long id, @RequestParam Integer quantity) {
 //        productService.updateStockQuantity(id, quantity);
 //        return ApiResponse.builder()
 //                .message("Update stock quantity successfully")
 //                .build();
 //    }
+
+    @PutMapping("/updateQuantity/{id}")
+    ApiResponse<?> updateQuantity(@PathVariable Long id, @RequestBody ProductQuantityRequest request) {
+        productService.updateQuantity(id, request);
+        return ApiResponse.builder()
+                .message("Update quantity successfully")
+                .build();
+    }
 
     @PutMapping("/restore/{id}")
     ApiResponse<?> restoreProduct(@PathVariable Long id) {

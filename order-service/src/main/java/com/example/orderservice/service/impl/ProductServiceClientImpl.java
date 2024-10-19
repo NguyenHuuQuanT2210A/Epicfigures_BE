@@ -1,5 +1,6 @@
 package com.example.orderservice.service.impl;
 
+import com.example.orderservice.dto.request.ProductQuantityRequest;
 import com.example.orderservice.dto.response.ApiResponse;
 import com.example.orderservice.dto.response.ProductResponse;
 import com.example.orderservice.service.ProductServiceClient;
@@ -25,4 +26,8 @@ public class ProductServiceClientImpl {
 //    public void updateSoldQuantity(Long id, Integer quantity){
 //        productServiceClient.updateSoldQuantity(id, quantity);
 //    }
+
+    public void updateQuantity(Long id, ProductQuantityRequest request){
+        productServiceClient.updateQuantity(id, request);
+    }
 }

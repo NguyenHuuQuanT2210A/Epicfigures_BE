@@ -12,18 +12,15 @@ import com.example.productservice.exception.CustomException;
 import com.example.productservice.mapper.CategoryMapper;
 import com.example.productservice.mapper.ProductMapper;
 import com.example.productservice.repositories.ProductRepository;
-import com.example.productservice.repositories.specification.ProductSpecification;
-import com.example.productservice.repositories.specification.SpecSearchCriteria;
+import com.example.productservice.repositories.specification.ProductSpecificationBuilder;
 import com.example.productservice.services.CategoryService;
 import com.example.productservice.services.ProductImageService;
-import com.example.productservice.services.ProductQuantityService;
 import com.example.productservice.services.ProductService;
 import com.example.productservice.util.GenerateUniqueCode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.domain.*;
-import org.springframework.data.jpa.domain.Specification;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 import org.springframework.util.StringUtils;
@@ -49,7 +46,6 @@ public class ProductServiceImpl implements ProductService {
     private final ProductMapper productMapper;
     private final CategoryMapper categoryMapper;
     private final ProductImageService productImageService;
-    private final ProductQuantityService productQuantityService;
 //    private final BaseRedisServiceImpl<String, String, Object> redisService;
     private final ObjectMapper objectMapper;
 
@@ -154,6 +150,12 @@ public class ProductServiceImpl implements ProductService {
         Product product = productMapper.INSTANCE.toProduct(request);
 
         product.setCategory(categoryMapper.INSTANCE.categoryResponsetoCategory(categoryDTO));
+        product.setStockQuantity(0);
+        product.setSoldQuantity(0);
+        product.setReservedQuantity(0);
+//        product.setListPrice(BigDecimal.valueOf(0));
+//        product.setPurchasePrice(BigDecimal.valueOf(0));
+//        product.setSellingPrice(BigDecimal.valueOf(0));
 
         do {
             product.setCodeProduct(GenerateUniqueCode.generateProductCode());
@@ -162,9 +164,6 @@ public class ProductServiceImpl implements ProductService {
         productRepository.save(product);
 
         productImageService.saveProductImage(product.getProductId(), imageFiles);
-
-        //add product quantity
-        productQuantityService.addProductQuantity(ProductQuantityRequest.builder().productId(product.getProductId()).build());
 
         //redis
 //        redisService.getKeyPrefixes("get_products" + "*").forEach(redisService::delete);
@@ -184,9 +183,7 @@ public class ProductServiceImpl implements ProductService {
 //            }
 //            return new PageImpl<>(productDTOS, pageable, productDTOS.size());
 //        }else {
-            if (category == null) {
-                throw new CustomException("Can not find category with id " + categoryId, HttpStatus.NOT_FOUND);
-            }
+
             return productRepository.findByCategoryAndDeletedAtIsNull(pageable, categoryMapper.INSTANCE.categoryResponsetoCategory(category))
                     .map(product -> {
                         ProductResponse productDTO = productMapper.INSTANCE.toProductResponse(product);
@@ -200,15 +197,22 @@ public class ProductServiceImpl implements ProductService {
     @Override
     public void updateProduct(long id, ProductRequest request, List<MultipartFile> imageFiles) throws IOException {
         Product existingProduct = findProductById(id);
-        if (request.getPrice() != null) {
-            existingProduct.setPrice(request.getPrice());
-        }
         if (request.getName() != null) {
             if (productRepository.existsByNameAndDeletedAtIsNull(request.getName()) && !request.getName().equals(existingProduct.getName())) {
                 throw new CustomException("Product already exists with name: " + request.getName(), HttpStatus.BAD_REQUEST);
             }
             existingProduct.setName(request.getName());
         }
+//        if (request.getListPrice() != null) {
+//            existingProduct.setListPrice(request.getListPrice());
+//        }
+//        if (request.getSellingPrice() != null) {
+//            existingProduct.setSellingPrice(request.getSellingPrice());
+//        }
+        if (request.getPrice() != null) {
+            existingProduct.setPrice(request.getPrice());
+        }
+
         if (request.getDescription() != null) {
             existingProduct.setDescription(request.getDescription());
         }
@@ -244,7 +248,6 @@ public class ProductServiceImpl implements ProductService {
             existingProduct.setCategory(category);
         }
 
-//        existingProduct.setStockQuantity(existingProduct.getStockQuantity());
         productRepository.save(existingProduct);
 
         List<Long> productImageIds = new ArrayList<>();
@@ -285,6 +288,25 @@ public class ProductServiceImpl implements ProductService {
 //    }
 
     @Override
+    public void updateQuantity(Long id, ProductQuantityRequest request) {
+        Product product = findProductById(id);
+
+        if (request.getStockQuantity() != null) {
+            product.setStockQuantity(request.getStockQuantity());
+        }
+        if (request.getSoldQuantity() != null) {
+            product.setSoldQuantity(request.getSoldQuantity());
+        }
+        if (request.getReservedQuantity() != null) {
+            product.setReservedQuantity(request.getReservedQuantity());
+        }
+//        if (request.getPurchasePrice() != null) {
+//            product.setPurchasePrice(request.getPurchasePrice());
+//        }
+        productRepository.save(product);
+    }
+
+    @Override
     public void deleteProduct(long id) {
         findProductById(id);
         productRepository.deleteById(id);
@@ -320,70 +342,53 @@ public class ProductServiceImpl implements ProductService {
     }
 
     @Override
-    public Page<ProductResponse> searchBySpecification(Pageable pageable, String sort, String[] product, String category) {
+    public Page<ProductResponse> searchBySpecification(Pageable pageable, String sort, String[] product, String[] category) {
         log.info("getProductsBySpecifications");
+        Pageable pageableSorted = sortData(sort, pageable);
 
+        ProductSpecificationBuilder builder = new ProductSpecificationBuilder();
+        Pattern pattern = Pattern.compile(SEARCH_SPEC_OPERATOR);
+        if (product != null) {
+            parseCriteriaBuilder(builder, product, pattern, false, null);
+        }
+        if (category != null) {
+            parseCriteriaBuilder(builder, category, pattern, true, "category");
+        }
+
+        if (builder.params.isEmpty()) {
+            return productRepository.findAll(pageableSorted).map(productMapper.INSTANCE::toProductResponse);
+        }
+
+        Page<Product> products = productRepository.findAll(builder.build(), pageableSorted);
+        return products.map(productMapper.INSTANCE::toProductResponse);
+    }
+
+    private Pageable sortData(String sort, Pageable pageable) {
         Pageable pageableSorted = pageable;
         if (StringUtils.hasText(sort)){
             Pattern patternSort = Pattern.compile(SORT_BY);
             Matcher matcher = patternSort.matcher(sort);
             if (matcher.find()) {
                 String columnName = matcher.group(1);
+
                 pageableSorted = matcher.group(3).equalsIgnoreCase("desc")
                         ? PageRequest.of(pageable.getPageNumber(), pageable.getPageSize(), Sort.by(columnName).descending())
                         : PageRequest.of(pageable.getPageNumber(), pageable.getPageSize(), Sort.by(columnName).ascending());
             }
         }
-
-        List<SpecSearchCriteria> params = new ArrayList<>();
-        Pattern pattern = Pattern.compile(SEARCH_SPEC_OPERATOR);
-        if (product != null) {
-            params.addAll(parseProductCriteria(product, pattern));
-        }
-        if (category != null) {
-            params.addAll(parseCategoryCriteria(category, pattern));
-        }
-
-        if (params.isEmpty()) {
-            return productRepository.findAll(pageableSorted).map(productMapper.INSTANCE::toProductResponse);
-        }
-
-        Specification<Product> result = new ProductSpecification(params.get(0));
-        for (int i = 1; i < params.size(); i++) {
-            result = params.get(i).getOrPredicate()
-                    ? Specification.where(result).or(new ProductSpecification(params.get(i)))
-                    : Specification.where(result).and(new ProductSpecification(params.get(i)));
-        }
-
-        Page<Product> products = productRepository.findAll(Objects.requireNonNull(result), pageableSorted);
-        return products.map(productMapper.INSTANCE::toProductResponse);
+        return pageableSorted;
     }
 
-    private List<SpecSearchCriteria> parseProductCriteria(String[] product, Pattern pattern) {
-        List<SpecSearchCriteria> params = new ArrayList<>();
-        for (String p : product) {
-            Matcher matcher = pattern.matcher(p);
+    private void parseCriteriaBuilder(ProductSpecificationBuilder builder, String[] entities, Pattern pattern, boolean isJoinQuery, String joinEntity) {
+        for (String e : entities) {
+            Matcher matcher = pattern.matcher(e);
             if (matcher.find()) {
-                SpecSearchCriteria searchCriteria = new SpecSearchCriteria(null, matcher.group(2), matcher.group(4), matcher.group(6), matcher.group(1), matcher.group(3), matcher.group(5));
-                if (p.startsWith(OR_PREDICATE_FLAG)) {
-                    searchCriteria.setOrPredicate(true);
+                if (e.startsWith(OR_PREDICATE_FLAG)) {
+                    builder.with(OR_PREDICATE_FLAG, matcher.group(1), matcher.group(2), matcher.group(3), matcher.group(4), matcher.group(5), matcher.group(6), isJoinQuery, joinEntity);
+                }else {
+                    builder.with(matcher.group(1), matcher.group(2), matcher.group(3), matcher.group(4), matcher.group(5), matcher.group(6), isJoinQuery, joinEntity);
                 }
-                params.add(searchCriteria);
             }
         }
-        return params;
-    }
-
-    private List<SpecSearchCriteria> parseCategoryCriteria(String category, Pattern pattern) {
-        List<SpecSearchCriteria> params = new ArrayList<>();
-        Matcher matcher = pattern.matcher(category);
-        if (matcher.find()) {
-            SpecSearchCriteria searchCriteria = new SpecSearchCriteria(null, matcher.group(2), matcher.group(4), matcher.group(6), matcher.group(1), matcher.group(3), matcher.group(5));
-            if (category.startsWith(OR_PREDICATE_FLAG)){
-                searchCriteria.setOrPredicate(true);
-            }
-            params.add(searchCriteria);
-        }
-        return params;
     }
 }

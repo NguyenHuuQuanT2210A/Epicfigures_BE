@@ -14,4 +14,6 @@ public interface InventoryStatusRepository extends JpaRepository<InventoryStatus
 
     @Query("SELECT i FROM InventoryStatus i WHERE i.name LIKE %?1% AND i.deletedAt IS NULL")
     Page<InventoryStatus> findByNameLikeAndDeletedAtIsNull(String name, Pageable pageable);
+
+    InventoryStatus findByName(String name);
 }

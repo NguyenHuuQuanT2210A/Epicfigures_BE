@@ -17,7 +17,9 @@ public class InventoryStatus extends BaseEntity {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private int id;
+    @Column(unique = true)
     private String name;
     private String description;
     private boolean isAddAction;
+    private boolean isSystemType;
 }

@@ -1,6 +1,7 @@
 package com.example.productservice.services;
 
 import com.example.productservice.dto.request.CategoryRequest;
+import com.example.productservice.dto.request.ProductQuantityRequest;
 import com.example.productservice.dto.request.ProductRequest;
 import com.example.productservice.dto.response.ProductResponse;
 import org.springframework.data.domain.Page;
@@ -28,9 +29,11 @@ public interface ProductService {
     Page<ProductResponse> getInTrash(Pageable pageable);
     List<ProductResponse> getProductsByIds(Set<Long> productIds);
     void restoreProduct(Long id);
-    Page<ProductResponse> searchBySpecification(Pageable pageable, String sort, String[] product, String category);
+    Page<ProductResponse> searchBySpecification(Pageable pageable, String sort, String[] product, String[] category);
 
     ProductResponse getProductByCode(String code);
 
 //    void updateSoldQuantity(Long id, Integer quantity);
+
+    void updateQuantity(Long id, ProductQuantityRequest request);
 }

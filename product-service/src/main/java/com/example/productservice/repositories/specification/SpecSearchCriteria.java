@@ -14,26 +14,16 @@ public class SpecSearchCriteria {
     private SearchOperation operation;
     private Object value;
     private Boolean orPredicate;
+    private Boolean isJoinQuery;
+    private String joinEntity;
 
-    public SpecSearchCriteria(String orPredicate, String key, String operation, String value,String prefix, String suffix, String operation2) {
+    public SpecSearchCriteria (String orPredicate,String key, SearchOperation operation, Object value, Boolean isJoinQuery, String joinEntity) {
+        super();
         this.orPredicate = orPredicate != null && orPredicate.equals(OR_PREDICATE_FLAG);
-        SearchOperation oper = SearchOperation.getSimpleOperation(operation.charAt(0));
-        if (oper == SearchOperation.EQUALITY){
-            boolean startWithAsterisk = prefix != null && prefix.contains(ZERO_OR_MORE_REGEX);
-            boolean endWithAsterisk = suffix != null && suffix.contains(ZERO_OR_MORE_REGEX);
-
-            if (startWithAsterisk && endWithAsterisk){
-                oper = SearchOperation.CONTAINS;
-            } else if (startWithAsterisk){
-                oper = SearchOperation.ENDS_WITH;
-            }else if (endWithAsterisk){
-                oper = SearchOperation.STARTS_WITH;
-            }
-        } else if ((oper == SearchOperation.GREATER_THAN || oper == SearchOperation.LESS_THAN) && operation2.equals(COMPARISON_EQUALITY)) {
-            oper = (oper == SearchOperation.GREATER_THAN) ? SearchOperation.GREATER_THAN_EQUAL : SearchOperation.LESS_THAN_EQUAL;
-        }
         this.key = key;
-        this.operation = oper;
+        this.operation = operation;
         this.value = value;
+        this.isJoinQuery = isJoinQuery;
+        this.joinEntity = joinEntity;
     }
 }

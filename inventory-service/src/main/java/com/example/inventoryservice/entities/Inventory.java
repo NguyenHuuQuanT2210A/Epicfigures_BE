@@ -19,8 +19,8 @@ public class Inventory extends BaseEntity {
     private Long id;
     private Long productId;
     private Integer quantity;
-    private BigDecimal unitPrice;
-    private BigDecimal totalCost;
+//    private BigDecimal unitPrice;
+//    private BigDecimal totalCost;
 
     private String note;
     private LocalDateTime date;

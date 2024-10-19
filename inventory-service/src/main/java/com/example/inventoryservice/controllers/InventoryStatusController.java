@@ -48,13 +48,21 @@ public class InventoryStatusController {
     }
 
     @GetMapping("/name")
-    ApiResponse<Page<InventoryStatusResponse>> getInventoryStatusByName(
+    ApiResponse<InventoryStatusResponse> getInventoryStatusByName(@RequestParam String name) {
+        return ApiResponse.<InventoryStatusResponse>builder()
+                .message("Get InventoryStatus By Name")
+                .data(inventoryStatusService.getInventoryStatusByName(name))
+                .build();
+    }
+
+    @GetMapping("/names")
+    ApiResponse<Page<InventoryStatusResponse>> getInventoryStatusByNames(
             @RequestParam(defaultValue = "1", name = "page") int page,
             @RequestParam(defaultValue = "10", name = "limit") int limit,
             @RequestParam String name) {
         return ApiResponse.<Page<InventoryStatusResponse>>builder()
-                .message("Get InventoryStatus By Id")
-                .data(inventoryStatusService.getInventoryStatusByName(name, PageRequest.of(page -1, limit, Sort.by("createdAt").descending())))
+                .message("Get InventoryStatus By Names")
+                .data(inventoryStatusService.getInventoryStatusByNames(name, PageRequest.of(page -1, limit, Sort.by("createdAt").descending())))
                 .build();
     }
 

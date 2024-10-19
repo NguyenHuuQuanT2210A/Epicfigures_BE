@@ -23,15 +23,17 @@ public class ProductResponse {
 //    @JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "#,###.00")
     private BigDecimal price;
 
+//    private BigDecimal purchasePrice;
+//
+//    private BigDecimal listPrice;
+//
+//    private BigDecimal sellingPrice;
+
     private Long categoryId;
 
     private CategoryResponse category;
 
     private Set<ProductImageResponse> images;
-
-//    private Integer stockQuantity;
-//private Long soldQuantity;
-    private ProductQuantityResponse productQuantity;
 
     private String manufacturer;
 
@@ -39,6 +41,11 @@ public class ProductResponse {
 
     private String weight;
 
+    private Integer stockQuantity;
+
+    private Integer reservedQuantity;
+
+    private Integer soldQuantity;
 
     @JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "dd-MM-yyyy HH:mm:ss")
     private LocalDateTime createdAt;

@@ -1,4 +1,4 @@
-package com.example.inventoryservice.dto.response;
+package com.example.orderservice.dto.response;
 
 import com.fasterxml.jackson.annotation.JsonFormat;
 import lombok.AllArgsConstructor;

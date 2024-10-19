@@ -20,17 +20,27 @@ public class ProductResponse {
 
     private BigDecimal price;
 
+//    private BigDecimal purchasePrice;
+//
+//    private BigDecimal listPrice;
+//
+//    private BigDecimal sellingPrice;
+
     private Long categoryId;
 
     private CategoryResponse category;
-
-    private Integer stockQuantity;
 
     private String manufacturer;
 
     private String size;
 
     private String weight;
+
+    private Integer stockQuantity;
+
+    private Integer reservedQuantity;
+
+    private Integer soldQuantity;
 
     @JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "dd-MM-yyyy HH:mm:ss")
     private LocalDateTime createdAt;

@@ -7,7 +7,7 @@ public enum SearchOperation {
 
     public static final String ZERO_OR_MORE_REGEX = "*";
 
-    public static final String COMPARISON_EQUALITY = "=";
+    public static final String COMPARISON_EQUALITY = "_";
 
     public static SearchOperation getSimpleOperation(final char input) {
         return switch (input) {

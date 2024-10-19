@@ -33,6 +33,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.util.StringUtils;
 
+import java.math.BigDecimal;
 import java.time.LocalDateTime;
 import java.util.*;
 import java.util.regex.Matcher;
@@ -50,7 +51,6 @@ public class OrderServiceImpl implements OrderService {
     private final OrderDetailService orderDetailService;
     private final UserServiceClientImpl userService;
     private final ProductServiceClientImpl productService;
-    private final ProductQuantityClient productQuantityClient;
     private final OrderMapper orderMapper;
     private final OrderDetailMapper orderDetailMapper;
     private final FeedbackRepository feedbackRepository;
@@ -60,6 +60,8 @@ public class OrderServiceImpl implements OrderService {
     private final CartRedisClient cartRedisClient;
     private final JwtTokenUtil jwtTokenUtil;
     private final AddressOrderClient addressOrderClient;
+    private final InventoryServiceClient inventoryServiceClient;
+    private final InventoryStatusServiceClient inventoryStatusServiceClient;
 
     Specification<jakarta.persistence.criteria.Order> specification = Specification.where(null);
 
@@ -336,16 +338,8 @@ public class OrderServiceImpl implements OrderService {
         order.setStatus(newStatus);
 
         if (newStatus == OrderSimpleStatus.ONDELIVERY) {
-            updateProductQuantities(order);
+            addInventory(order);
         }
-
-//        if (status == OrderSimpleStatus.COMPLETE){
-//            for (var orderDetail : order.getOrderDetails()){
-//                feedbackRepository.save(feedbackMapper.toFeedback(FeedbackRequest.builder()
-//                        .orderDetail(orderDetail)
-//                        .build()));
-//            }
-//        }
 
         orderRepository.save(order);
 
@@ -370,16 +364,17 @@ public class OrderServiceImpl implements OrderService {
         }
     }
 
-    private void updateProductQuantities(Order order) {
+    private void addInventory(Order order) {
         order.getOrderDetails().forEach(orderDetail -> {
-            var productQuantity = productQuantityClient.getProductQuantityByProductId(orderDetail.getId().getProductId()).getData();
-            productQuantityClient.updateProductQuantity(
-                    productQuantity.getId(),
-                    ProductQuantityRequest.builder()
-                            .stockQuantity(productQuantity.getStockQuantity() - orderDetail.getQuantity())
-                            .reservedQuantity(productQuantity.getReservedQuantity() - orderDetail.getQuantity())
-                            .soldQuantity(productQuantity.getSoldQuantity() + orderDetail.getQuantity())
-                            .build()
+            var product = productService.getProductById(orderDetail.getId().getProductId()).getData();
+            inventoryServiceClient.createInventory(InventoryRequest.builder()
+                    .productId(product.getProductId())
+                    .quantity(orderDetail.getQuantity())
+//                    .unitPrice(orderDetail.getUnitPrice())
+                    .inventoryStatusId(inventoryStatusServiceClient.getInventoryStatusByName("OUT").getData().getId())
+                    .note("Order code :" + order.getCodeOrder() + ", Product " + product.getName())
+                    .date(LocalDatetimeConverter.convertLocalDateTimeToString(LocalDateTime.now()))
+                    .build()
             );
         });
     }

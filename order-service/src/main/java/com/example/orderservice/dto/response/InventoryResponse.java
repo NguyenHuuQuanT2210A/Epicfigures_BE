@@ -15,6 +15,8 @@ public class InventoryResponse implements Serializable {
     private Long id;
     private Long productId;
     private Integer quantity;
+    //    private BigDecimal unitPrice;
+//    private BigDecimal totalCost;
     private String type;
 
     @JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "dd-MM-yyyy HH:mm:ss")

@@ -15,8 +15,8 @@ import java.time.LocalDateTime;
 public class InventoryResponse implements Serializable {
     private Long id;
     private Integer quantity;
-    private BigDecimal unitPrice;
-    private BigDecimal totalCost;
+//    private BigDecimal unitPrice;
+//    private BigDecimal totalCost;
     private String status;
     private String note;
     private ProductResponse productResponse;

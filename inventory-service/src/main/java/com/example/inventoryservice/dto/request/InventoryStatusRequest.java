@@ -1,6 +1,5 @@
 package com.example.inventoryservice.dto.request;
 
-import com.example.inventoryservice.entities.base.BaseEntity;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;

@@ -3,19 +3,19 @@ package com.example.inventoryservice.services.impl;
 import com.example.inventoryservice.dto.request.InventoryStatusRequest;
 import com.example.inventoryservice.dto.response.InventoryStatusResponse;
 import com.example.inventoryservice.entities.InventoryStatus;
+import com.example.inventoryservice.exception.CustomException;
 import com.example.inventoryservice.exception.NotFoundException;
 import com.example.inventoryservice.mapper.InventoryStatusMapper;
 import com.example.inventoryservice.repository.InventoryStatusRepository;
 import com.example.inventoryservice.services.InventoryStatusService;
-import jakarta.servlet.http.HttpServletRequest;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
+import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 
 import java.time.LocalDateTime;
-import java.util.List;
 
 @Slf4j
 @Service
@@ -35,13 +35,16 @@ public class InventoryStatusServiceImpl implements InventoryStatusService {
     }
 
     @Override
-    public Page<InventoryStatusResponse> getInventoryStatusByName(String name, Pageable pageable) {
+    public Page<InventoryStatusResponse> getInventoryStatusByNames(String name, Pageable pageable) {
         return inventoryStatusRepository.findByNameLikeAndDeletedAtIsNull(name, pageable).map(inventoryStatusMapper::toInventoryStatusResponse);
     }
 
     @Override
     public void updateInventoryStatus(Integer id, InventoryStatusRequest request) {
         InventoryStatus inventoryStatus = findInventoryStatusById(id);
+        if (inventoryStatus.isSystemType()) {
+            throw new CustomException("Cannot update system type inventory", HttpStatus.BAD_REQUEST);
+        }
         inventoryStatusMapper.updatedInventoryStatus(inventoryStatus, request);
         inventoryStatus.setAddAction(Boolean.parseBoolean(request.getIsAddAction()));
         inventoryStatusRepository.save(inventoryStatus);
@@ -51,12 +54,17 @@ public class InventoryStatusServiceImpl implements InventoryStatusService {
     public Integer addInventoryStatus(InventoryStatusRequest request) {
         var inventoryStatus = inventoryStatusMapper.toInventory(request);
         inventoryStatus.setAddAction(Boolean.parseBoolean(request.getIsAddAction()));
+        inventoryStatus.setSystemType(false);
         inventoryStatusRepository.save(inventoryStatus);
         return inventoryStatus.getId();
     }
 
     @Override
     public void deleteInventoryStatus(Integer id) {
+        InventoryStatus inventoryStatus = findInventoryStatusById(id);
+        if (inventoryStatus.isSystemType()) {
+            throw new CustomException("Cannot delete system type inventory", HttpStatus.BAD_REQUEST);
+        }
         inventoryStatusRepository.deleteById(id);
     }
 
@@ -67,7 +75,9 @@ public class InventoryStatusServiceImpl implements InventoryStatusService {
     @Override
     public void moveToTrash(Integer id) {
         InventoryStatus inventoryStatus = findInventoryStatusById(id);
-
+        if (inventoryStatus.isSystemType()) {
+            throw new CustomException("Cannot trash system type inventory", HttpStatus.BAD_REQUEST);
+        }
         LocalDateTime now = LocalDateTime.now();
         inventoryStatus.setDeletedAt(now);
         inventoryStatusRepository.save(inventoryStatus);
@@ -83,5 +93,10 @@ public class InventoryStatusServiceImpl implements InventoryStatusService {
         InventoryStatus inventoryStatus = findInventoryStatusById(id);
         inventoryStatus.setDeletedAt(null);
         inventoryStatusRepository.save(inventoryStatus);
+    }
+
+    @Override
+    public InventoryStatusResponse getInventoryStatusByName(String name) {
+        return inventoryStatusMapper.toInventoryStatusResponse(inventoryStatusRepository.findByName(name));
     }
 }

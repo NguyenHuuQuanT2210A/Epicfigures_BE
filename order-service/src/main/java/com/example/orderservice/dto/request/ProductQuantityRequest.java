@@ -2,13 +2,16 @@ package com.example.orderservice.dto.request;
 
 import lombok.*;
 
+import java.math.BigDecimal;
+
 @Getter
 @Setter
 @NoArgsConstructor
 @AllArgsConstructor
 @Builder
 public class ProductQuantityRequest {
-    private Long stockQuantity;
-    private Long reservedQuantity;
-    private Long soldQuantity;
+    private Integer stockQuantity;
+    private Integer reservedQuantity;
+    private Integer soldQuantity;
+//    private BigDecimal purchasePrice;
 }

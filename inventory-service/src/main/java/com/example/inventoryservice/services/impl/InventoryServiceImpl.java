@@ -6,7 +6,6 @@ import com.example.inventoryservice.dto.request.InventoryRequest;
 import com.example.inventoryservice.dto.response.InventoryResponse;
 import com.example.inventoryservice.dto.response.ProductResponse;
 import com.example.inventoryservice.entities.Inventory;
-import com.example.inventoryservice.enums.InventoryStatus;
 import com.example.inventoryservice.exception.NotFoundException;
 import com.example.inventoryservice.helper.LocalDatetimeConverter;
 import com.example.inventoryservice.mapper.InventoryMapper;
@@ -14,21 +13,15 @@ import com.example.inventoryservice.repository.InventoryRepository;
 import com.example.inventoryservice.repository.InventoryStatusRepository;
 import com.example.inventoryservice.security.JwtTokenUtil;
 import com.example.inventoryservice.services.InventoryService;
-import com.example.inventoryservice.services.InventoryStatusService;
 import com.example.inventoryservice.services.ProductClients;
-import com.example.inventoryservice.services.ProductQuantityClient;
 import jakarta.servlet.http.HttpServletRequest;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.mapstruct.Named;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 
-import java.math.BigDecimal;
 import java.time.LocalDateTime;
-import java.util.Comparator;
-import java.util.List;
 
 @Slf4j
 @Service
@@ -37,7 +30,6 @@ public class InventoryServiceImpl implements InventoryService {
     private final InventoryRepository inventoryRepository;
     private final InventoryMapper inventoryMapper;
     private final ProductClients productClients;
-    private final ProductQuantityClient productQuantityClient;
     private final InventoryStatusRepository inventoryStatusRepository;
     private final JwtTokenUtil jwtTokenUtil;
 
@@ -92,38 +84,55 @@ public class InventoryServiceImpl implements InventoryService {
         inventory.setUpdatedBy(getUserNameFromToken(httpServletRequest));
         inventory.setInventoryStatus(inventoryStatus);
 
-//        int stockQuantity;
-//        if (inventoryStatus.isAddAction()) {
-//            stockQuantity = product.getData().getStockQuantity() + request.getQuantity();
-//        } else {
-//            stockQuantity = product.getData().getStockQuantity() - request.getQuantity();
-//        }
+        int stockQuantity;
+        if (inventoryStatus.isAddAction()) {
+            stockQuantity = product.getData().getStockQuantity() + request.getQuantity();
+        } else {
+            stockQuantity = product.getData().getStockQuantity() - request.getQuantity();
+        }
 
-//        productClients.updateStockQuantity(product.getData().getProductId(), stockQuantity);
+        productClients.updateQuantity(product.getData().getProductId(), ProductQuantityRequest.builder().stockQuantity(stockQuantity).build());
 
         inventoryRepository.save(inventory);
     }
 
     @Override
     public Long addInventory(InventoryRequest request, HttpServletRequest httpServletRequest) {
-        var productQuantity = productQuantityClient.getProductQuantityByProductId(request.getProductId()).getData();
+        var product = getProductById(request.getProductId());
         var inventoryStatus = inventoryStatusRepository.findById(request.getInventoryStatusId()).orElseThrow(() -> new NotFoundException("Inventory Status not found"));
 
         Inventory inventory = inventoryMapper.toInventory(request);
-        inventory.setTotalCost(request.getUnitPrice().multiply(BigDecimal.valueOf(request.getQuantity())));
+//        inventory.setTotalCost(request.getUnitPrice().multiply(BigDecimal.valueOf(request.getQuantity())));
         inventory.setDate(LocalDatetimeConverter.toLocalDateTime(request.getDate()));
         inventory.setCreatedBy(getUserNameFromToken(httpServletRequest));
         inventory.setInventoryStatus(inventoryStatus);
         inventoryRepository.save(inventory);
 
-        long stockQuantity;
+        int stockQuantity;
         if (inventoryStatus.isAddAction()) {
-            stockQuantity = productQuantity.getStockQuantity() + request.getQuantity();
+            stockQuantity = product.getData().getStockQuantity() + request.getQuantity();
         } else {
-            stockQuantity = productQuantity.getStockQuantity() - request.getQuantity();
+            stockQuantity = product.getData().getStockQuantity() - request.getQuantity();
         }
 
-        productQuantityClient.updateProductQuantity(productQuantity.getId(), ProductQuantityRequest.builder().stockQuantity(stockQuantity).build());
+        if (inventoryStatus.getName().equals("OUT")){
+            int reservedQuantity = product.getData().getReservedQuantity() - request.getQuantity();
+            int soldQuantity = product.getData().getSoldQuantity() + request.getQuantity();
+            productClients.updateQuantity(product.getData().getProductId(), ProductQuantityRequest.builder()
+                    .stockQuantity(stockQuantity)
+                    .reservedQuantity(reservedQuantity)
+                    .soldQuantity(soldQuantity)
+                    .build());
+        } else {
+            productClients.updateQuantity(product.getData().getProductId(), ProductQuantityRequest.builder().stockQuantity(stockQuantity).build());
+        }
+//        else if (inventoryStatus.getName().equals("IN") && inventoryStatus.isSystemType()) {
+//            productClients.updateQuantity(product.getData().getProductId(),
+//                    ProductQuantityRequest.builder()
+//                            .stockQuantity(stockQuantity)
+//                            .purchasePrice(inventory.getUnitPrice())
+//                            .build());
+//        }
 
         return inventory.getId();
     }

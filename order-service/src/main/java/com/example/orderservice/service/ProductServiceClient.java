@@ -1,6 +1,7 @@
 package com.example.orderservice.service;
 
 import com.example.orderservice.config.AuthenticationRequestInterceptor;
+import com.example.orderservice.dto.request.ProductQuantityRequest;
 import com.example.orderservice.dto.response.ApiResponse;
 import com.example.orderservice.dto.response.ProductResponse;
 import org.springframework.cloud.openfeign.FeignClient;
@@ -21,4 +22,7 @@ public interface ProductServiceClient {
 
 //    @PutMapping("/updateSoldQuantity/{id}")
 //    void updateSoldQuantity(@PathVariable Long id, @RequestParam Integer quantity);
+
+    @PutMapping("/updateQuantity/{id}")
+    void updateQuantity(@PathVariable Long id, @RequestBody ProductQuantityRequest request);
 }

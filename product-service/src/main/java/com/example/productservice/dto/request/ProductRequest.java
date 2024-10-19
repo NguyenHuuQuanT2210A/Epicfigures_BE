@@ -16,19 +16,21 @@ public class ProductRequest {
 
     private String description;
 
-    private BigDecimal price;
-
     private Long categoryId;
 
     private CategoryRequest category;
 
     private Set<ProductImageRequest> images;
 
-//    private Integer stockQuantity;
-
     private String manufacturer;
 
     private String size;
 
     private String weight;
+
+    private BigDecimal price;
+
+//    private BigDecimal listPrice;
+//
+//    private BigDecimal sellingPrice;
 }
