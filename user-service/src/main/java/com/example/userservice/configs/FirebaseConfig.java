@@ -20,6 +20,7 @@ public class FirebaseConfig {
 
     @Bean
     public FirebaseApp initFirebase() throws IOException {
+        if (FirebaseApp.getApps().isEmpty()) {
 //        String serviceAccountPath = System.getProperty("user.dir") + "/epicgure-firebase-key.json";
 //        FileInputStream serviceAccountStream = new FileInputStream(serviceAccountPath);
 //        ClassPathResource serviceAccount = new ClassPathResource("epicgure-firebase-key.json");
@@ -46,5 +47,9 @@ public class FirebaseConfig {
                 .build();
 
         return FirebaseApp.initializeApp(options);
+
+        } else {
+            return FirebaseApp.getInstance();
+        }
     }
 }

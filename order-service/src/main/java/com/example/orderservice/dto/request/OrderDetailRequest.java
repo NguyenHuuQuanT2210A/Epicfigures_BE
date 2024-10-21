@@ -16,4 +16,5 @@ public class OrderDetailRequest {
     private OrderResponse order;
     private Integer quantity;
     private BigDecimal unitPrice;
+    private BigDecimal totalPrice;
 }

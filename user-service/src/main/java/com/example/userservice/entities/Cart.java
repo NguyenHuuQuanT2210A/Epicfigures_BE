@@ -20,6 +20,7 @@ public class Cart {
 
     private Integer quantity;
     private BigDecimal unitPrice;
+    private BigDecimal totalPrice;
 
     @Enumerated(EnumType.STRING)
     @Column(nullable = false)

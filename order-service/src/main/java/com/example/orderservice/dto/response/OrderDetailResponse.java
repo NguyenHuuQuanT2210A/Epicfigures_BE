@@ -14,5 +14,6 @@ public class OrderDetailResponse {
     private OrderDetailId id = new OrderDetailId();
     private Integer quantity;
     private BigDecimal unitPrice;
+    private BigDecimal totalPrice;
     private ProductResponse product;
 }

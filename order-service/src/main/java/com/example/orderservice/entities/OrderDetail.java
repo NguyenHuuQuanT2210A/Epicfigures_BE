@@ -23,6 +23,7 @@ public class OrderDetail {
     private Order order;
     private Integer quantity;
     private BigDecimal unitPrice;
+    private BigDecimal totalPrice;
 
     @OneToOne(mappedBy = "orderDetail")
     private Feedback feedback;

@@ -193,11 +193,13 @@ public class OrderServiceImpl implements OrderService {
 
                 Order finalNewOrder = newOrder;
                 request.getCartItems().forEach(cartItem -> {
+                    var product = productService.getProductById(cartItem.getProductId()).getData();
                     orderDetails.add(OrderDetailRequest.builder()
                             .order(orderMapper.toOrderResponse(finalNewOrder))
                             .id(new OrderDetailId(finalNewOrder.getId(), cartItem.getProductId()))
                             .quantity(cartItem.getQuantity())
-                            .unitPrice(cartItem.getUnitPrice())
+                            .unitPrice(product.getPrice())
+                            .totalPrice(cartItem.getTotalPrice())
                             .build());
 
                     ids.add(new UserAndProductId(cartItem.getUserId(), cartItem.getProductId()));

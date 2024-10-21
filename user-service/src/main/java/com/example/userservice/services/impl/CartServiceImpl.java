@@ -5,6 +5,7 @@ import com.example.userservice.dtos.response.ProductImageResponse;
 import com.example.userservice.entities.UserAndProductId;
 import com.example.userservice.entities.Cart;
 import com.example.userservice.exceptions.AppException;
+import com.example.userservice.exceptions.CustomException;
 import com.example.userservice.exceptions.ErrorCode;
 import com.example.userservice.repositories.CartRepository;
 import com.example.userservice.services.CartService;
@@ -13,6 +14,7 @@ import com.example.userservice.statics.enums.CartStatus;
 import lombok.AccessLevel;
 import lombok.RequiredArgsConstructor;
 import lombok.experimental.FieldDefaults;
+import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -69,22 +71,29 @@ public class CartServiceImpl implements CartService {
     @Override
     public Cart addCart(Cart cart) {
         var cartExist = getCartById(cart.getId());
-        var product = productClient.getProductById(cart.getId().getProductId());
+        var product = productClient.getProductById(cart.getId().getProductId()).getData();
+
+        if ((product.getStockQuantity() - product.getReservedQuantity()) < cart.getQuantity() || product.getStockQuantity() == 0)
+        {
+            throw new AppException(ErrorCode.EXCEED_PRODUCT_QUANTITY);
+        }
 
         if (cartExist == null) {
             return cartRepository.save(Cart.builder().id(cart.getId())
                     .quantity(cart.getQuantity())
-                    .unitPrice(BigDecimal.valueOf(cart.getQuantity()).multiply(product.getData().getPrice()))
+                    .unitPrice(product.getPrice())
+                    .totalPrice(BigDecimal.valueOf(cart.getQuantity()).multiply(product.getPrice()))
                     .status(CartStatus.AVAILABLE)
                     .build());
 
         }else {
-            if (product.getData().getStockQuantity() < cart.getQuantity() + cartExist.getQuantity())
+            if ((product.getStockQuantity() - product.getReservedQuantity()) < cart.getQuantity() + cartExist.getQuantity())
             {
                 throw new AppException(ErrorCode.EXCEED_PRODUCT_QUANTITY);
             }
             cartExist.setQuantity(cart.getQuantity() + cartExist.getQuantity());
-            cartExist.setUnitPrice(BigDecimal.valueOf(cart.getQuantity()).multiply(product.getData().getPrice()).add(cartExist.getUnitPrice()));
+            cartExist.setUnitPrice(product.getPrice());
+            cartExist.setTotalPrice(BigDecimal.valueOf(cartExist.getQuantity()).multiply(product.getPrice()));
             return cartRepository.save(cartExist);
         }
     }
@@ -92,13 +101,17 @@ public class CartServiceImpl implements CartService {
     @Override
     public Cart updateQuantity(UserAndProductId ids, Integer quantity) {
         Cart cart = getCartById(ids);
-        var product = productClient.getProductById(cart.getId().getProductId());
-        if (product.getData().getStockQuantity() < quantity)
+        if (cart == null) {
+            throw new CustomException("Cart not found", HttpStatus.NOT_FOUND);
+        }
+        var product = productClient.getProductById(cart.getId().getProductId()).getData();
+        if ((product.getStockQuantity() - product.getReservedQuantity())  < quantity || product.getStockQuantity() == 0)
         {
             throw new AppException(ErrorCode.EXCEED_PRODUCT_QUANTITY);
         }
         cart.setQuantity(quantity);
-        cart.setUnitPrice(BigDecimal.valueOf(quantity).multiply(product.getData().getPrice()));
+        cart.setUnitPrice(product.getPrice());
+        cart.setTotalPrice(BigDecimal.valueOf(quantity).multiply(product.getPrice()));
         return cartRepository.save(cart);
     }
 
@@ -113,7 +126,6 @@ public class CartServiceImpl implements CartService {
             deleteCart(id);
         }
     }
-
 
     @Override
     @Transactional

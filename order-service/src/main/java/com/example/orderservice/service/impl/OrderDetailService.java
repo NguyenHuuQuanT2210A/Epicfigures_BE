@@ -47,6 +47,7 @@ public class OrderDetailService {
         OrderDetail orderDetail = orderDetailMapper.INSTANCE.toOrderDetail(request);
         orderDetail.setId(new OrderDetailId(request.getId().getOrderId(), request.getId().getProductId()));
         orderDetail.setUnitPrice(request.getUnitPrice());
+        orderDetail.setTotalPrice(request.getTotalPrice());
         orderDetail.setQuantity(request.getQuantity());
         orderDetailRepository.save(orderDetail);
 
