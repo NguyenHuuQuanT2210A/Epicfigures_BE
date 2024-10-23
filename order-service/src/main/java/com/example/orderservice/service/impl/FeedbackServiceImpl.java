@@ -15,6 +15,8 @@ import com.example.orderservice.service.OrderService;
 import com.example.orderservice.service.ProductServiceClient;
 import com.example.orderservice.service.UserServiceClient;
 import lombok.RequiredArgsConstructor;
+import org.jsoup.Jsoup;
+import org.jsoup.safety.Safelist;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.http.HttpStatus;
@@ -59,10 +61,11 @@ public class FeedbackServiceImpl implements FeedbackService {
 
     @Override
     public void createFeedback(FeedbackRequest request) {
-        try {
+            validateComment(request.getComment());
             Feedback feedback = feedbackMapper.toFeedback(request);
             var oder = orderService.findById(request.getOrderDetail().getId().getOrderId());
             feedback.setUserId(oder.getUserId());
+        try {
             feedbackRepository.save(feedback);
         }catch (Exception e) {
             throw new CustomException("error while create feedback", HttpStatus.INTERNAL_SERVER_ERROR);
@@ -71,6 +74,7 @@ public class FeedbackServiceImpl implements FeedbackService {
 
     @Override
     public FeedbackResponse updateFeedback(Long id, FeedbackRequest request) {
+        validateComment(request.getComment());
         Feedback feedbackUpdate = getFeedbackById(id);
         feedbackMapper.updateFeedback(feedbackUpdate, request);
         try {
@@ -96,5 +100,11 @@ public class FeedbackServiceImpl implements FeedbackService {
 
     private Feedback getFeedbackById(Long id){
         return feedbackRepository.findById(id).orElseThrow(() -> new AppException(ErrorCode.FEEDBACK_NOT_EXISTED));
+    }
+
+    public void validateComment(String comment) throws IllegalArgumentException {
+        if (!Jsoup.isValid(comment, Safelist.none())) {
+            throw new CustomException("Invalid comment", HttpStatus.BAD_REQUEST);
+        }
     }
 }
