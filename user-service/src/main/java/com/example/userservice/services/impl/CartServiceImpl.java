@@ -19,6 +19,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.math.BigDecimal;
+import java.math.RoundingMode;
 import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
@@ -49,12 +50,14 @@ public class CartServiceImpl implements CartService {
             var product = productClient.getProductById(cart.getId().getProductId());
             if (product.getData() == null) {
                 cart.setStatus(CartStatus.DISCONTINUED);
-            }else if (product.getData().getStockQuantity() < cart.getQuantity()) {
-                cart.setStatus(CartStatus.EXCEEDED_AVAILABLE_STOCK);
             }else if (product.getData().getStockQuantity() == 0) {
                 cart.setStatus(CartStatus.OUT_OF_STOCK);
-            }else if (product.getData().getPrice().compareTo(cart.getUnitPrice().divide(BigDecimal.valueOf(cart.getQuantity()))) != 0) {
+            }else if (product.getData().getStockQuantity() < cart.getQuantity()) {
+                cart.setStatus(CartStatus.EXCEEDED_AVAILABLE_STOCK);
+            }else if (product.getData().getPrice().compareTo(cart.getTotalPrice().divide(BigDecimal.valueOf(cart.getQuantity()), 2, RoundingMode.HALF_UP)) != 0) {
                 cart.setStatus(CartStatus.PRICE_CHANGED);
+            }else {
+                cart.setStatus(CartStatus.AVAILABLE);
             }
             cartRepository.save(cart);
             cartsToCheck.add(cart);
@@ -150,6 +153,7 @@ public class CartServiceImpl implements CartService {
                     .description(product.getData().getDescription())
                     .status(cart.getStatus())
                     .unitPrice(cart.getUnitPrice())
+                    .totalPrice(cart.getTotalPrice())
                     .productImages(productImagesUrl)
                     .build());
         }

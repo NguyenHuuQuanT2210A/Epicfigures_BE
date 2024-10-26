@@ -18,6 +18,7 @@ public class CartResponse {
     UserAndProductId id;
     Integer quantity;
     BigDecimal unitPrice;
+    BigDecimal totalPrice;
     String productName;
     BigDecimal productPrice;
     String description;
