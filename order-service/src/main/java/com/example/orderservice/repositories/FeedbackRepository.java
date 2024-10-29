@@ -20,10 +20,10 @@ public interface FeedbackRepository extends JpaRepository<Feedback, Long> {
     @Query("SELECT f FROM Feedback f WHERE f.orderDetail.order.userId = :userId")
     Page<Feedback> findByUserId(Long userId, Pageable pageable);
 
-    @Query("SELECT f FROM Feedback f WHERE f.orderDetail.id.productId = :productId")
+    @Query("SELECT f FROM Feedback f WHERE f.orderDetail.productId = :productId")
     Page<Feedback> findByProductId(Long productId, Pageable pageable);
 
-    @Query("SELECT f FROM Feedback f WHERE f.orderDetail.id.productId = :productId AND f.rateStar = :rateStar")
+    @Query("SELECT f FROM Feedback f WHERE f.orderDetail.productId = :productId AND f.rateStar = :rateStar")
     Page<Feedback> findByProductIdAndRateStar(Long productId, Integer rateStar, Pageable pageable);
 
 //    using store procedure

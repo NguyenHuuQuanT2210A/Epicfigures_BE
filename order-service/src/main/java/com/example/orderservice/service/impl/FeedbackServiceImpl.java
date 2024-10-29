@@ -4,7 +4,6 @@ import com.example.orderservice.enums.ErrorCode;
 import com.example.orderservice.dto.request.FeedbackRequest;
 import com.example.orderservice.dto.response.FeedbackResponse;
 import com.example.orderservice.entities.Feedback;
-import com.example.orderservice.entities.OrderDetailId;
 import com.example.orderservice.exception.AppException;
 import com.example.orderservice.exception.CustomException;
 import com.example.orderservice.mapper.FeedbackMapper;
@@ -40,7 +39,7 @@ public class FeedbackServiceImpl implements FeedbackService {
     }
 
     @Override
-    public FeedbackResponse findByOrderDetailId(OrderDetailId orderDetailId) {
+    public FeedbackResponse findByOrderDetailId(String orderDetailId) {
         var orderDetail = orderDetailMapper.orderDetailResponsetoOrderDetail(orderDetailService.findOrderDetailById(orderDetailId));
         return feedbackMapper.toFeedbackResponse(feedbackRepository.findByOrderDetail(orderDetail));
     }
@@ -63,7 +62,7 @@ public class FeedbackServiceImpl implements FeedbackService {
     public void createFeedback(FeedbackRequest request) {
             validateComment(request.getComment());
             Feedback feedback = feedbackMapper.toFeedback(request);
-            var oder = orderService.findById(request.getOrderDetail().getId().getOrderId());
+            var oder = orderService.findById(request.getOrderDetail().getOrder().getId());
             feedback.setUserId(oder.getUserId());
         try {
             feedbackRepository.save(feedback);

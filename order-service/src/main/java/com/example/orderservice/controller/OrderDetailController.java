@@ -2,7 +2,6 @@ package com.example.orderservice.controller;
 
 import com.example.orderservice.dto.response.ApiResponse;
 import com.example.orderservice.dto.response.OrderDetailResponse;
-import com.example.orderservice.entities.OrderDetailId;
 import com.example.orderservice.service.impl.OrderDetailService;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import lombok.RequiredArgsConstructor;
@@ -20,24 +19,33 @@ import java.util.List;
 public class OrderDetailController {
     private final OrderDetailService orderDetailService;
 
-    @GetMapping("/orderAndProduct")
-    public ApiResponse<OrderDetailResponse> getOrderDetailByOrderIdAndProductId(@RequestBody OrderDetailId orderDetailId) {
-        OrderDetailResponse orderDetailDTO = orderDetailService.findOrderDetailById(orderDetailId);
+    @GetMapping("/id/{id}")
+    public ApiResponse<OrderDetailResponse> getOrderDetailById(@PathVariable String id) {
+        OrderDetailResponse orderDetailDTO = orderDetailService.findOrderDetailById(id);
         return ApiResponse.<OrderDetailResponse>builder()
-                .message("Get Order Detail by OrderId And ProductId")
+                .message("Get Order Detail by Id")
                 .data(orderDetailDTO)
                 .build();
     }
 
-    @GetMapping("/isOrderDetailExist")
-    public ResponseEntity<Boolean> isOrderDetailExist(@RequestBody OrderDetailId orderDetailId) {
-        OrderDetailResponse orderDetailDTO = orderDetailService.findOrderDetailById(orderDetailId);
-        if (orderDetailDTO == null) {
-            return ResponseEntity.ok(false);
-        }else {
-            return ResponseEntity.ok(true);
-        }
-    }
+//    @GetMapping("/orderAndProduct")
+//    public ApiResponse<OrderDetailResponse> getOrderDetailByOrderIdAndProductId(@RequestBody OrderDetailId orderDetailId) {
+//        OrderDetailResponse orderDetailDTO = orderDetailService.findOrderDetailById(orderDetailId);
+//        return ApiResponse.<OrderDetailResponse>builder()
+//                .message("Get Order Detail by OrderId And ProductId")
+//                .data(orderDetailDTO)
+//                .build();
+//    }
+
+//    @GetMapping("/isOrderDetailExist")
+//    public ResponseEntity<Boolean> isOrderDetailExist(@RequestBody OrderDetailId orderDetailId) {
+//        OrderDetailResponse orderDetailDTO = orderDetailService.findOrderDetailById(orderDetailId);
+//        if (orderDetailDTO == null) {
+//            return ResponseEntity.ok(false);
+//        }else {
+//            return ResponseEntity.ok(true);
+//        }
+//    }
 
     @GetMapping("/order/{orderId}")
     public ApiResponse<List<OrderDetailResponse>> getOrderDetailsByOrderId(@PathVariable String orderId) {
@@ -48,18 +56,25 @@ public class OrderDetailController {
                 .build();
     }
 
-    @PutMapping("/updateQuantity")
-    public ApiResponse<OrderDetailResponse> updateQuantity(@RequestBody OrderDetailId orderDetailId, @RequestParam Integer quantity) {
-        OrderDetailResponse orderDetailDTO = orderDetailService.updateQuantity(orderDetailId, quantity);
-        return ApiResponse.<OrderDetailResponse>builder()
+    @PutMapping("/updateQuantity/{id}")
+    public ApiResponse<Void> updateQuantity(@PathVariable String id, @RequestParam Integer quantity) {
+        orderDetailService.updateQuantity(id, quantity);
+        return ApiResponse.<Void>builder()
                 .message("Update quantity of Order Detail")
-                .data(orderDetailDTO)
                 .build();
     }
 
-    @DeleteMapping("/orderAndProduct")
-    public ApiResponse<String> deleteOrderDetailByOrderIdAndProductId(@RequestBody OrderDetailId orderDetailId) {
-        orderDetailService.deleteOrderDetail(orderDetailId);
+//    @DeleteMapping("/orderAndProduct")
+//    public ApiResponse<String> deleteOrderDetailByOrderIdAndProductId(@RequestBody OrderDetailId orderDetailId) {
+//        orderDetailService.deleteOrderDetail(orderDetailId);
+//        return ApiResponse.<String>builder()
+//                .message("Delete Order Detail Successfully!")
+//                .build();
+//    }
+
+    @DeleteMapping("/id/{id}")
+    public ApiResponse<String> deleteOrderDetailById(@PathVariable String id) {
+        orderDetailService.deleteOrderDetail(id);
         return ApiResponse.<String>builder()
                 .message("Delete Order Detail Successfully!")
                 .build();

@@ -4,17 +4,16 @@ import com.example.orderservice.entities.base.BaseEntity;
 import com.example.orderservice.enums.OrderSimpleStatus;
 import com.fasterxml.jackson.annotation.JsonManagedReference;
 import jakarta.persistence.*;
-import lombok.AllArgsConstructor;
-import lombok.Getter;
-import lombok.NoArgsConstructor;
-import lombok.Setter;
+import lombok.*;
 import org.hibernate.annotations.GenericGenerator;
 
 import java.math.BigDecimal;
+import java.time.LocalDateTime;
 import java.util.Set;
 
 @Getter
 @Setter
+@Builder
 @NoArgsConstructor
 @AllArgsConstructor
 @Entity
@@ -44,8 +43,10 @@ public class Order extends BaseEntity {
     private BigDecimal totalPrice;
     @Enumerated(EnumType.ORDINAL)
     private OrderSimpleStatus status;
-    @OneToMany(mappedBy = "order",
-            fetch = FetchType.LAZY, cascade = CascadeType.REMOVE)
+
+    private LocalDateTime returnDeadline;
+
+    @OneToMany(mappedBy = "order", fetch = FetchType.LAZY, cascade = CascadeType.REMOVE)
     @JsonManagedReference
     private Set<OrderDetail> orderDetails;
 

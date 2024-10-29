@@ -2,14 +2,13 @@ package com.example.orderservice.service.impl;
 
 import com.example.orderservice.dto.request.OrderDetailRequest;
 import com.example.orderservice.dto.request.ProductQuantityRequest;
-import com.example.orderservice.dto.response.ApiResponse;
 import com.example.orderservice.dto.response.OrderDetailResponse;
 import com.example.orderservice.dto.response.ProductResponse;
 import com.example.orderservice.entities.OrderDetail;
-import com.example.orderservice.entities.OrderDetailId;
 import com.example.orderservice.exception.CustomException;
 import com.example.orderservice.mapper.OrderDetailMapper;
 
+import com.example.orderservice.mapper.OrderMapper;
 import com.example.orderservice.repositories.OrderDetailRepository;
 import com.example.orderservice.service.ProductServiceClient;
 import lombok.RequiredArgsConstructor;
@@ -25,10 +24,16 @@ import java.util.stream.Collectors;
 public class OrderDetailService {
     private final OrderDetailRepository orderDetailRepository;
     private final OrderDetailMapper orderDetailMapper;
+    private final OrderMapper orderMapper;
     private final ProductServiceClient productServiceClient;
 
     public List<OrderDetailResponse> findOrderDetailByOrderId(String id) {
-        return orderDetailRepository.findOrderDetailsByOrder_Id(id).stream().map(orderDetailMapper.INSTANCE::toOrderDetailResponse).collect(Collectors.toList());
+        return orderDetailRepository.findOrderDetailsByOrder_Id(id).stream().map(orderDetail -> {
+            var product = getProductById(orderDetail.getProductId());
+            var orderDetailResponse = orderDetailMapper.INSTANCE.toOrderDetailResponse(orderDetail);
+            orderDetailResponse.setProduct(product);
+            return orderDetailResponse;
+        }).collect(Collectors.toList());
     }
 
     public OrderDetailResponse createOrderDetail(OrderDetailRequest request) {
@@ -44,14 +49,18 @@ public class OrderDetailService {
 //            return orderDetailMapper.INSTANCE.orderDetailToOrderDetailDTO(orderDetailRepository.save(orderDetail));
 //        }
 
-        OrderDetail orderDetail = orderDetailMapper.INSTANCE.toOrderDetail(request);
-        orderDetail.setId(new OrderDetailId(request.getId().getOrderId(), request.getId().getProductId()));
-        orderDetail.setUnitPrice(request.getUnitPrice());
-        orderDetail.setTotalPrice(request.getTotalPrice());
-        orderDetail.setQuantity(request.getQuantity());
+        OrderDetail orderDetail = OrderDetail.builder()
+                .order(request.getOrder())
+                .quantity(request.getQuantity())
+                .returnableQuantity(request.getQuantity())
+                .unitPrice(request.getUnitPrice())
+                .totalPrice(request.getTotalPrice())
+                .productId(request.getProductId())
+                .build();
+
         orderDetailRepository.save(orderDetail);
 
-        var product = productServiceClient.getProductById(orderDetail.getId().getProductId());
+        var product = productServiceClient.getProductById(orderDetail.getProductId());
         Integer reservedQuantity = product.getData().getReservedQuantity() + orderDetail.getQuantity();
 
         productServiceClient.updateQuantity(product.getData().getProductId(), ProductQuantityRequest.builder().reservedQuantity(reservedQuantity).build());
@@ -59,11 +68,11 @@ public class OrderDetailService {
         return orderDetailMapper.INSTANCE.toOrderDetailResponse(orderDetail);
     }
 
-    public OrderDetailResponse updateOrderDetail(OrderDetailRequest request) {
+    public OrderDetailResponse updateOrderDetail(OrderDetailRequest request, String id) {
         if (request == null) {
             throw new CustomException("OrderDetailDTO is null", HttpStatus.BAD_REQUEST);
         }
-        OrderDetail orderDetail = orderDetailRepository.findOrderDetailById(request.getId());
+        OrderDetail orderDetail = orderDetailRepository.findOrderDetailById(id);
         if (orderDetail == null) {
             throw new CustomException("OrderDetail not found", HttpStatus.NOT_FOUND);
         }
@@ -71,7 +80,7 @@ public class OrderDetailService {
         return orderDetailMapper.INSTANCE.toOrderDetailResponse(orderDetailRepository.save(orderDetail));
     }
 
-    public void deleteOrderDetail(OrderDetailId id) {
+    public void deleteOrderDetail(String id) {
         OrderDetail orderDetail = orderDetailRepository.findOrderDetailById(id);
         if (orderDetail == null) {
             throw new CustomException("OrderDetail not found", HttpStatus.NOT_FOUND);
@@ -79,20 +88,28 @@ public class OrderDetailService {
         orderDetailRepository.delete(orderDetail);
     }
 
-    public OrderDetailResponse findOrderDetailById(OrderDetailId id) {
+    public OrderDetailResponse findOrderDetailById(String id) {
         OrderDetail orderDetail = orderDetailRepository.findOrderDetailById(id);
 //        if (orderDetail == null) {
 //            throw new CustomException("OrderDetail not found", HttpStatus.NOT_FOUND);
 //        }
-        return orderDetailMapper.INSTANCE.toOrderDetailResponse(orderDetail);
+        var product = getProductById(orderDetail.getProductId());
+        var orderDetailResponse = orderDetailMapper.INSTANCE.toOrderDetailResponse(orderDetail);
+        orderDetailResponse.setProduct(product);
+        return orderDetailResponse;
     }
 
-    public OrderDetailResponse updateQuantity(OrderDetailId orderDetailId, Integer quantity) {
-        OrderDetail orderDetail = orderDetailMapper.INSTANCE.orderDetailResponsetoOrderDetail(findOrderDetailById(orderDetailId));
+    public void updateQuantity(String id, Integer quantity) {
+        OrderDetail orderDetail = orderDetailRepository.findOrderDetailById(id);
+        var productDTO = getProductById(orderDetail.getProductId());
         orderDetail.setQuantity(quantity);
-        ApiResponse<ProductResponse> productDTO = productServiceClient.getProductById(orderDetailId.getProductId());
-        orderDetail.setUnitPrice(productDTO.getData().getPrice().multiply(new BigDecimal(quantity)));
+        orderDetail.setReturnableQuantity(quantity);
+        orderDetail.setUnitPrice(productDTO.getPrice());
+        orderDetail.setTotalPrice(productDTO.getPrice().multiply(new BigDecimal(quantity)));
         orderDetailRepository.save(orderDetail);
-        return orderDetailMapper.INSTANCE.toOrderDetailResponse(orderDetail);
+    }
+
+    private ProductResponse getProductById(Long productId) {
+        return productServiceClient.getProductById(productId).getData();
     }
 }

@@ -7,8 +7,10 @@ import com.example.orderservice.repositories.*;
 import com.example.orderservice.enums.OrderSimpleStatus;
 import com.example.orderservice.service.impl.ProductServiceClientImpl;
 import com.example.orderservice.service.impl.UserServiceClientImpl;
+import com.example.orderservice.util.GenerateUniqueCode;
 import com.github.javafaker.Faker;
 import org.springframework.boot.CommandLineRunner;
+import org.springframework.stereotype.Component;
 
 import java.math.BigDecimal;
 import java.util.*;
@@ -48,12 +50,16 @@ public class OrderSeeder implements CommandLineRunner {
             int orderDetailNumber = faker.number().numberBetween(1, 3);
 
             System.out.println(order.getId());
+            do {
+                order.setCodeOrder(GenerateUniqueCode.generateOrderCode());
+            } while (orderRepository.existsByCodeOrder(order.getCodeOrder()));
+
             order.setStatus(OrderSimpleStatus.PENDING);
             order.setUserId(userServiceClient.getUserById((long) userId).getData().getId());
             for (int j = 0; j < orderDetailNumber; j++) {
                 int productId = faker.number().numberBetween(1, 9);
                 for (OrderDetail od : orderDetails) {
-                    if (od.getId().getProductId() == productId && od.getOrder().getUserId() == userId) {
+                    if (od.getProductId() == productId && od.getOrder().getUserId() == userId) {
                         existProduct = true;
                         break;
                     }
@@ -65,12 +71,15 @@ public class OrderSeeder implements CommandLineRunner {
                 }
                 OrderDetail orderDetail = new OrderDetail();
                 ApiResponse<ProductResponse> product = productServiceClient.getProductById((long) productId);
-                orderDetail.setId(new OrderDetailId(order.getId(), product.getData().getProductId()));
+                orderDetail.setOrder(order);
+                orderDetail.setProductId(product.getData().getProductId());
                 int quantity = faker.number().numberBetween(1, 5);
                 orderDetail.setOrder(order);
                 orderDetail.setQuantity(quantity);
+                orderDetail.setReturnableQuantity(quantity);
                 long unitPrice = product.getData().getPrice().longValue() * quantity;
                 orderDetail.setUnitPrice(new BigDecimal(unitPrice));
+                orderDetail.setTotalPrice(new BigDecimal(unitPrice * quantity));
                 total += unitPrice;
                 orderDetails.add(orderDetail);
             }

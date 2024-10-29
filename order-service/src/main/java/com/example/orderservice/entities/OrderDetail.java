@@ -2,28 +2,33 @@ package com.example.orderservice.entities;
 
 import com.fasterxml.jackson.annotation.JsonBackReference;
 import jakarta.persistence.*;
-import lombok.AllArgsConstructor;
-import lombok.Getter;
-import lombok.NoArgsConstructor;
-import lombok.Setter;
+import lombok.*;
+import org.hibernate.annotations.GenericGenerator;
 
 import java.math.BigDecimal;
 @Getter
 @Setter
+@Builder
 @AllArgsConstructor
 @NoArgsConstructor
 @Entity
 public class OrderDetail {
-    @EmbeddedId
-    private OrderDetailId id = new OrderDetailId();
+//    @EmbeddedId
+//    private OrderDetailId id = new OrderDetailId();
+
+    @Id
+    @GeneratedValue(strategy = GenerationType.UUID)
+    private String id;
+
     @ManyToOne
-    @MapsId("orderId")
     @JoinColumn(name = "order_id", referencedColumnName = "id", nullable = false)
     @JsonBackReference
     private Order order;
     private Integer quantity;
+    private Integer returnableQuantity;
     private BigDecimal unitPrice;
     private BigDecimal totalPrice;
+    private Long productId;
 
     @OneToOne(mappedBy = "orderDetail")
     private Feedback feedback;

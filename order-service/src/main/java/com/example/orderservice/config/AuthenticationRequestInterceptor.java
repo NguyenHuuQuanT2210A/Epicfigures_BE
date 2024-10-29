@@ -14,6 +14,11 @@ public class AuthenticationRequestInterceptor implements RequestInterceptor {
         ServletRequestAttributes servletRequestAttributes =
                 (ServletRequestAttributes) RequestContextHolder.getRequestAttributes();
 
+        if (servletRequestAttributes == null) {
+            log.info("Request attributes are null");
+            return;
+        }
+
         var authHeader = servletRequestAttributes.getRequest().getHeader("Authorization");
 
         log.info("Header: {}", authHeader);

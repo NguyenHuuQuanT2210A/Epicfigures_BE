@@ -4,7 +4,6 @@ import com.example.orderservice.dto.request.*;
 import com.example.orderservice.dto.response.*;
 import com.example.orderservice.enums.OrderSimpleStatus;
 import com.example.orderservice.entities.Order;
-import com.example.orderservice.entities.OrderDetailId;
 import com.example.orderservice.enums.PaymentType;
 import com.example.orderservice.enums.Platform;
 import com.example.orderservice.exception.CustomException;
@@ -143,13 +142,14 @@ public class OrderServiceImpl implements OrderService {
         var orderResponse = orderMapper.toOrderResponse(findOrderById(id));
         if (orderResponse != null) {
             orderResponse.getOrderDetails().forEach(orderDetailResponse -> {
-                var productResponse = productService.getProductById(orderDetailResponse.getId().getProductId());
+                var productResponse = productService.getProductById(orderDetailResponse.getProductId());
                 if (productResponse != null && productResponse.getData() != null) {
                     orderDetailResponse.setProduct(productResponse.getData());
                     if (productResponse.getData().getImages() != null) {
                         orderDetailResponse.getProduct().setImages(productResponse.getData().getImages());
                     }
                 }
+                orderDetailResponse.setOrderId(id);
             });
         }
         return orderResponse;
@@ -195,8 +195,8 @@ public class OrderServiceImpl implements OrderService {
                 request.getCartItems().forEach(cartItem -> {
                     var product = productService.getProductById(cartItem.getProductId()).getData();
                     orderDetails.add(OrderDetailRequest.builder()
-                            .order(orderMapper.toOrderResponse(finalNewOrder))
-                            .id(new OrderDetailId(finalNewOrder.getId(), cartItem.getProductId()))
+                            .order(finalNewOrder)
+                            .productId(cartItem.getProductId())
                             .quantity(cartItem.getQuantity())
                             .unitPrice(product.getPrice())
                             .totalPrice(cartItem.getTotalPrice())
@@ -312,7 +312,7 @@ public class OrderServiceImpl implements OrderService {
             ordersPage = orderRepository.findOrderByUserId(userId, specification, sortedPage).map(orderMapper.INSTANCE::toOrderResponse);
             ordersPage.getContent().forEach(order -> {
                 order.getOrderDetails().forEach(orderDetailResponse -> {
-                    var data = productService.getProductById(orderDetailResponse.getId().getProductId());
+                    var data = productService.getProductById(orderDetailResponse.getProductId());
                     orderDetailResponse.setProduct(data.getData());
                 });
             });
@@ -368,7 +368,7 @@ public class OrderServiceImpl implements OrderService {
 
     private void addInventory(Order order) {
         order.getOrderDetails().forEach(orderDetail -> {
-            var product = productService.getProductById(orderDetail.getId().getProductId()).getData();
+            var product = productService.getProductById(orderDetail.getProductId()).getData();
             inventoryServiceClient.createInventory(InventoryRequest.builder()
                     .productId(product.getProductId())
                     .quantity(orderDetail.getQuantity())
@@ -402,7 +402,7 @@ public class OrderServiceImpl implements OrderService {
         var order = findOrderById(orderId);
         List<ProductResponse> products = new ArrayList<>();
         for (var orderDetail : order.getOrderDetails()){
-            var product = productService.getProductById(orderDetail.getId().getProductId());
+            var product = productService.getProductById(orderDetail.getProductId());
             products.add(product.getData());
         }
         return products;

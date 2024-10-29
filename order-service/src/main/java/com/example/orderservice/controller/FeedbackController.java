@@ -3,7 +3,6 @@ package com.example.orderservice.controller;
 import com.example.orderservice.dto.request.FeedbackRequest;
 import com.example.orderservice.dto.response.ApiResponse;
 import com.example.orderservice.dto.response.FeedbackResponse;
-import com.example.orderservice.entities.OrderDetailId;
 import com.example.orderservice.service.FeedbackService;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import lombok.RequiredArgsConstructor;
@@ -27,8 +26,8 @@ public class FeedbackController {
                 .build();
     }
 
-    @GetMapping("/orderDetail")
-    ApiResponse<FeedbackResponse> getFeedbackByOrderDetailId(@RequestBody OrderDetailId orderDetailId) {
+    @GetMapping("/orderDetail/{orderDetailId}")
+    ApiResponse<FeedbackResponse> getFeedbackByOrderDetailId(@PathVariable String orderDetailId) {
         return ApiResponse.<FeedbackResponse>builder()
                 .message("Get Feedback by Order Detail Id")
                 .data(feedbackService.findByOrderDetailId(orderDetailId))

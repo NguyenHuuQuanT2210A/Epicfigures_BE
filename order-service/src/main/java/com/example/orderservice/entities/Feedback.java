@@ -20,9 +20,6 @@ public class Feedback extends BaseEntity {
     private Long userId;
 
     @OneToOne(fetch = FetchType.LAZY)
-    @JoinColumns({
-            @JoinColumn(name = "order_id", updatable = false),
-            @JoinColumn(name = "product_id", updatable = false),
-    })
+    @JoinColumn(name = "order_detail_id", updatable = false)
     private OrderDetail orderDetail;
 }
