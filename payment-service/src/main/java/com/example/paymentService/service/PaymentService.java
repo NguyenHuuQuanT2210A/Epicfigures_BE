@@ -3,7 +3,6 @@ package com.example.paymentService.service;
 import com.example.paymentService.dto.request.PaymentRequest;
 import com.example.paymentService.dto.response.OrderResponse;
 import com.example.paymentService.config.KafkaProducer;
-import com.example.paymentService.dto.response.ApiResponse;
 import com.example.paymentService.dto.response.UserResponse;
 import com.example.paymentService.entity.Payment;
 import com.example.paymentService.enums.PaymentStatus;
@@ -13,12 +12,12 @@ import com.example.paymentService.event.PaymentCreatedEvent;
 
 import com.example.paymentService.event.RequestUpdateStatusOrder;
 import com.example.paymentService.repository.PaymentRepository;
+import com.example.paymentService.util.ParseBigDecimal;
 import com.paypal.base.rest.PayPalRESTException;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
-import org.springframework.http.ResponseEntity;
 import org.springframework.kafka.core.KafkaTemplate;
 import org.springframework.stereotype.Service;
 import org.springframework.web.client.RestTemplate;
@@ -41,19 +40,19 @@ public class PaymentService {
     private final UserClient userClient;
 
     public String creatPayment( PaymentRequest request, String baseUrl) throws UnsupportedEncodingException, PayPalRESTException {
-        ApiResponse<OrderResponse> orderResponse = orderClient.getOrderById(request.getOrderId());
+        OrderResponse orderResponse = orderClient.getOrderById(request.getOrderId()).getData();
 
         if (request.getPaymentType().equals(PaymentType.PAYMENT)){
             savePayment(request.getOrderId());
         }else if (request.getPaymentType().equals(PaymentType.REPAYMENT)){
-            orderResponse = orderClient.changePaymentMethod(request.getOrderId(), request.getPaymentMethod());
+            orderResponse = orderClient.changePaymentMethod(request.getOrderId(), request.getPaymentMethod()).getData();
         }
 
         if (request.getPaymentMethod().equalsIgnoreCase("PAYPAL")){
-            return paypalService.createPayment(request.getOrderId(), orderResponse.getData(), baseUrl);
+            return paypalService.createPayment(request.getOrderId(), orderResponse, baseUrl);
         }
         else if (request.getPaymentMethod().equalsIgnoreCase("VNPAY")){
-            return vnPayService.createPaymentVnPay(request.getOrderId(), orderResponse.getData(), baseUrl);
+            return vnPayService.createPaymentVnPay(request.getOrderId(), orderResponse, baseUrl);
         }else {
             updateStatusPayment(true, request.getOrderId());
             updateStatusOrder(true, request.getOrderId());
@@ -66,12 +65,12 @@ public class PaymentService {
     }
 
     public void savePayment(String orderId){
-        ApiResponse<OrderResponse> orderResponse = orderClient.getOrderById(orderId);
+        OrderResponse orderResponse = orderClient.getOrderById(orderId).getData();
 
         paymentRepository.save(Payment.builder()
-                .userId(orderResponse.getData().getUserId())
+                .userId(orderResponse.getUserId())
                 .paidAt(now())
-                .total(orderResponse.getData().getTotalPrice())
+                .total(ParseBigDecimal.parseStringToBigDecimal(orderResponse.getTotalPrice()))
                 .orderId(orderId)
                 .status(PaymentStatus.PENDING).build());
     }
@@ -88,11 +87,11 @@ public class PaymentService {
     }
 
     public void updateStatusOrder(Boolean a, String orderId){
-        ApiResponse<OrderResponse> orderResponse = orderClient.getOrderById(orderId);
-        ApiResponse<UserResponse> userResponse = userClient.getUserById(orderResponse.getData().getUserId());
+        OrderResponse orderResponse = orderClient.getOrderById(orderId).getData();
+        UserResponse userResponse = userClient.getUserById(orderResponse.getUserId()).getData();
 
         if (a){
-            kafkaProducer.sendEmail(new CreateEventToNotification(orderResponse.getData().getUserId(), userResponse.getData().getEmail(), orderResponse.getData().getTotalPrice().intValueExact()));
+            kafkaProducer.sendEmail(new CreateEventToNotification(orderResponse.getUserId(), userResponse.getEmail(), ParseBigDecimal.parseStringToBigDecimal(orderResponse.getTotalPrice()).intValueExact()));
         }
         RequestUpdateStatusOrder requestUpdateStatusOrder = new RequestUpdateStatusOrder();
         requestUpdateStatusOrder.setStatus(a);

@@ -1,6 +1,5 @@
 package com.example.notificationService.service;
 
-import com.example.notificationService.dto.response.ApiResponse;
 import com.example.notificationService.dto.response.UserResponse;
 import com.example.notificationService.enums.OrderSimpleStatus;
 import com.example.notificationService.email.EmailService;
@@ -24,10 +23,10 @@ public class NotificationService {
     private final UserClient userClient;
 
     public void sendMailOrder(CreateEventToNotification orderSendMail) {
-        ApiResponse<UserResponse> response = userClient.getUserById(orderSendMail.getUserId());
+        UserResponse response = userClient.getUserById(orderSendMail.getUserId()).getData();
 
         List<Object> emailParameters = new ArrayList<>();
-        emailParameters.add(response.getData().getUsername());
+        emailParameters.add(response.getUsername());
         emailParameters.add(orderSendMail.getPrice().toString());
 
         emailService.sendMail(orderSendMail.getEmail(), "Order successfully", emailParameters, "thank-you");
@@ -44,15 +43,15 @@ public class NotificationService {
     }
 
     public void sendMailForgotPassword(CreateEventToForgotPassword forgotPasswordEvent) {
-        ApiResponse<UserResponse> response = userClient.getUserById(forgotPasswordEvent.getId());
+        UserResponse response = userClient.getUserById(forgotPasswordEvent.getId()).getData();
 
         List<Object> emailParameters = new ArrayList<>();
-        emailParameters.add(response.getData().getUsername());
-        emailParameters.add(response.getData().getEmail());
+        emailParameters.add(response.getUsername());
+        emailParameters.add(response.getEmail());
         emailParameters.add(forgotPasswordEvent.getUrlPlatform());
         emailParameters.add(forgotPasswordEvent.getSecretKey());
 
-        emailService.sendMail(response.getData().getEmail(), "Forgot Password", emailParameters, "forgot-password");
+        emailService.sendMail(response.getEmail(), "Forgot Password", emailParameters, "forgot-password");
     }
 }
 

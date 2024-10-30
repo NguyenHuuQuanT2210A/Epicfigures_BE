@@ -8,6 +8,7 @@ import com.example.orderservice.enums.OrderSimpleStatus;
 import com.example.orderservice.service.impl.ProductServiceClientImpl;
 import com.example.orderservice.service.impl.UserServiceClientImpl;
 import com.example.orderservice.util.GenerateUniqueCode;
+import com.example.orderservice.util.ParseBigDecimal;
 import com.github.javafaker.Faker;
 import org.springframework.boot.CommandLineRunner;
 import org.springframework.stereotype.Component;
@@ -77,7 +78,7 @@ public class OrderSeeder implements CommandLineRunner {
                 orderDetail.setOrder(order);
                 orderDetail.setQuantity(quantity);
                 orderDetail.setReturnableQuantity(quantity);
-                long unitPrice = product.getData().getPrice().longValue() * quantity;
+                long unitPrice = ParseBigDecimal.parseStringToBigDecimal(product.getData().getPrice()).longValue() * quantity;
                 orderDetail.setUnitPrice(new BigDecimal(unitPrice));
                 orderDetail.setTotalPrice(new BigDecimal(unitPrice * quantity));
                 total += unitPrice;

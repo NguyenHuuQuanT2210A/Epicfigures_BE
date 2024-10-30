@@ -15,6 +15,7 @@ public class OrderResponse {
     private String id;
     private String codeOrder;
     private Long userId;
+    @JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "#,###.00")
     private BigDecimal totalPrice;
     private String firstName;
     private String lastName;

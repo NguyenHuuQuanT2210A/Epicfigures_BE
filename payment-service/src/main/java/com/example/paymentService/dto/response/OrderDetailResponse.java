@@ -12,8 +12,8 @@ public class OrderDetailResponse {
     private String id;
     private Integer quantity;
     private Integer returnableQuantity;
-    private BigDecimal unitPrice;
-    private BigDecimal totalPrice;
+    private String unitPrice;
+    private String totalPrice;
     private ProductResponse product;
     private String orderId;
     private Long productId;

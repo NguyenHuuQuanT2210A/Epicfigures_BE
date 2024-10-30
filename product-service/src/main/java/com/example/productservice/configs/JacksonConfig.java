@@ -23,21 +23,21 @@ public class JacksonConfig {
         mapper.disable(SerializationFeature.WRITE_DATES_AS_TIMESTAMPS);
         mapper.registerModule(new JavaTimeModule());
 
-//        SimpleModule module = new SimpleModule();
-//        module.addSerializer(BigDecimal.class, new CustomBigDecimalSerializer());
-//        mapper.registerModule(module);
+        SimpleModule module = new SimpleModule();
+        module.addSerializer(BigDecimal.class, new CustomBigDecimalSerializer());
+        mapper.registerModule(module);
 
         return mapper;
     }
 
-//    public static class CustomBigDecimalSerializer extends JsonSerializer<BigDecimal> {
-//        @Override
-//        public void serialize(BigDecimal value, JsonGenerator gen, com.fasterxml.jackson.databind.SerializerProvider serializers) throws IOException, IOException {
-//            DecimalFormat df = new DecimalFormat("#,###.##");
-//            String formattedValue = df.format(value);
-//            gen.writeString(formattedValue);
-//        }
-//    }
+    public static class CustomBigDecimalSerializer extends JsonSerializer<BigDecimal> {
+        @Override
+        public void serialize(BigDecimal value, JsonGenerator gen, com.fasterxml.jackson.databind.SerializerProvider serializers) throws IOException, IOException {
+            DecimalFormat df = new DecimalFormat("#,###.00");
+            String formattedValue = df.format(value);
+            gen.writeString(formattedValue);
+        }
+    }
 
 //    @Bean
 //    public Jackson2ObjectMapperBuilder objectMapperBuilder() {

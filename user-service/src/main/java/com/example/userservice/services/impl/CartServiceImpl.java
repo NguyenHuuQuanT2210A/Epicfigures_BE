@@ -11,6 +11,7 @@ import com.example.userservice.repositories.CartRepository;
 import com.example.userservice.services.CartService;
 import com.example.userservice.services.ProductClient;
 import com.example.userservice.statics.enums.CartStatus;
+import com.example.userservice.util.ParseBigDecimal;
 import lombok.AccessLevel;
 import lombok.RequiredArgsConstructor;
 import lombok.experimental.FieldDefaults;
@@ -47,14 +48,14 @@ public class CartServiceImpl implements CartService {
         var carts = cartRepository.findAllByUserId(userId);
         List<Cart> cartsToCheck = new ArrayList<>();
         for (var cart : carts) {
-            var product = productClient.getProductById(cart.getId().getProductId());
-            if (product.getData() == null) {
+            var product = productClient.getProductById(cart.getId().getProductId()).getData();
+            if (product == null) {
                 cart.setStatus(CartStatus.DISCONTINUED);
-            }else if (product.getData().getStockQuantity() == 0) {
+            }else if (product.getStockQuantity() == 0) {
                 cart.setStatus(CartStatus.OUT_OF_STOCK);
-            }else if (product.getData().getStockQuantity() < cart.getQuantity()) {
+            }else if (product.getStockQuantity() < cart.getQuantity()) {
                 cart.setStatus(CartStatus.EXCEEDED_AVAILABLE_STOCK);
-            }else if (product.getData().getPrice().compareTo(cart.getTotalPrice().divide(BigDecimal.valueOf(cart.getQuantity()), 2, RoundingMode.HALF_UP)) != 0) {
+            }else if (ParseBigDecimal.parseStringToBigDecimal(product.getPrice()).compareTo(cart.getTotalPrice().divide(BigDecimal.valueOf(cart.getQuantity()), 2, RoundingMode.HALF_UP)) != 0) {
                 cart.setStatus(CartStatus.PRICE_CHANGED);
             }else {
                 cart.setStatus(CartStatus.AVAILABLE);
@@ -84,8 +85,8 @@ public class CartServiceImpl implements CartService {
         if (cartExist == null) {
             return cartRepository.save(Cart.builder().id(cart.getId())
                     .quantity(cart.getQuantity())
-                    .unitPrice(product.getPrice())
-                    .totalPrice(BigDecimal.valueOf(cart.getQuantity()).multiply(product.getPrice()))
+                    .unitPrice(ParseBigDecimal.parseStringToBigDecimal(product.getPrice()))
+                    .totalPrice(BigDecimal.valueOf(cart.getQuantity()).multiply(ParseBigDecimal.parseStringToBigDecimal(product.getPrice())))
                     .status(CartStatus.AVAILABLE)
                     .build());
 
@@ -95,8 +96,8 @@ public class CartServiceImpl implements CartService {
                 throw new AppException(ErrorCode.EXCEED_PRODUCT_QUANTITY);
             }
             cartExist.setQuantity(cart.getQuantity() + cartExist.getQuantity());
-            cartExist.setUnitPrice(product.getPrice());
-            cartExist.setTotalPrice(BigDecimal.valueOf(cartExist.getQuantity()).multiply(product.getPrice()));
+            cartExist.setUnitPrice(ParseBigDecimal.parseStringToBigDecimal(product.getPrice()));
+            cartExist.setTotalPrice(BigDecimal.valueOf(cartExist.getQuantity()).multiply(ParseBigDecimal.parseStringToBigDecimal(product.getPrice())));
             return cartRepository.save(cartExist);
         }
     }
@@ -113,8 +114,8 @@ public class CartServiceImpl implements CartService {
             throw new AppException(ErrorCode.EXCEED_PRODUCT_QUANTITY);
         }
         cart.setQuantity(quantity);
-        cart.setUnitPrice(product.getPrice());
-        cart.setTotalPrice(BigDecimal.valueOf(quantity).multiply(product.getPrice()));
+        cart.setUnitPrice(ParseBigDecimal.parseStringToBigDecimal(product.getPrice()));
+        cart.setTotalPrice(BigDecimal.valueOf(quantity).multiply(ParseBigDecimal.parseStringToBigDecimal(product.getPrice())));
         return cartRepository.save(cart);
     }
 
@@ -141,16 +142,16 @@ public class CartServiceImpl implements CartService {
 
         for (var cart : carts) {
             Set<String> productImagesUrl = new HashSet<>();
-            var product = productClient.getProductById(cart.getId().getProductId());
-            for (ProductImageResponse productImage : product.getData().getImages()) {
+            var product = productClient.getProductById(cart.getId().getProductId()).getData();
+            for (ProductImageResponse productImage : product.getImages()) {
                 productImagesUrl.add(productImage.getImageUrl());
             }
             cartResponses.add(CartResponse.builder()
                     .id(cart.getId())
                     .quantity(cart.getQuantity())
-                    .productName(product.getData().getName())
-                    .productPrice(product.getData().getPrice())
-                    .description(product.getData().getDescription())
+                    .productName(product.getName())
+                    .productPrice(product.getPrice())
+                    .description(product.getDescription())
                     .status(cart.getStatus())
                     .unitPrice(cart.getUnitPrice())
                     .totalPrice(cart.getTotalPrice())

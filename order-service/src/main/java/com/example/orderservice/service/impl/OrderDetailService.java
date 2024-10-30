@@ -11,6 +11,7 @@ import com.example.orderservice.mapper.OrderDetailMapper;
 import com.example.orderservice.mapper.OrderMapper;
 import com.example.orderservice.repositories.OrderDetailRepository;
 import com.example.orderservice.service.ProductServiceClient;
+import com.example.orderservice.util.ParseBigDecimal;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
@@ -60,10 +61,10 @@ public class OrderDetailService {
 
         orderDetailRepository.save(orderDetail);
 
-        var product = productServiceClient.getProductById(orderDetail.getProductId());
-        Integer reservedQuantity = product.getData().getReservedQuantity() + orderDetail.getQuantity();
+        var product = getProductById(orderDetail.getProductId());
+        Integer reservedQuantity = product.getReservedQuantity() + orderDetail.getQuantity();
 
-        productServiceClient.updateQuantity(product.getData().getProductId(), ProductQuantityRequest.builder().reservedQuantity(reservedQuantity).build());
+        productServiceClient.updateQuantity(product.getProductId(), ProductQuantityRequest.builder().reservedQuantity(reservedQuantity).build());
 
         return orderDetailMapper.INSTANCE.toOrderDetailResponse(orderDetail);
     }
@@ -104,8 +105,8 @@ public class OrderDetailService {
         var productDTO = getProductById(orderDetail.getProductId());
         orderDetail.setQuantity(quantity);
         orderDetail.setReturnableQuantity(quantity);
-        orderDetail.setUnitPrice(productDTO.getPrice());
-        orderDetail.setTotalPrice(productDTO.getPrice().multiply(new BigDecimal(quantity)));
+        orderDetail.setUnitPrice(ParseBigDecimal.parseStringToBigDecimal(productDTO.getPrice()));
+        orderDetail.setTotalPrice(ParseBigDecimal.parseStringToBigDecimal(productDTO.getPrice()).multiply(new BigDecimal(quantity)));
         orderDetailRepository.save(orderDetail);
     }
 

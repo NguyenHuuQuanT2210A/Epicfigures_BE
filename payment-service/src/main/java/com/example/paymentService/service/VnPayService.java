@@ -2,6 +2,7 @@ package com.example.paymentService.service;
 
 import com.example.paymentService.config.Config;
 import com.example.paymentService.dto.response.OrderResponse;
+import com.example.paymentService.util.ParseBigDecimal;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 
@@ -30,7 +31,7 @@ public class VnPayService {
         String orderType = "other";
         String bankCode = "NCB";
 
-        BigDecimal total = convertVNDToUSD(orderResponse.getTotalPrice());
+        BigDecimal total = convertVNDToUSD(ParseBigDecimal.parseStringToBigDecimal(orderResponse.getTotalPrice()));
         Map<String, String> vnp_Params = new HashMap<>();
         vnp_Params.put("vnp_Version", vnp_Version);
         vnp_Params.put("vnp_Command", vnp_Command);

@@ -20,7 +20,7 @@ public class ProductResponse {
 
     private String description;
 
-//    @JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "#,###.00")
+    @JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "#,###.00")
     private BigDecimal price;
 
 //    private BigDecimal purchasePrice;

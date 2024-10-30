@@ -14,7 +14,7 @@ import java.util.Set;
 public class OrderResponse {
     private String id;
     private Long userId;
-    private BigDecimal totalPrice;
+    private String totalPrice;
     private String firstName;
     private String lastName;
     private String email;

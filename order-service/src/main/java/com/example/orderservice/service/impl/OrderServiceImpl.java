@@ -21,6 +21,7 @@ import com.example.orderservice.specification.SearchBody;
 import com.example.orderservice.specification.SearchCriteria;
 import com.example.orderservice.specification.SearchCriteriaOperator;
 import com.example.orderservice.util.GenerateUniqueCode;
+import com.example.orderservice.util.ParseBigDecimal;
 import jakarta.persistence.criteria.*;
 import jakarta.servlet.http.HttpServletRequest;
 import lombok.RequiredArgsConstructor;
@@ -142,11 +143,11 @@ public class OrderServiceImpl implements OrderService {
         var orderResponse = orderMapper.toOrderResponse(findOrderById(id));
         if (orderResponse != null) {
             orderResponse.getOrderDetails().forEach(orderDetailResponse -> {
-                var productResponse = productService.getProductById(orderDetailResponse.getProductId());
-                if (productResponse != null && productResponse.getData() != null) {
-                    orderDetailResponse.setProduct(productResponse.getData());
-                    if (productResponse.getData().getImages() != null) {
-                        orderDetailResponse.getProduct().setImages(productResponse.getData().getImages());
+                var productResponse = productService.getProductById(orderDetailResponse.getProductId()).getData();
+                if (productResponse != null) {
+                    orderDetailResponse.setProduct(productResponse);
+                    if (productResponse.getImages() != null) {
+                        orderDetailResponse.getProduct().setImages(productResponse.getImages());
                     }
                 }
                 orderDetailResponse.setOrderId(id);
@@ -162,8 +163,8 @@ public class OrderServiceImpl implements OrderService {
             newOrder = orderMapper.toOrder(request);
             String paymentResponse;
 
-            ApiResponse<UserResponse> user = userService.getUserById(request.getUserId());
-            if (user.getData() == null) {
+            UserResponse user = userService.getUserById(request.getUserId()).getData();
+            if (user == null) {
                 throw new CustomException("User not found", HttpStatus.BAD_REQUEST);
             }
             if (jwtTokenUtil.getPlatform(token).equals(Platform.MOBILE.name())){
@@ -193,12 +194,11 @@ public class OrderServiceImpl implements OrderService {
 
                 Order finalNewOrder = newOrder;
                 request.getCartItems().forEach(cartItem -> {
-                    var product = productService.getProductById(cartItem.getProductId()).getData();
                     orderDetails.add(OrderDetailRequest.builder()
                             .order(finalNewOrder)
                             .productId(cartItem.getProductId())
                             .quantity(cartItem.getQuantity())
-                            .unitPrice(product.getPrice())
+                            .unitPrice(cartItem.getUnitPrice())
                             .totalPrice(cartItem.getTotalPrice())
                             .build());
 
@@ -312,8 +312,8 @@ public class OrderServiceImpl implements OrderService {
             ordersPage = orderRepository.findOrderByUserId(userId, specification, sortedPage).map(orderMapper.INSTANCE::toOrderResponse);
             ordersPage.getContent().forEach(order -> {
                 order.getOrderDetails().forEach(orderDetailResponse -> {
-                    var data = productService.getProductById(orderDetailResponse.getProductId());
-                    orderDetailResponse.setProduct(data.getData());
+                    var data = productService.getProductById(orderDetailResponse.getProductId()).getData();
+                    orderDetailResponse.setProduct(data);
                 });
             });
         } catch (Exception e) {
@@ -402,8 +402,8 @@ public class OrderServiceImpl implements OrderService {
         var order = findOrderById(orderId);
         List<ProductResponse> products = new ArrayList<>();
         for (var orderDetail : order.getOrderDetails()){
-            var product = productService.getProductById(orderDetail.getProductId());
-            products.add(product.getData());
+            var product = productService.getProductById(orderDetail.getProductId()).getData();
+            products.add(product);
         }
         return products;
     }
