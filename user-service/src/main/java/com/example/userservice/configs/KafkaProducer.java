@@ -1,6 +1,8 @@
 package com.example.userservice.configs;
 
+import com.example.userservice.dtos.request.ContactRequest;
 import com.example.userservice.dtos.request.CreateEventToForgotPassword;
+import com.example.userservice.dtos.response.ContactResponse;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.kafka.core.KafkaTemplate;
@@ -20,6 +22,15 @@ public class KafkaProducer {
         Message<CreateEventToForgotPassword> message = MessageBuilder
                 .withPayload(event)
                 .setHeader(KafkaHeaders.TOPIC, "forgot-password")
+                .build();
+        kafkaTemplate.send(message);
+    }
+
+    public void sendReplyContact(ContactRequest contactRequest){
+        log.info(String.format("Send email to: ", contactRequest.getEmail()));
+        Message<ContactRequest> message = MessageBuilder
+                .withPayload(contactRequest)
+                .setHeader(KafkaHeaders.TOPIC, "contact")
                 .build();
         kafkaTemplate.send(message);
     }

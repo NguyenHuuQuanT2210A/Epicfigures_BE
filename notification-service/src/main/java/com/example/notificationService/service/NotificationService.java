@@ -6,6 +6,7 @@ import com.example.notificationService.email.EmailService;
 
 import com.example.paymentService.event.CreateEventToNotification;
 import com.example.paymentService.event.RequestUpdateStatusOrder;
+import com.example.userservice.dtos.request.ContactRequest;
 import com.example.userservice.dtos.request.CreateEventToForgotPassword;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -52,6 +53,16 @@ public class NotificationService {
         emailParameters.add(forgotPasswordEvent.getSecretKey());
 
         emailService.sendMail(response.getEmail(), "Forgot Password", emailParameters, "forgot-password");
+    }
+
+    public void sendMailContact(ContactRequest contactRequest) {
+        List<Object> emailParameters = new ArrayList<>();
+        emailParameters.add(contactRequest.getUsername());
+        emailParameters.add(contactRequest.getEmail());
+        emailParameters.add(contactRequest.getPhoneNumber());
+        emailParameters.add(contactRequest.getNote());
+
+        emailService.sendMail(contactRequest.getEmail(), "Contact", emailParameters, "contact");
     }
 }
 

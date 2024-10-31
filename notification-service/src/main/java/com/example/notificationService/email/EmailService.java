@@ -42,6 +42,9 @@ public class EmailService {
             } else if (template.equals("forgot-password")) {
                 Context contextForgotPassword = setContextForgotPassword(emailParameters);
                 html = templateEngine.process(template, contextForgotPassword);
+            }else if (template.equals("contact")){
+                Context contextContact = setContextContact(emailParameters);
+                html = templateEngine.process(template, contextContact);
             }
 
             // Send attach files
@@ -77,6 +80,15 @@ public class EmailService {
         context.setVariable("userName", emailParameters.get(0));
         context.setVariable("email", emailParameters.get(1));
         context.setVariable("linkReset", emailParameters.get(2) + "?secretKey=" + emailParameters.get(3));
+        return context;
+    }
+
+    private Context setContextContact(List<Object> emailParameters){
+        Context context = new Context();
+        context.setVariable("userName", emailParameters.get(0));
+        context.setVariable("email", emailParameters.get(1));
+        context.setVariable("phoneNumber", emailParameters.get(2));
+        context.setVariable("note", emailParameters.get(3));
         return context;
     }
 }

@@ -1,6 +1,6 @@
 package com.example.userservice.services.impl;
 
-
+import com.example.userservice.configs.KafkaProducer;
 import com.example.userservice.dtos.request.ContactRequest;
 import com.example.userservice.dtos.request.ContactUpdateRequest;
 import com.example.userservice.dtos.response.ContactResponse;
@@ -36,6 +36,7 @@ import static com.example.userservice.util.AppConst.SORT_BY;
 public class ContactServiceImpl implements ContactService {
     private final ContactRepository contactRepository;
     private final ContactMapper contactMapper;
+    private final KafkaProducer kafkaProducer;
 
     @Override
     public Page<ContactResponse> getAllContacts(Pageable pageable) {
@@ -84,8 +85,10 @@ public class ContactServiceImpl implements ContactService {
             throw new NotFoundException("Email is spam");
         }
         Contact contact = contactMapper.toContact(contactRequest);
-        if (contactRequest.getContactReplyId() != null)
+        if (contactRequest.getContactReplyId() != null){
             contact.setContactReply(findContactById(contactRequest.getContactReplyId()));
+            kafkaProducer.sendReplyContact(contactRequest);
+        }
         return contactMapper.toContactResponse(contactRepository.save(contact));
     }
 

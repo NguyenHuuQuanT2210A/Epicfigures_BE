@@ -3,6 +3,7 @@ package com.example.notificationService.kafka;
 import com.example.notificationService.service.NotificationService;
 import com.example.paymentService.event.CreateEventToNotification;
 import com.example.paymentService.event.RequestUpdateStatusOrder;
+import com.example.userservice.dtos.request.ContactRequest;
 import com.example.userservice.dtos.request.CreateEventToForgotPassword;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -51,6 +52,17 @@ public class NotificationConsumer {
         try {
             notificationService.sendMailForgotPassword(forgotPasswordEvent);
             log.info(String.format("Send Email successfully! ", forgotPasswordEvent.getEmail()));
+        }catch (Exception e){
+            e.printStackTrace();
+        }
+    }
+
+    @KafkaListener(topics = "contact", groupId = "contact")
+    public void replyContact(ContactRequest contactRequest){
+        log.info(String.format("Event message recieved -> %s", contactRequest.getUsername()));
+        try {
+            notificationService.sendMailContact(contactRequest);
+            log.info(String.format("Send Email successfully! ", contactRequest.getEmail()));
         }catch (Exception e){
             e.printStackTrace();
         }
