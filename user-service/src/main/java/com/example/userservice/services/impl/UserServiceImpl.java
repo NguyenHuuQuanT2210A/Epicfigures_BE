@@ -3,14 +3,18 @@ package com.example.userservice.services.impl;
 import com.example.userservice.dtos.request.UserRequest;
 import com.example.userservice.dtos.response.Statistics;
 import com.example.userservice.dtos.response.UserResponse;
+import com.example.userservice.entities.Contact;
 import com.example.userservice.entities.Role;
 import com.example.userservice.entities.User;
 import com.example.userservice.exceptions.CustomException;
 import com.example.userservice.mappers.UserMapper;
 import com.example.userservice.repositories.RoleRepository;
 import com.example.userservice.repositories.UserRepository;
+import com.example.userservice.repositories.specification.SearchOperation;
 import com.example.userservice.repositories.specification.SpecSearchCriteria;
-import com.example.userservice.repositories.specification.UserSpecification;
+import com.example.userservice.repositories.specification.SpecificationBuilder;
+import com.example.userservice.repositories.specification.contactSpec.ContactSpecification;
+import com.example.userservice.repositories.specification.userSpec.UserSpecification;
 import com.example.userservice.services.UserService;
 import com.example.userservice.statics.enums.ERole;
 import lombok.RequiredArgsConstructor;
@@ -31,7 +35,6 @@ import java.util.*;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
-import static com.example.userservice.repositories.specification.SearchOperation.OR_PREDICATE_FLAG;
 import static com.example.userservice.util.AppConst.SEARCH_SPEC_OPERATOR;
 import static com.example.userservice.util.AppConst.SORT_BY;
 
@@ -242,69 +245,64 @@ public class UserServiceImpl implements UserService {
     }
 
     @Override
-    public Page<UserResponse> searchBySpecification(Pageable pageable, String sort, String[] user, String role) {
+    public Page<UserResponse> searchBySpecification(Pageable pageable, String sort, String[] user, String[] role) {
+        Pageable pageableSorted = sortData(sort, pageable);
+
+        SpecificationBuilder builder = new SpecificationBuilder();
+        Pattern pattern = Pattern.compile(SEARCH_SPEC_OPERATOR);
+        if (user != null) {
+            parseCriteriaBuilder(builder, user, pattern, false, null);
+        }
+        if (role != null) {
+            parseCriteriaBuilder(builder, role, pattern, true, "roles");
+        }
+
+        if (builder.params.isEmpty()) {
+            return userRepository.findAll(pageableSorted).map(UserMapper.INSTANCE::toUserResponse);
+        }
+
+        Page<User> users = userRepository.findAll(build(builder.params), pageableSorted);
+        return users.map(UserMapper.INSTANCE::toUserResponse);
+    }
+
+    private Pageable sortData(String sort, Pageable pageable) {
         Pageable pageableSorted = pageable;
         if (StringUtils.hasText(sort)){
             Pattern patternSort = Pattern.compile(SORT_BY);
             Matcher matcher = patternSort.matcher(sort);
             if (matcher.find()) {
                 String columnName = matcher.group(1);
+
                 pageableSorted = matcher.group(3).equalsIgnoreCase("desc")
                         ? PageRequest.of(pageable.getPageNumber(), pageable.getPageSize(), Sort.by(columnName).descending())
                         : PageRequest.of(pageable.getPageNumber(), pageable.getPageSize(), Sort.by(columnName).ascending());
             }
         }
-
-        List<SpecSearchCriteria> params = new ArrayList<>();
-        Pattern pattern = Pattern.compile(SEARCH_SPEC_OPERATOR);
-        if (user != null) {
-            params.addAll(parseUserCriteria(user, pattern));
-        }
-        if (role != null) {
-            params.addAll(parseRoleCriteria(role, pattern));
-        }
-
-        if (params.isEmpty()) {
-            return userRepository.findAll(pageableSorted).map(UserMapper.INSTANCE::toUserResponse);
-        }
-
-        Specification<User> result = new UserSpecification(params.get(0));
-        for (int i = 1; i < params.size(); i++) {
-            result = params.get(i).getOrPredicate()
-                    ? Specification.where(result).or(new UserSpecification(params.get(i)))
-                    : Specification.where(result).and(new UserSpecification(params.get(i)));
-        }
-
-        Page<User> products = userRepository.findAll(Objects.requireNonNull(result), pageableSorted);
-        return products.map(UserMapper.INSTANCE::toUserResponse);
+        return pageableSorted;
     }
 
-    private List<SpecSearchCriteria> parseUserCriteria(String[] user, Pattern pattern) {
-        List<SpecSearchCriteria> params = new ArrayList<>();
-        for (String u : user) {
-            Matcher matcher = pattern.matcher(u);
+    private void parseCriteriaBuilder(SpecificationBuilder builder, String[] entities, Pattern pattern, boolean isJoinQuery, String joinEntity) {
+        for (String e : entities) {
+            Matcher matcher = pattern.matcher(e);
             if (matcher.find()) {
-                SpecSearchCriteria searchCriteria = new SpecSearchCriteria(null, matcher.group(2), matcher.group(4), matcher.group(6), matcher.group(1), matcher.group(3), matcher.group(5));
-                if (u.startsWith(OR_PREDICATE_FLAG)) {
-                    searchCriteria.setOrPredicate(true);
+                if (e.startsWith(SearchOperation.OR_PREDICATE_FLAG)) {
+                    builder.with(SearchOperation.OR_PREDICATE_FLAG, matcher.group(1), matcher.group(2), matcher.group(3), matcher.group(4), matcher.group(5), matcher.group(6), isJoinQuery, joinEntity);
+                }else {
+                    builder.with(matcher.group(1), matcher.group(2), matcher.group(3), matcher.group(4), matcher.group(5), matcher.group(6), isJoinQuery, joinEntity);
                 }
-                params.add(searchCriteria);
             }
         }
-        return params;
     }
 
-    private List<SpecSearchCriteria> parseRoleCriteria(String role, Pattern pattern) {
-        List<SpecSearchCriteria> params = new ArrayList<>();
-        Matcher matcher = pattern.matcher(role);
-        if (matcher.find()) {
-            SpecSearchCriteria searchCriteria = new SpecSearchCriteria(null, matcher.group(2), matcher.group(4), matcher.group(6), matcher.group(1), matcher.group(3), matcher.group(5));
-            if (role.startsWith(OR_PREDICATE_FLAG)){
-                searchCriteria.setOrPredicate(true);
-            }
-            params.add(searchCriteria);
+    private Specification<User> build(List<SpecSearchCriteria> params){
+        Specification<User> specification = new UserSpecification(params.get(0));
+
+        for (int i = 1; i < params.size(); i++) {
+            specification = params.get(i).getOrPredicate()
+                    ? Specification.where(specification).or(new UserSpecification(params.get(i)))
+                    : Specification.where(specification).and(new UserSpecification(params.get(i)));
         }
-        return params;
+        return specification;
     }
 
 }

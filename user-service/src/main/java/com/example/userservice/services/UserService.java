@@ -16,7 +16,7 @@ public interface UserService {
     UserResponse findByEmail(String email);
     void moveToTrash(Long id);
     void restoreUser(Long id);
-    Page<UserResponse> searchBySpecification(Pageable pageable, String sort, String[] user, String role);
+    Page<UserResponse> searchBySpecification(Pageable pageable, String sort, String[] user, String[] role);
 
     Object countUsers();
 

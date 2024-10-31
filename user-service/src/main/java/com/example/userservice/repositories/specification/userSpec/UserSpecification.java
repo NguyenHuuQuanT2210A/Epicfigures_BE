@@ -1,6 +1,7 @@
-package com.example.productservice.repositories.specification;
+package com.example.userservice.repositories.specification.userSpec;
 
-import com.example.productservice.entities.Product;
+import com.example.userservice.entities.User;
+import com.example.userservice.repositories.specification.SpecSearchCriteria;
 import jakarta.persistence.criteria.*;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
@@ -8,12 +9,12 @@ import org.springframework.data.jpa.domain.Specification;
 
 @Getter
 @AllArgsConstructor
-public class ProductSpecification implements Specification<Product> {
+public class UserSpecification implements Specification<User> {
 
     private SpecSearchCriteria criteria;
 
     @Override
-    public Predicate toPredicate(Root<Product> root, CriteriaQuery<?> query, CriteriaBuilder builder) {
+    public Predicate toPredicate(Root<User> root, CriteriaQuery<?> query, CriteriaBuilder builder) {
         if (Boolean.TRUE.equals(criteria.getIsJoinQuery())) {
             return handleJoin(root, query, builder);
         }
@@ -35,10 +36,10 @@ public class ProductSpecification implements Specification<Product> {
         };
     }
 
-    private Predicate handleJoin(Root<Product> root, CriteriaQuery<?> query, CriteriaBuilder builder) {
+    private Predicate handleJoin(Root<User> root, CriteriaQuery<?> query, CriteriaBuilder builder) {
         var value = criteria.getValue();
-        Join<?, Product> join = switch (criteria.getJoinEntity().toLowerCase()) {
-            case "category" -> root.join("category");
+        Join<?, User> join = switch (criteria.getJoinEntity().toLowerCase()) {
+            case "roles" -> root.join("roles");
             default -> throw new IllegalStateException("Unexpected join entity: " + criteria.getJoinEntity());
         };
 
@@ -59,4 +60,9 @@ public class ProductSpecification implements Specification<Product> {
             default -> throw new IllegalStateException("Unexpected value: " + criteria.getOperation());
         };
     }
+
+//    private Predicate handleJoin(Root<User> root, CriteriaQuery<?> query, CriteriaBuilder builder) {
+//        Join<Role, User> join = root.join("roles");
+//        return builder.equal(join.get(criteria.getKey()), criteria.getValue());
+//    }
 }

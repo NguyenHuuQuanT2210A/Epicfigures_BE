@@ -20,6 +20,8 @@ public class OrderSpecification implements Specification<Order> {
         switch (criteria.getOperation()) {
             case EQUALITY:
                 return builder.equal(root.get(criteria.getKey()), criteria.getValue());
+            case BOOLEAN_EQUALITY:
+                return builder.equal(root.get(criteria.getKey()), Boolean.parseBoolean(criteria.getValue().toString()));
             case NEGATION:
                 return builder.notEqual(root.get(criteria.getKey()), criteria.getValue());
             case GREATER_THAN:

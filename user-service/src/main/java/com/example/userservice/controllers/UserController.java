@@ -166,7 +166,7 @@ public class UserController {
                                                        @RequestParam(defaultValue = "10", name = "limit") int limit,
                                                        @RequestParam(required = false) String sort,
                                                        @RequestParam(required = false) String[] user,
-                                                       @RequestParam(required = false) String role) {
+                                                       @RequestParam(required = false) String[] role) {
         return ApiResponse.builder()
                 .message("List of Users")
                 .data(userService.searchBySpecification(PageRequest.of(page -1, limit), sort, user, role))
