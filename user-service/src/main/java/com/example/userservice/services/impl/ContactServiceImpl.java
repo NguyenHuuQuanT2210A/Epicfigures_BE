@@ -2,6 +2,7 @@ package com.example.userservice.services.impl;
 
 
 import com.example.userservice.dtos.request.ContactRequest;
+import com.example.userservice.dtos.request.ContactUpdateRequest;
 import com.example.userservice.dtos.response.ContactResponse;
 import com.example.userservice.entities.Contact;
 import com.example.userservice.exceptions.NotFoundException;
@@ -86,6 +87,21 @@ public class ContactServiceImpl implements ContactService {
         if (contactRequest.getContactReplyId() != null)
             contact.setContactReply(findContactById(contactRequest.getContactReplyId()));
         return contactMapper.toContactResponse(contactRepository.save(contact));
+    }
+
+    @Override
+    public void updateStatusContact(Long id, ContactUpdateRequest contactUpdateRequest) {
+        Contact contact = findContactById(id);
+        if (contactUpdateRequest.getIsRead() != null && !contactUpdateRequest.getIsRead().isEmpty()){
+            contact.setRead(Boolean.parseBoolean(contactUpdateRequest.getIsRead()));
+        }
+        if (contactUpdateRequest.getIsImportant() != null && !contactUpdateRequest.getIsImportant().isEmpty()){
+            contact.setImportant(Boolean.parseBoolean(contactUpdateRequest.getIsImportant()));
+        }
+        if (contactUpdateRequest.getIsSpam() != null && !contactUpdateRequest.getIsSpam().isEmpty()){
+            contact.setSpam(Boolean.parseBoolean(contactUpdateRequest.getIsSpam()));
+        }
+        contactRepository.save(contact);
     }
 
     @Override

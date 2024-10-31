@@ -43,7 +43,8 @@ public class WebSecurityConfig {
             "/api/v1/blogs/getAll/**",
             "/api/v1/blogs/id/{id}",
             "/api/v1/blogs/blog/**",
-            "/api/v1/blogs/title/**"
+            "/api/v1/blogs/title/**",
+            "/api/v1/contact/create"
     };
 
     @Bean

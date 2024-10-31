@@ -1,6 +1,7 @@
 package com.example.userservice.controllers;
 
 import com.example.userservice.dtos.request.ContactRequest;
+import com.example.userservice.dtos.request.ContactUpdateRequest;
 import com.example.userservice.dtos.response.ApiResponse;
 import com.example.userservice.dtos.response.ContactResponse;
 import com.example.userservice.services.ContactService;
@@ -103,11 +104,19 @@ public class ContactController {
                 .build();
     }
 
-    @PostMapping()
+    @PostMapping("/create")
     ApiResponse<?> saveContact(@RequestBody ContactRequest request) {
         return ApiResponse.<ContactResponse>builder()
                 .message("Create a new Contact")
                 .data(contactService.addContact(request))
+                .build();
+    }
+
+    @PutMapping("/{id}")
+    ApiResponse<?> updateContact(@PathVariable Long id, @RequestBody ContactUpdateRequest request) {
+        contactService.updateStatusContact(id, request);
+        return ApiResponse.builder()
+                .message("Update Contact Successfully")
                 .build();
     }
 
