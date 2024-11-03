@@ -3,6 +3,7 @@ package com.example.inventoryservice.entities.seeder;
 import com.example.inventoryservice.dto.request.ProductQuantityRequest;
 import com.example.inventoryservice.entities.Inventory;
 import com.example.inventoryservice.entities.InventoryStatus;
+import com.example.inventoryservice.enums.InventoryActionType;
 import com.example.inventoryservice.repository.InventoryRepository;
 import com.example.inventoryservice.repository.InventoryStatusRepository;
 import com.example.inventoryservice.services.ProductClients;
@@ -42,13 +43,21 @@ public class InventorySeeder implements CommandLineRunner {
         List<InventoryStatus> inventoryStatuses = new ArrayList<>();
         List<Inventory> inventories = new ArrayList<>();
 
-        List<String> inventoryStatusNames = List.of("IN", "OUT");
+        List<String> inventoryStatusNames = List.of("IN", "OUT", "RETURN_RESALEABLE", "RETURN_NON_RESALEABLE");
         String description = "Lorem ipsum dolor sit amet, consectetur adipiscing elit.";
+
         for (String inventoryStatusName : inventoryStatusNames) {
                 InventoryStatus inventoryStatus = new InventoryStatus();
                 inventoryStatus.setName(inventoryStatusName);
                 inventoryStatus.setDescription(description);
-                inventoryStatus.setAddAction(inventoryStatusName.equals("IN"));
+                if (inventoryStatusName.equals("IN") || inventoryStatusName.equals("RETURN_RESALEABLE")) {
+                    inventoryStatus.setInventoryActionType(InventoryActionType.ADD);
+                } else if (inventoryStatusName.equals("OUT")) {
+                    inventoryStatus.setInventoryActionType(InventoryActionType.SUBTRACT);
+                } else {
+                    inventoryStatus.setInventoryActionType(InventoryActionType.NONE);
+                }
+
                 inventoryStatus.setSystemType(true);
                 inventoryStatuses.add(inventoryStatus);
         }

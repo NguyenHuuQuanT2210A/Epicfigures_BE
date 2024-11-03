@@ -26,6 +26,6 @@ public class Inventory extends BaseEntity {
     private LocalDateTime date;
 
     @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "inventory_status_id", referencedColumnName = "id", nullable = false)
+    @JoinColumn(name = "inventory_statu s_id", referencedColumnName = "id", nullable = false)
     private InventoryStatus inventoryStatus;
 }

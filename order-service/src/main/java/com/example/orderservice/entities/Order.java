@@ -44,7 +44,7 @@ public class Order extends BaseEntity {
     @Enumerated(EnumType.ORDINAL)
     private OrderSimpleStatus status;
 
-    private LocalDateTime returnDeadline;
+    private LocalDateTime deliveredAt;
 
     @OneToMany(mappedBy = "order", fetch = FetchType.LAZY, cascade = CascadeType.REMOVE)
     @JsonManagedReference

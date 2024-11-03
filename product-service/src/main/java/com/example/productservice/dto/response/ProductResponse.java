@@ -47,6 +47,8 @@ public class ProductResponse {
 
     private Integer soldQuantity;
 
+    private Integer returnPeriodDays;
+
     @JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "dd-MM-yyyy HH:mm:ss")
     private LocalDateTime createdAt;
 

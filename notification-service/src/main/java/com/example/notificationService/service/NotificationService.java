@@ -4,6 +4,7 @@ import com.example.notificationService.dto.response.UserResponse;
 import com.example.notificationService.enums.OrderSimpleStatus;
 import com.example.notificationService.email.EmailService;
 
+import com.example.orderservice.dto.request.ReturnItemMail;
 import com.example.paymentService.event.CreateEventToNotification;
 import com.example.paymentService.event.RequestUpdateStatusOrder;
 import com.example.userservice.dtos.request.ContactRequest;
@@ -63,6 +64,17 @@ public class NotificationService {
         emailParameters.add(contactRequest.getNote());
 
         emailService.sendMail(contactRequest.getEmail(), "Contact", emailParameters, "contact");
+    }
+
+    public void sendMailReturnItem(ReturnItemMail returnItemMail) {
+        List<Object> emailParameters = new ArrayList<>();
+        emailParameters.add(returnItemMail.getUsername());
+        emailParameters.add(returnItemMail.getEmail());
+        emailParameters.add(returnItemMail.getOrderCode());
+        emailParameters.add(returnItemMail.getStatus());
+        emailParameters.add(returnItemMail.getStatusNote());
+
+        emailService.sendMail(returnItemMail.getEmail(), "Return Item", emailParameters, "return-item");
     }
 }
 

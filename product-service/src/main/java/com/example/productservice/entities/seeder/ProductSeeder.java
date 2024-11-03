@@ -94,6 +94,7 @@ public class ProductSeeder implements CommandLineRunner {
             product.setManufacturer(faker.company().name());
             product.setSize(faker.food().measurement());
             product.setWeight(faker.food().measurement());
+            product.setReturnPeriodDays(faker.number().numberBetween(7, 15));
 
             product.setCreatedAt(LocalDateTime.now());
             product.setUpdatedAt(LocalDateTime.now());

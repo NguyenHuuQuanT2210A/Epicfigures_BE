@@ -94,9 +94,14 @@ public class OrderDetailService {
 //        if (orderDetail == null) {
 //            throw new CustomException("OrderDetail not found", HttpStatus.NOT_FOUND);
 //        }
-        var product = getProductById(orderDetail.getProductId());
+
         var orderDetailResponse = orderDetailMapper.INSTANCE.toOrderDetailResponse(orderDetail);
-        orderDetailResponse.setProduct(product);
+
+        if (orderDetail != null) {
+            var product = getProductById(orderDetail.getProductId());
+            orderDetailResponse.setProduct(product);
+        }
+
         return orderDetailResponse;
     }
 

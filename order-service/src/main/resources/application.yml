@@ -35,6 +35,13 @@ spring:
           facebook:
             client-id: 1632890864218116
             client-secret: 80be9bb154d02c8fc043624aab30c788
+
+  kafka:
+    producer:
+      bootstrap-servers: localhost:9092
+      key-serializer: org.apache.kafka.common.serialization.StringSerializer
+      value-serializer: org.springframework.kafka.support.serializer.JsonSerializer
+
 server:
   port: 8084
 
@@ -76,3 +83,11 @@ eureka:
 
 jwt:
   secretKey: cb17bdf73fb9500c10bc64270d65efedcbdbd412c9d7a258f293e298a44dc7e5
+
+firebase:
+  bucket-name: epicgure.appspot.com
+  image-base-url: https://firebasestorage.googleapis.com/v0/b/${firebase.bucket-name}/o/
+  upload-logo: product-image/
+  upload-product-image: product-image/
+  upload-user-image: product-image/
+  upload-return-item-image: return-item-image/

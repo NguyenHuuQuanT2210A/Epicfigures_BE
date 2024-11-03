@@ -35,17 +35,36 @@ public class EmailService {
             MimeMessage mimeMessage = javaMailSender.createMimeMessage();
             MimeMessageHelper helper = new MimeMessageHelper(mimeMessage, true, "UTF-8");
 
-            String html = "";
-            if (template.equals("thank-you")) {
-                Context contextOrder = setContextOrder(emailParameters);
-                html = templateEngine.process(template, contextOrder);
-            } else if (template.equals("forgot-password")) {
-                Context contextForgotPassword = setContextForgotPassword(emailParameters);
-                html = templateEngine.process(template, contextForgotPassword);
-            }else if (template.equals("contact")){
-                Context contextContact = setContextContact(emailParameters);
-                html = templateEngine.process(template, contextContact);
-            }
+            //            if (template.equals("thank-you")) {
+//                Context contextOrder = setContextOrder(emailParameters);
+//                html = templateEngine.process(template, contextOrder);
+//            } else if (template.equals("forgot-password")) {
+//                Context contextForgotPassword = setContextForgotPassword(emailParameters);
+//                html = templateEngine.process(template, contextForgotPassword);
+//            }else if (template.equals("contact")){
+//                Context contextContact = setContextContact(emailParameters);
+//                html = templateEngine.process(template, contextContact);
+//            }
+
+            String html = switch (template) {
+                case "thank-you" -> {
+                    Context contextOrder = setContextOrder(emailParameters);
+                    yield templateEngine.process(template, contextOrder);
+                }
+                case "forgot-password" -> {
+                    Context contextForgotPassword = setContextForgotPassword(emailParameters);
+                    yield templateEngine.process(template, contextForgotPassword);
+                }
+                case "contact" -> {
+                    Context contextContact = setContextContact(emailParameters);
+                    yield templateEngine.process(template, contextContact);
+                }
+                case "return-item" -> {
+                    Context contextReturnItem = setContextReturnItem(emailParameters);
+                    yield templateEngine.process(template, contextReturnItem);
+                }
+                default -> "";
+            };
 
             // Send attach files
 //            if (files != null) {
@@ -89,6 +108,16 @@ public class EmailService {
         context.setVariable("email", emailParameters.get(1));
         context.setVariable("phoneNumber", emailParameters.get(2));
         context.setVariable("note", emailParameters.get(3));
+        return context;
+    }
+
+    private Context setContextReturnItem(List<Object> emailParameters){
+        Context context = new Context();
+        context.setVariable("userName", emailParameters.get(0));
+        context.setVariable("email", emailParameters.get(1));
+        context.setVariable("orderCode", emailParameters.get(2));
+        context.setVariable("status", emailParameters.get(3));
+        context.setVariable("statusNote", emailParameters.get(3));
         return context;
     }
 }

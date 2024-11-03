@@ -108,6 +108,13 @@ spring:
           filters:
             - JwtAuthenticationFilter
 
+        - id: return-item-service
+          uri: http://localhost:8084
+          predicates:
+            - Path=/api/v1/return_item/**
+          filters:
+            - JwtAuthenticationFilter
+
 #        inventory-service
         - id: inventory-service
           uri: http://localhost:8888

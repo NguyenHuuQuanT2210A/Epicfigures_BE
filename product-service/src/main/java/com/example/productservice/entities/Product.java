@@ -64,4 +64,6 @@ public class Product extends BaseEntity {
     @ColumnDefault("0")
     @Column(nullable = false)
     private Integer soldQuantity;
+
+    private Integer returnPeriodDays;
 }

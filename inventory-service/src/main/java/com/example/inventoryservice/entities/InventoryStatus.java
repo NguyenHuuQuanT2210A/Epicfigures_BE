@@ -1,6 +1,7 @@
 package com.example.inventoryservice.entities;
 
 import com.example.inventoryservice.entities.base.BaseEntity;
+import com.example.inventoryservice.enums.InventoryActionType;
 import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
@@ -20,6 +21,6 @@ public class InventoryStatus extends BaseEntity {
     @Column(unique = true)
     private String name;
     private String description;
-    private boolean isAddAction;
+    private InventoryActionType inventoryActionType;
     private boolean isSystemType;
 }

@@ -6,6 +6,8 @@ import lombok.*;
 import org.hibernate.annotations.GenericGenerator;
 
 import java.math.BigDecimal;
+import java.util.List;
+
 @Getter
 @Setter
 @Builder
@@ -32,4 +34,7 @@ public class OrderDetail {
 
     @OneToOne(mappedBy = "orderDetail")
     private Feedback feedback;
+
+    @OneToMany(mappedBy = "orderDetail", fetch = FetchType.EAGER, cascade = CascadeType.ALL)
+    private List<ReturnItem> returnItem;
 }

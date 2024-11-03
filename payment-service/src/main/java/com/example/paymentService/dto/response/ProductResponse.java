@@ -39,6 +39,8 @@ public class ProductResponse {
 
     private String weight;
 
+    private Integer returnPeriodDays;
+
     @JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "dd-MM-yyyy HH:mm:ss")
     private LocalDateTime createdAt;
 

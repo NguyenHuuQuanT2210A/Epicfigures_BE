@@ -13,7 +13,9 @@ import com.example.orderservice.mapper.OrderDetailMapper;
 import com.example.orderservice.mapper.OrderMapper;
 import com.example.orderservice.repositories.FeedbackRepository;
 import com.example.orderservice.repositories.OrderRepository;
+import com.example.orderservice.repositories.specification.SearchOperation;
 import com.example.orderservice.repositories.specification.SpecSearchCriteria;
+import com.example.orderservice.repositories.specification.SpecificationBuilder;
 import com.example.orderservice.security.JwtTokenUtil;
 import com.example.orderservice.service.*;
 import com.example.orderservice.specification.OrderSpecification;
@@ -21,7 +23,6 @@ import com.example.orderservice.specification.SearchBody;
 import com.example.orderservice.specification.SearchCriteria;
 import com.example.orderservice.specification.SearchCriteriaOperator;
 import com.example.orderservice.util.GenerateUniqueCode;
-import com.example.orderservice.util.ParseBigDecimal;
 import jakarta.persistence.criteria.*;
 import jakarta.servlet.http.HttpServletRequest;
 import lombok.RequiredArgsConstructor;
@@ -33,14 +34,12 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.util.StringUtils;
 
-import java.math.BigDecimal;
 import java.time.LocalDateTime;
 import java.util.*;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 
-import static com.example.orderservice.repositories.specification.SearchOperation.OR_PREDICATE_FLAG;
 import static com.example.orderservice.util.AppConst.SEARCH_SPEC_OPERATOR;
 import static com.example.orderservice.util.AppConst.SORT_BY;
 
@@ -341,6 +340,8 @@ public class OrderServiceImpl implements OrderService {
 
         if (newStatus == OrderSimpleStatus.ONDELIVERY) {
             addInventory(order);
+        }else if (newStatus == OrderSimpleStatus.DELIVERED){
+            order.setDeliveredAt(LocalDateTime.now());
         }
 
         orderRepository.save(order);
@@ -438,10 +439,10 @@ public class OrderServiceImpl implements OrderService {
 
     @Override
     public Page<OrderResponse> searchBySpecification(Pageable pageable, String sort, String[] order) {
-        List<SpecSearchCriteria> params = new ArrayList<>();
+        SpecificationBuilder builder = new SpecificationBuilder();
         Pattern pattern = Pattern.compile(SEARCH_SPEC_OPERATOR);
         if (order != null) {
-            params.addAll(parseOrderCriteria(order, pattern));
+            parseCriteriaBuilder(builder, order, pattern, false, null);
         }
 
         Specification<Order> statusAndCreatedAtSortSpecification = (root, query, criteriaBuilder) -> {
@@ -460,7 +461,7 @@ public class OrderServiceImpl implements OrderService {
             List<String> validColumns = Arrays.asList(
                     "id", "userId", "codeOrder", "addressOrderId", "firstName", "lastName", "email",
                     "address", "phone", "country", "postalCode", "note", "paymentMethod", "totalPrice",
-                    "status", "createdAt", "updatedAt", "deletedAt", "createdBy", "updatedBy", "deletedBy"
+                    "status", "createdAt", "updatedAt", "deletedAt", "deliveredAt", "createdBy", "updatedBy", "deletedBy"
             );
 
             if (StringUtils.hasText(sort)) {
@@ -494,37 +495,38 @@ public class OrderServiceImpl implements OrderService {
 
         Specification<Order> result;
 
-        if (params.isEmpty()) {
-            result = statusAndCreatedAtSortSpecification;
+        if (builder.params.isEmpty()) {
+            return orderRepository.findAll(statusAndCreatedAtSortSpecification, pageable).map(orderMapper.INSTANCE::toOrderResponse);
         } else {
-            result = new com.example.orderservice.repositories.specification.OrderSpecification(params.get(0));
-            for (int i = 1; i < params.size(); i++) {
-                result = params.get(i).getOrPredicate()
-                        ? Specification.where(result).or(new com.example.orderservice.repositories.specification.OrderSpecification(params.get(i)))
-                        : Specification.where(result).and(new com.example.orderservice.repositories.specification.OrderSpecification(params.get(i)));
-            }
-
-            result = Specification.where(result).and(statusAndCreatedAtSortSpecification);
+            result = Specification.where(build(builder.params)).and(statusAndCreatedAtSortSpecification);
         }
-
 
         Page<Order> orders = orderRepository.findAll(Objects.requireNonNull(result), pageable);
 
         return orders.map(orderMapper.INSTANCE::toOrderResponse);
     }
 
-    private List<SpecSearchCriteria> parseOrderCriteria(String[] order, Pattern pattern) {
-        List<SpecSearchCriteria> params = new ArrayList<>();
-        for (String o : order) {
-            Matcher matcher = pattern.matcher(o);
+    private void parseCriteriaBuilder(SpecificationBuilder builder, String[] entities, Pattern pattern, boolean isJoinQuery, String joinEntity) {
+        for (String e : entities) {
+            Matcher matcher = pattern.matcher(e);
             if (matcher.find()) {
-                SpecSearchCriteria searchCriteria = new SpecSearchCriteria(null, matcher.group(2), matcher.group(4), matcher.group(6), matcher.group(1), matcher.group(3), matcher.group(5));
-                if (o.startsWith(OR_PREDICATE_FLAG)) {
-                    searchCriteria.setOrPredicate(true);
+                if (e.startsWith(SearchOperation.OR_PREDICATE_FLAG)) {
+                    builder.withOrder(SearchOperation.OR_PREDICATE_FLAG, matcher.group(1), matcher.group(2), matcher.group(3), matcher.group(4), matcher.group(5), matcher.group(6), isJoinQuery, joinEntity);
+                }else {
+                    builder.withOrder(matcher.group(1), matcher.group(2), matcher.group(3), matcher.group(4), matcher.group(5), matcher.group(6), isJoinQuery, joinEntity);
                 }
-                params.add(searchCriteria);
             }
         }
-        return params;
+    }
+
+    private Specification<Order> build(List<SpecSearchCriteria> params){
+        Specification<Order> specification = new com.example.orderservice.repositories.specification.order.OrderSpecification(params.get(0));
+
+        for (int i = 1; i < params.size(); i++) {
+            specification = params.get(i).getOrPredicate()
+                    ? Specification.where(specification).or(new com.example.orderservice.repositories.specification.order.OrderSpecification(params.get(i)))
+                    : Specification.where(specification).and(new com.example.orderservice.repositories.specification.order.OrderSpecification(params.get(i)));
+        }
+        return specification;
     }
 }

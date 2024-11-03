@@ -46,14 +46,15 @@ public class InventoryStatusServiceImpl implements InventoryStatusService {
             throw new CustomException("Cannot update system type inventory", HttpStatus.BAD_REQUEST);
         }
         inventoryStatusMapper.updatedInventoryStatus(inventoryStatus, request);
-        inventoryStatus.setAddAction(Boolean.parseBoolean(request.getIsAddAction()));
+        inventoryStatus.setInventoryActionType(request.getInventoryActionType());
         inventoryStatusRepository.save(inventoryStatus);
     }
 
     @Override
     public Integer addInventoryStatus(InventoryStatusRequest request) {
         var inventoryStatus = inventoryStatusMapper.toInventory(request);
-        inventoryStatus.setAddAction(Boolean.parseBoolean(request.getIsAddAction()));
+        inventoryStatus.setInventoryActionType(request.getInventoryActionType());
+
         inventoryStatus.setSystemType(false);
         inventoryStatusRepository.save(inventoryStatus);
         return inventoryStatus.getId();

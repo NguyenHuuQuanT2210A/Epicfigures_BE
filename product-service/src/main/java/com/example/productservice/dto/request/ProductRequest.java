@@ -30,6 +30,8 @@ public class ProductRequest {
 
     private BigDecimal price;
 
+    private Integer returnPeriodDays;
+
 //    private BigDecimal listPrice;
 //
 //    private BigDecimal sellingPrice;

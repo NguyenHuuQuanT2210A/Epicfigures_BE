@@ -1,6 +1,8 @@
 package com.example.notificationService.kafka;
 
 import com.example.notificationService.service.NotificationService;
+import com.example.orderservice.dto.request.ReturnItemMail;
+import com.example.orderservice.dto.request.ReturnItemStatusRequest;
 import com.example.paymentService.event.CreateEventToNotification;
 import com.example.paymentService.event.RequestUpdateStatusOrder;
 import com.example.userservice.dtos.request.ContactRequest;
@@ -63,6 +65,17 @@ public class NotificationConsumer {
         try {
             notificationService.sendMailContact(contactRequest);
             log.info(String.format("Send Email successfully! ", contactRequest.getEmail()));
+        }catch (Exception e){
+            e.printStackTrace();
+        }
+    }
+
+    @KafkaListener(topics = "return-item", groupId = "return-item")
+    public void returnItem(ReturnItemMail returnItemMail){
+        log.info(String.format("Event message recieved -> %s", returnItemMail.getUsername()));
+        try {
+            notificationService.sendMailReturnItem(returnItemMail);
+            log.info(String.format("Send Email successfully! ", returnItemMail.getEmail()));
         }catch (Exception e){
             e.printStackTrace();
         }

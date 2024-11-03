@@ -19,6 +19,7 @@ public class Blog extends BaseEntity {
     private Long id;
     private String title;
     private String tags;
+    @Column(length = 2500)
     private String content;
     private String author;
     private String imageTitle;

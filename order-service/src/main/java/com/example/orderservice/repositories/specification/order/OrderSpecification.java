@@ -1,6 +1,7 @@
-package com.example.orderservice.repositories.specification;
+package com.example.orderservice.repositories.specification.order;
 
 import com.example.orderservice.entities.Order;
+import com.example.orderservice.repositories.specification.SpecSearchCriteria;
 import jakarta.persistence.criteria.CriteriaBuilder;
 import jakarta.persistence.criteria.CriteriaQuery;
 import jakarta.persistence.criteria.Predicate;

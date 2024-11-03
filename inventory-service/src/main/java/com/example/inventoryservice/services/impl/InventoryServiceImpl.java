@@ -6,6 +6,7 @@ import com.example.inventoryservice.dto.request.InventoryRequest;
 import com.example.inventoryservice.dto.response.InventoryResponse;
 import com.example.inventoryservice.dto.response.ProductResponse;
 import com.example.inventoryservice.entities.Inventory;
+import com.example.inventoryservice.enums.InventoryActionType;
 import com.example.inventoryservice.exception.NotFoundException;
 import com.example.inventoryservice.helper.LocalDatetimeConverter;
 import com.example.inventoryservice.mapper.InventoryMapper;
@@ -84,10 +85,10 @@ public class InventoryServiceImpl implements InventoryService {
         inventory.setUpdatedBy(getUserNameFromToken(httpServletRequest));
         inventory.setInventoryStatus(inventoryStatus);
 
-        int stockQuantity;
-        if (inventoryStatus.isAddAction()) {
+        int stockQuantity = 0;
+        if (inventoryStatus.getInventoryActionType().equals(InventoryActionType.ADD)) {
             stockQuantity = product.getData().getStockQuantity() + request.getQuantity();
-        } else {
+        } else if (inventoryStatus.getInventoryActionType().equals(InventoryActionType.SUBTRACT)) {
             stockQuantity = product.getData().getStockQuantity() - request.getQuantity();
         }
 
@@ -108,10 +109,10 @@ public class InventoryServiceImpl implements InventoryService {
         inventory.setInventoryStatus(inventoryStatus);
         inventoryRepository.save(inventory);
 
-        int stockQuantity;
-        if (inventoryStatus.isAddAction()) {
+        int stockQuantity = 0;
+        if (inventoryStatus.getInventoryActionType().equals(InventoryActionType.ADD)) {
             stockQuantity = product.getData().getStockQuantity() + request.getQuantity();
-        } else {
+        } else if (inventoryStatus.getInventoryActionType().equals(InventoryActionType.SUBTRACT)) {
             stockQuantity = product.getData().getStockQuantity() - request.getQuantity();
         }
 
@@ -123,9 +124,10 @@ public class InventoryServiceImpl implements InventoryService {
                     .reservedQuantity(reservedQuantity)
                     .soldQuantity(soldQuantity)
                     .build());
-        } else {
+        } else if (inventoryStatus.getInventoryActionType() != InventoryActionType.NONE) {
             productClients.updateQuantity(product.getData().getProductId(), ProductQuantityRequest.builder().stockQuantity(stockQuantity).build());
         }
+
 //        else if (inventoryStatus.getName().equals("IN") && inventoryStatus.isSystemType()) {
 //            productClients.updateQuantity(product.getData().getProductId(),
 //                    ProductQuantityRequest.builder()
