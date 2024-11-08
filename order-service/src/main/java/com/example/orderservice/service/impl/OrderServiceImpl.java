@@ -396,6 +396,22 @@ public class OrderServiceImpl implements OrderService {
     }
 
     @Override
+    public OrderResponse changeStatusCancel(String id, String reasonCancel) {
+        var order = findOrderById(id);
+        if (reasonCancel == null || reasonCancel.isEmpty()) {
+            throw new CustomException("Reason cancel is required", HttpStatus.BAD_REQUEST);
+        }
+        if (order.getStatus().ordinal() < OrderSimpleStatus.ONDELIVERY.ordinal()) {
+            order.setStatus(OrderSimpleStatus.CANCEL);
+            order.setReasonCancel(reasonCancel);
+            orderRepository.save(order);
+            return orderMapper.toOrderResponse(order);
+        }else {
+            throw new CustomException("Cannot cancel order", HttpStatus.BAD_REQUEST);
+        }
+    }
+
+    @Override
     public OrderResponse changePaymentMethod(String id, String paymentMethod) {
         var order = findOrderById(id);
         order.setPaymentMethod(paymentMethod);

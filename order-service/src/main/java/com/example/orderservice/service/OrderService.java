@@ -34,6 +34,8 @@ public interface OrderService {
     OrderResponse changePaymentMethod(String id, String paymentMethod);
 
     OrderResponse findByCode(String code);
+
+    OrderResponse changeStatusCancel(String id, String reasonCancel);
 }
 
 

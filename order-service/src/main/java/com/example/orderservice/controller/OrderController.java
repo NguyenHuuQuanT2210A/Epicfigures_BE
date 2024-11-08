@@ -9,6 +9,9 @@ import com.example.orderservice.service.OrderService;
 import com.example.orderservice.specification.SearchBody;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.servlet.http.HttpServletRequest;
+import jakarta.validation.Valid;
+import jakarta.validation.constraints.NotEmpty;
+import lombok.NonNull;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Sort;
@@ -123,6 +126,14 @@ public class OrderController {
         return ApiResponse.builder()
                 .message("Change status of Order")
                 .data(orderService.changeStatus(id, status))
+                .build();
+    }
+
+    @PutMapping("/changeStatusCancelOrder/{id}")
+    public ApiResponse<?> changeStatusCancel(@PathVariable String id, @RequestBody String reasonCancel) {
+        return ApiResponse.builder()
+                .message("Change status cancel of Order")
+                .data(orderService.changeStatusCancel(id, reasonCancel))
                 .build();
     }
 
