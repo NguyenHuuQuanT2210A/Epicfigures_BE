@@ -2,6 +2,8 @@ package com.example.apigateway.config;
 
 import lombok.NonNull;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.cloud.gateway.route.RouteLocator;
+import org.springframework.cloud.gateway.route.builder.RouteLocatorBuilder;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.security.config.annotation.method.configuration.EnableGlobalMethodSecurity;
@@ -62,4 +64,17 @@ public class SecurityConfig {
         return new CorsWebFilter(urlBasedCorsConfigurationSource);
     }
 
+    @Bean
+    public RouteLocator myRoutes(RouteLocatorBuilder builder) {
+        return builder.routes()
+                .route(r -> r.path("/ws/**")
+                        .filters(f -> f
+                                .setResponseHeader("Access-Control-Allow-Credentials", "true")
+                                .setResponseHeader("Access-Control-Allow-Origin", "http://localhost:3000")  // Địa chỉ của ReactJS
+//                                .setResponseHeader("Access-Control-Allow-Headers", "Authorization, Content-Type")
+//                                .setResponseHeader("Access-Control-Allow-Methods", "GET, POST, OPTIONS")
+                        )
+                        .uri("http://localhost:8087"))
+                .build();
+    }
 }

@@ -1,80 +1,94 @@
 package com.example.notificationService.service;
 
-import com.example.notificationService.dto.response.UserResponse;
-import com.example.notificationService.enums.OrderSimpleStatus;
-import com.example.notificationService.email.EmailService;
+import com.example.notificationService.dto.request.NotificationRequest;
+import com.example.notificationService.dto.response.NotificationResponse;
 
-import com.example.orderservice.dto.request.ReturnItemMail;
-import com.example.paymentService.event.CreateEventToNotification;
-import com.example.paymentService.event.RequestUpdateStatusOrder;
-import com.example.userservice.dtos.request.ContactRequest;
-import com.example.userservice.dtos.request.CreateEventToForgotPassword;
+import com.example.notificationService.mapper.NotificationMapper;
+import com.example.notificationService.repository.NotificationRepository;
+import com.example.orderservice.exception.CustomException;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.beans.factory.annotation.Value;
+import org.springframework.data.redis.core.RedisTemplate;
+import org.springframework.data.redis.listener.RedisMessageListenerContainer;
+import org.springframework.http.HttpStatus;
+import org.springframework.messaging.simp.SimpMessagingTemplate;
 import org.springframework.stereotype.Service;
 
-import java.util.ArrayList;
 import java.util.List;
+import java.util.stream.Collectors;
 
 @Slf4j
 @Service
 @RequiredArgsConstructor
 public class NotificationService {
-    private final EmailService emailService;
-    private final OrderClient orderClient;
-    private final UserClient userClient;
+    private final SimpMessagingTemplate simpMessagingTemplate;
+    private final NotificationRepository notificationRepository;
+    private final NotificationMapper notificationMapper;
+    private final RedisTemplate<String, Object> redisTemplate;
+    private final RedisMessageListenerContainer redisMessageListener;
+    private final NotificationEventListener notificationEventListener;
+    @Value("${redis.pubsub.topic.all}")
+    private String topicNotificationAll;
+    @Value("${redis.pubsub.topic.user}")
+    private String topicNotificationUser;
+    @Value("${redis.pubsub.topic.group}")
+    private String topicNotificationGroup;
 
-    public void sendMailOrder(CreateEventToNotification orderSendMail) {
-        UserResponse response = userClient.getUserById(orderSendMail.getUserId()).getData();
+    public void sendNotification(NotificationRequest notificationRequest) {
+        var notification = notificationMapper.toNotification(notificationRequest);
+        notification.setIsSendAll(Boolean.TRUE.equals(notificationRequest.getIsSendAll()));
+        notificationRepository.save(notification);
+        var message = notificationMapper.toNotificationResponse(notification);
 
-        List<Object> emailParameters = new ArrayList<>();
-        emailParameters.add(response.getUsername());
-        emailParameters.add(orderSendMail.getPrice().toString());
-
-        emailService.sendMail(orderSendMail.getEmail(), "Order successfully", emailParameters, "thank-you");
-    }
-
-    public void consumerUpdateStatusOrder(RequestUpdateStatusOrder requestUpdateStatusOrder) {
-        if (requestUpdateStatusOrder.getStatus()){
-            orderClient.changeStatus(requestUpdateStatusOrder.getOrderId(), OrderSimpleStatus.PENDING);
-            log.info("Order status is pending");
-        }else {
-            orderClient.changeStatus(requestUpdateStatusOrder.getOrderId(), OrderSimpleStatus.PAYMENT_FAILED);
-            log.info("Order status is cancel");
+        if (notificationRequest.getTopicRedis().equals(topicNotificationAll)) {
+            sendNotificationsAllUser(message);
+        }else if (notificationRequest.getTopicRedis().contains(topicNotificationUser)) {
+            sendNotificationToUser(message);
         }
+
     }
 
-    public void sendMailForgotPassword(CreateEventToForgotPassword forgotPasswordEvent) {
-        UserResponse response = userClient.getUserById(forgotPasswordEvent.getId()).getData();
+    public void sendNotificationToUser(NotificationResponse message) {
+        log.info("Sending WS notification to {} with payload {}", message.getUserId().toString(), message);
 
-        List<Object> emailParameters = new ArrayList<>();
-        emailParameters.add(response.getUsername());
-        emailParameters.add(response.getEmail());
-        emailParameters.add(forgotPasswordEvent.getUrlPlatform());
-        emailParameters.add(forgotPasswordEvent.getSecretKey());
+        try {
+            message.setSendTo("/user/" + message.getUserId() + "/notifications/userTemp");
+            redisTemplate.convertAndSend(topicNotificationUser + ":" + message.getUserId(), message);
+        } catch (Exception e) {
+            throw new CustomException("Error while sending notification use redis to user", HttpStatus.INTERNAL_SERVER_ERROR);
+        }
 
-        emailService.sendMail(response.getEmail(), "Forgot Password", emailParameters, "forgot-password");
+        simpMessagingTemplate.convertAndSendToUser(
+                message.getUserId().toString(),
+                "/notifications",
+                message
+        );
     }
 
-    public void sendMailContact(ContactRequest contactRequest) {
-        List<Object> emailParameters = new ArrayList<>();
-        emailParameters.add(contactRequest.getUsername());
-        emailParameters.add(contactRequest.getEmail());
-        emailParameters.add(contactRequest.getPhoneNumber());
-        emailParameters.add(contactRequest.getNote());
+    public void sendNotificationsAllUser(NotificationResponse message) {
+        log.info("Sending WS notification to all user with payload {}", message);
 
-        emailService.sendMail(contactRequest.getEmail(), "Contact", emailParameters, "contact");
+//            ChannelTopic topic = ChannelTopic.of(notificationRequest.getTopic());
+//            redisMessageListener.addMessageListener(notificationEventListener, topic);
+//            redisTemplate.convertAndSend(topic.getTopic(), message);
+
+        try {
+            message.setSendTo("/topic/allTemp");
+            redisTemplate.convertAndSend(topicNotificationAll, message);
+        } catch (Exception e) {
+            throw new CustomException("Error while sending notification use redis to user", HttpStatus.INTERNAL_SERVER_ERROR);
+        }
+
+        simpMessagingTemplate.convertAndSend(
+                "/topic/all",
+                message
+        );
     }
 
-    public void sendMailReturnItem(ReturnItemMail returnItemMail) {
-        List<Object> emailParameters = new ArrayList<>();
-        emailParameters.add(returnItemMail.getUsername());
-        emailParameters.add(returnItemMail.getEmail());
-        emailParameters.add(returnItemMail.getOrderCode());
-        emailParameters.add(returnItemMail.getStatus());
-        emailParameters.add(returnItemMail.getStatusNote());
-
-        emailService.sendMail(returnItemMail.getEmail(), "Return Item", emailParameters, "return-item");
+    public List<NotificationResponse> getNotificationsByUserId(Long userId) {
+        return notificationRepository.findByUserIdOrIsSendAllOrderByCreatedAtDesc(userId, true)
+                .stream().map(notificationMapper::toNotificationResponse).collect(Collectors.toList());
     }
 }
 

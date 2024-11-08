@@ -1,8 +1,7 @@
 package com.example.notificationService.kafka;
 
-import com.example.notificationService.service.NotificationService;
+import com.example.notificationService.service.MailSenderService;
 import com.example.orderservice.dto.request.ReturnItemMail;
-import com.example.orderservice.dto.request.ReturnItemStatusRequest;
 import com.example.paymentService.event.CreateEventToNotification;
 import com.example.paymentService.event.RequestUpdateStatusOrder;
 import com.example.userservice.dtos.request.ContactRequest;
@@ -16,7 +15,7 @@ import org.springframework.stereotype.Service;
 @Service
 @RequiredArgsConstructor
 public class NotificationConsumer {
-    private final NotificationService notificationService;
+    private final MailSenderService mailSenderService;
 
     @KafkaListener(
             topics = "notification",
@@ -25,7 +24,7 @@ public class NotificationConsumer {
     public void consume(CreateEventToNotification orderSendMail){
         log.info(String.format("Event message recieved -> %s", orderSendMail.toString()));
         try {
-            notificationService.sendMailOrder(orderSendMail);
+            mailSenderService.sendMailOrder(orderSendMail);
             log.info(String.format("Send Email successfully! ", orderSendMail.getEmail()));
         }catch (Exception e){
             e.printStackTrace();
@@ -39,7 +38,7 @@ public class NotificationConsumer {
     public void updateStatusOrder(RequestUpdateStatusOrder requestUpdateStatusOrder){
         log.info(String.format("Update order id -> %s", requestUpdateStatusOrder.getOrderId()));
         try {
-            notificationService.consumerUpdateStatusOrder(requestUpdateStatusOrder);
+            mailSenderService.consumerUpdateStatusOrder(requestUpdateStatusOrder);
         }catch (Exception e){
             e.printStackTrace();
         }
@@ -52,7 +51,7 @@ public class NotificationConsumer {
     public void forgotPassword(CreateEventToForgotPassword forgotPasswordEvent){
         log.info(String.format("Event message recieved -> %s", forgotPasswordEvent.toString()));
         try {
-            notificationService.sendMailForgotPassword(forgotPasswordEvent);
+            mailSenderService.sendMailForgotPassword(forgotPasswordEvent);
             log.info(String.format("Send Email successfully! ", forgotPasswordEvent.getEmail()));
         }catch (Exception e){
             e.printStackTrace();
@@ -63,7 +62,7 @@ public class NotificationConsumer {
     public void replyContact(ContactRequest contactRequest){
         log.info(String.format("Event message recieved -> %s", contactRequest.getUsername()));
         try {
-            notificationService.sendMailContact(contactRequest);
+            mailSenderService.sendMailContact(contactRequest);
             log.info(String.format("Send Email successfully! ", contactRequest.getEmail()));
         }catch (Exception e){
             e.printStackTrace();
@@ -74,7 +73,7 @@ public class NotificationConsumer {
     public void returnItem(ReturnItemMail returnItemMail){
         log.info(String.format("Event message recieved -> %s", returnItemMail.getUsername()));
         try {
-            notificationService.sendMailReturnItem(returnItemMail);
+            mailSenderService.sendMailReturnItem(returnItemMail);
             log.info(String.format("Send Email successfully! ", returnItemMail.getEmail()));
         }catch (Exception e){
             e.printStackTrace();

@@ -91,3 +91,10 @@ firebase:
   upload-product-image: product-image/
   upload-user-image: product-image/
   upload-return-item-image: return-item-image/
+
+redis:
+  pubsub:
+    topic:
+      all: notificationAll
+      user: notificationUser
+      group: notificationGroup

@@ -26,6 +26,7 @@ import com.example.orderservice.util.GenerateUniqueCode;
 import jakarta.persistence.criteria.*;
 import jakarta.servlet.http.HttpServletRequest;
 import lombok.RequiredArgsConstructor;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.data.domain.*;
 import org.springframework.data.jpa.domain.Specification;
 import org.springframework.http.HttpStatus;
@@ -61,6 +62,10 @@ public class OrderServiceImpl implements OrderService {
     private final AddressOrderClient addressOrderClient;
     private final InventoryServiceClient inventoryServiceClient;
     private final InventoryStatusServiceClient inventoryStatusServiceClient;
+//    private final NotificationService notificationService;
+    private final NotificationClient notificationClient;
+    @Value("${redis.pubsub.topic.user}")
+    private String topicNotificationUser;
 
     Specification<jakarta.persistence.criteria.Order> specification = Specification.where(null);
 
@@ -345,6 +350,14 @@ public class OrderServiceImpl implements OrderService {
         }
 
         orderRepository.save(order);
+
+        notificationClient.sendNotification(NotificationRequest.builder()
+                .userId(order.getUserId())
+                .title("order status")
+                .message("Your order status has been changed to " + newStatus)
+                .topicRedis(topicNotificationUser + ":" + order.getUserId())
+                .type("info")
+                .build());
 
         return orderMapper.toOrderResponse(order);
     }

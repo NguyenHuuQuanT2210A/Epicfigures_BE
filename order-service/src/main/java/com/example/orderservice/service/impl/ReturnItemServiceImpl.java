@@ -19,6 +19,7 @@ import com.example.orderservice.repositories.specification.returnItem.ReturnItem
 import com.example.orderservice.service.*;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
@@ -54,6 +55,9 @@ public class ReturnItemServiceImpl implements ReturnItemService {
     private final ProductServiceClientImpl productService;
     private final InventoryServiceClient inventoryServiceClient;
     private final InventoryStatusServiceClient inventoryStatusServiceClient;
+    private final NotificationClient notificationClient;
+    @Value("${redis.pubsub.topic.user}")
+    private String topicNotificationUser;
 
     @Override
     public Page<ReturnItemResponse> getAllReturnItems(Pageable pageable) {
@@ -198,6 +202,14 @@ public class ReturnItemServiceImpl implements ReturnItemService {
                     .statusNote(returnItem.getStatusNote())
                     .build());
         }
+
+        notificationClient.sendNotification(NotificationRequest.builder()
+                .userId(returnItem.getOrderDetail().getOrder().getUserId())
+                .title("Return item status")
+                .message("Your return item status has been updated to " + returnItem.getStatus())
+                .topicRedis(topicNotificationUser + ":" + returnItem.getOrderDetail().getOrder().getUserId())
+                .type("info")
+                .build());
     }
 
     @Override
