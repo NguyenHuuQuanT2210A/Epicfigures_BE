@@ -9,6 +9,7 @@ import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.JpaSpecificationExecutor;
 import org.springframework.data.jpa.repository.Query;
 
+import java.math.BigDecimal;
 import java.util.List;
 
 public interface OrderRepository extends JpaRepository<Order, String>, JpaSpecificationExecutor<Order> {
@@ -19,6 +20,8 @@ public interface OrderRepository extends JpaRepository<Order, String>, JpaSpecif
     List<Order> findByUserId(Long userId);
     Page<Order> findOrderByUserIdAndStatus(Long userId, OrderSimpleStatus status, Pageable pageable);
     Long countOrdersByStatus(OrderSimpleStatus status);
+    @Query("SELECT SUM(o.totalPrice) FROM Order o WHERE o.status = ?1")
+    BigDecimal sumTotalPriceByStatus(OrderSimpleStatus status);
     boolean existsByCodeOrder(String codeOrder);
     Order findByCodeOrder(String codeOrder);
 }

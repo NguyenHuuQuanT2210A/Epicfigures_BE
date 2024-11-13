@@ -60,6 +60,7 @@ public class SecurityConfig {
 
         org.springframework.web.cors.reactive.UrlBasedCorsConfigurationSource urlBasedCorsConfigurationSource = new UrlBasedCorsConfigurationSource();
         urlBasedCorsConfigurationSource.registerCorsConfiguration("/**", corsConfiguration);
+        urlBasedCorsConfigurationSource.registerCorsConfiguration("/ws/**", corsConfiguration);
 
         return new CorsWebFilter(urlBasedCorsConfigurationSource);
     }
@@ -67,14 +68,23 @@ public class SecurityConfig {
     @Bean
     public RouteLocator myRoutes(RouteLocatorBuilder builder) {
         return builder.routes()
-                .route(r -> r.path("/ws/**")
+                .route(r -> r.path("/ws/customer/**")
                         .filters(f -> f
-                                .setResponseHeader("Access-Control-Allow-Credentials", "true")
-                                .setResponseHeader("Access-Control-Allow-Origin", "http://localhost:3000")  // Địa chỉ của ReactJS
+                                        .setResponseHeader("Access-Control-Allow-Credentials", "true")
+                                        .setResponseHeader("Access-Control-Allow-Origin", "http://localhost:3000")  // Địa chỉ của ReactJS
 //                                .setResponseHeader("Access-Control-Allow-Headers", "Authorization, Content-Type")
 //                                .setResponseHeader("Access-Control-Allow-Methods", "GET, POST, OPTIONS")
                         )
                         .uri("http://localhost:8087"))
+                .route(r -> r.path("/ws/admin/**")
+                        .filters(f -> f
+                                .setResponseHeader("Access-Control-Allow-Credentials", "true")
+                                .setResponseHeader("Access-Control-Allow-Origin", "http://localhost:3001")  // Địa chỉ của ReactJS
+//                                .setResponseHeader("Access-Control-Allow-Headers", "Authorization, Content-Type")
+//                                .setResponseHeader("Access-Control-Allow-Methods", "GET, POST, OPTIONS")
+                        )
+                        .uri("http://localhost:8087"))
+
                 .build();
     }
 }

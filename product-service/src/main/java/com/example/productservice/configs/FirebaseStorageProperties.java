@@ -15,4 +15,8 @@ public class FirebaseStorageProperties {
     private String uploadProductImage;
 
     private String uploadUserImage;
+
+    private String uploadBlogImage;
+
+    private String uploadReturnItemImage;
 }

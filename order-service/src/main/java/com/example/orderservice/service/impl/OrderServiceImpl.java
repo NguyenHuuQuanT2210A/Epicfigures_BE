@@ -463,6 +463,7 @@ public class OrderServiceImpl implements OrderService {
                 .complete(orderRepository.countOrdersByStatus(OrderSimpleStatus.COMPLETE))
                 .cancel(orderRepository.countOrdersByStatus(OrderSimpleStatus.CANCEL))
                 .paymentFailed(orderRepository.countOrdersByStatus(OrderSimpleStatus.PAYMENT_FAILED))
+                .revenue(orderRepository.sumTotalPriceByStatus(OrderSimpleStatus.COMPLETE))
                 .build();
     }
 

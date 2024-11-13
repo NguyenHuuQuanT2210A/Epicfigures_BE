@@ -91,7 +91,11 @@ public class PaymentService {
         UserResponse userResponse = userClient.getUserById(orderResponse.getUserId()).getData();
 
         if (a){
-            kafkaProducer.sendEmail(new CreateEventToNotification(orderResponse.getUserId(), userResponse.getEmail(), ParseBigDecimal.parseStringToBigDecimal(orderResponse.getTotalPrice()).intValueExact()));
+            if (orderResponse.getEmail() != null){
+                kafkaProducer.sendEmail(new CreateEventToNotification(orderResponse.getUserId(), orderResponse.getEmail(), ParseBigDecimal.parseStringToBigDecimal(orderResponse.getTotalPrice()).intValueExact()));
+            }else {
+                kafkaProducer.sendEmail(new CreateEventToNotification(orderResponse.getUserId(), userResponse.getEmail(), ParseBigDecimal.parseStringToBigDecimal(orderResponse.getTotalPrice()).intValueExact()));
+            }
         }
         RequestUpdateStatusOrder requestUpdateStatusOrder = new RequestUpdateStatusOrder();
         requestUpdateStatusOrder.setStatus(a);

@@ -2,6 +2,7 @@ package com.example.userservice.entities.seeder;
 
 import com.example.userservice.entities.*;
 import com.example.userservice.repositories.*;
+import com.example.userservice.services.FirebaseService;
 import com.example.userservice.statics.enums.ERole;
 import com.github.javafaker.Faker;
 import org.springframework.boot.CommandLineRunner;
@@ -15,12 +16,22 @@ public class UserSeeder implements CommandLineRunner {
     private final UserRepository userRepository;
     private final RoleRepository roleRepository;
     private final PasswordEncoder encoder;
+    private final BlogRepository blogRepository;
+    private final FirebaseService firebaseService;
+
+
     Faker faker = new Faker();
 
-    public UserSeeder(UserRepository userRepository, RoleRepository roleRepository, PasswordEncoder encoder) {
+    public UserSeeder(UserRepository userRepository,
+                      RoleRepository roleRepository,
+                      PasswordEncoder encoder,
+                      BlogRepository blogRepository,
+                      FirebaseService firebaseService) {
         this.userRepository = userRepository;
         this.roleRepository = roleRepository;
         this.encoder = encoder;
+        this.blogRepository = blogRepository;
+        this.firebaseService = firebaseService;
     }
 
     @Override
@@ -61,7 +72,7 @@ public class UserSeeder implements CommandLineRunner {
                         nameExisting = false;
                         continue;
                     }
-                    String password = encoder.encode("123456");
+                    String password = encoder.encode("123456789");
                     String address = faker.address().fullAddress();
                     StringBuilder email = new StringBuilder();
                     email.append(firstName.toLowerCase(Locale.ROOT)).append(lastName.toLowerCase(Locale.ROOT)).append("@gmail.com");
@@ -80,6 +91,24 @@ public class UserSeeder implements CommandLineRunner {
                 }
             }
             userRepository.saveAll(users);
+        }
+
+        if (blogRepository.count() == 0) {
+            var user = userRepository.findByUsernameAndDeletedAtIsNull("admin").get();
+            List<Blog> blogs = new ArrayList<>();
+            List<String> imageUrls = firebaseService.getAllImages("blog-image/");
+
+            for (String imageUrl : imageUrls) {
+                Blog blog = new Blog();
+                blog.setTitle(faker.book().title());
+                blog.setTags(faker.book().genre());
+                blog.setContent(faker.lorem().paragraph());
+                blog.setUser(user);
+                blog.setAuthor(user.getUsername());
+                blog.setImageTitle(imageUrl);
+                blogs.add(blog);
+            }
+            blogRepository.saveAll(blogs);
         }
     }
 }

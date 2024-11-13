@@ -99,7 +99,8 @@ eureka:
 firebase:
   bucket-name: epicgure.appspot.com
   image-base-url: https://firebasestorage.googleapis.com/v0/b/${firebase.bucket-name}/o/
-  upload-logo: product-image/
+  upload-logo: logo-image/
   upload-product-image: product-image/
   upload-user-image: user-image/
   upload-blog-image: blog-image/
+  upload-return-item-image: return-item-image/

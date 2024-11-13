@@ -4,6 +4,7 @@ import com.example.userservice.exceptions.CustomException;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.google.cloud.storage.Blob;
 import com.google.cloud.storage.Bucket;
+import com.google.cloud.storage.Storage;
 import com.google.firebase.cloud.StorageClient;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.HttpStatus;
@@ -16,8 +17,11 @@ import java.net.URI;
 import java.net.http.HttpClient;
 import java.net.http.HttpRequest;
 import java.net.http.HttpResponse;
+import java.util.ArrayList;
+import java.util.Comparator;
 import java.util.List;
 import java.util.UUID;
+import java.util.stream.Collectors;
 
 @Service
 public class FirebaseService {
@@ -103,5 +107,38 @@ public class FirebaseService {
         String extractedPath = url.substring(startIndex, endIndex);
 
         return extractedPath.replace("%2F", "/");
+    }
+
+    public List<String> getAllImages(String prefixImageFolder) {
+        List<Blob> imageBlobs = new ArrayList<>();
+        Bucket bucket = StorageClient.getInstance().bucket();
+
+        for (Blob blob : bucket.list(Storage.BlobListOption.prefix(prefixImageFolder)).iterateAll()) {
+            imageBlobs.add(blob);
+        }
+
+        return switch (prefixImageFolder) {
+            case "product-image/" -> getLimitedImageUrls(imageBlobs, bucket, 37);
+            case "blog-image/" -> getLimitedImageUrls(imageBlobs, bucket, 10);
+            default -> getImageUrls(imageBlobs, bucket);
+        };
+    }
+
+    private List<String> getLimitedImageUrls(List<Blob> imageBlobs, Bucket bucket, int limit) {
+        return imageBlobs.stream()
+                .sorted(Comparator.comparing(Blob::getName))
+                .limit(limit)
+                .map(blob -> generateImageUrl(blob, bucket))
+                .collect(Collectors.toList());
+    }
+
+    private List<String> getImageUrls(List<Blob> imageBlobs, Bucket bucket) {
+        return imageBlobs.stream()
+                .map(blob -> generateImageUrl(blob, bucket))
+                .collect(Collectors.toList());
+    }
+
+    private String generateImageUrl(Blob blob, Bucket bucket) {
+        return "https://storage.googleapis.com/" + bucket.getName() + "/" + blob.getName();
     }
 }

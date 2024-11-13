@@ -3,11 +3,13 @@ package com.example.productservice.entities.seeder;
 import com.example.productservice.entities.*;
 import com.example.productservice.helper.LocalDatetimeConverter;
 import com.example.productservice.repositories.*;
+import com.example.productservice.services.FirebaseService;
 import com.example.productservice.statics.enums.ProductSimpleStatus;
 import com.example.productservice.util.GenerateUniqueCode;
 import com.example.productservice.util.StringHelper;
 import com.github.javafaker.Faker;
 import org.springframework.boot.CommandLineRunner;
+import org.springframework.core.annotation.Order;
 import org.springframework.stereotype.Component;
 
 import java.math.BigDecimal;
@@ -19,15 +21,19 @@ public class ProductSeeder implements CommandLineRunner {
     ProductRepository productRepository;
     CategoryRepository categoryRepository;
     ProductImageRepository productImageRepository;
+    FirebaseService firebaseService;
+
     Faker faker = new Faker();
 
     public ProductSeeder(
                        ProductRepository productRepository,
                        CategoryRepository categoryRepository,
-                       ProductImageRepository productImageRepository) {
+                       ProductImageRepository productImageRepository,
+                       FirebaseService firebaseService) {
         this.productRepository = productRepository;
         this.categoryRepository = categoryRepository;
         this.productImageRepository = productImageRepository;
+        this.firebaseService = firebaseService;
     }
 
     @Override
@@ -103,16 +109,18 @@ public class ProductSeeder implements CommandLineRunner {
         }
         productRepository.saveAll(products);
 
-//        List<ProductImage> productImages = new ArrayList<>();
+        List<ProductImage> productImages = new ArrayList<>();
 
-//        for (int j = 0; j < 30; j++) {
-//            ProductImage productImage = new ProductImage();
-//            productImage.setProduct(products.get(faker.number().numberBetween(0, 19)));
-//            productImage.setImageUrl("img-url-" + j + ".jpg");
-//            productImages.add(productImage);
-//        }
+        List<String> imageUrls = firebaseService.getAllImages("product-image/");
 
-//        productImageRepository.saveAll(productImages);
+        for (String imageUrl : imageUrls) {
+            ProductImage productImage = new ProductImage();
+            productImage.setProduct(products.get(faker.number().numberBetween(0, 19)));
+            productImage.setImageUrl(imageUrl);
+            productImages.add(productImage);
+        }
+
+        productImageRepository.saveAll(productImages);
     }
 
 }

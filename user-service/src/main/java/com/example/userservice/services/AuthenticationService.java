@@ -63,7 +63,11 @@ public class AuthenticationService {
 
             UserDetailsImpl userDetails = (UserDetailsImpl) authentication.getPrincipal();
 
-            String accessToken = jwtUtils.generateAccessToken(userDetails, loginRequest.getPlatform().toString(), loginRequest.getVersion());
+        String accessToken;
+        do {
+            accessToken = jwtUtils.generateAccessToken(userDetails, loginRequest.getPlatform().toString(), loginRequest.getVersion());
+        } while (tokenBlacklistService.isTokenInvalid(accessToken));
+
             String refreshToken = jwtUtils.generateRefreshToken(userDetails, loginRequest.getPlatform().toString(), loginRequest.getVersion());
 
             List<String> roles = userDetails.getAuthorities().stream()

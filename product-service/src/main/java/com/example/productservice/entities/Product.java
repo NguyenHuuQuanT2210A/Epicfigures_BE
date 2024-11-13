@@ -51,6 +51,14 @@ public class Product extends BaseEntity {
 
     private String size;
 
+//    private String material;
+//
+//    private Integer height;
+//
+//    private Integer width;
+//
+//    private String figure;
+
     private String weight;
 
     @ColumnDefault("0")
