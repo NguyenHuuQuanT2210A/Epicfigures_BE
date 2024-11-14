@@ -52,6 +52,7 @@ public class ReturnItemServiceImpl implements ReturnItemService {
     private final FirebaseService firebaseService;
     private final FirebaseStorageProperties firebaseStorageProperties;
     private final KafkaProducer kafkaProducer;
+    private final UserServiceClientImpl userService;
     private final ProductServiceClientImpl productService;
     private final InventoryServiceClient inventoryServiceClient;
     private final InventoryStatusServiceClient inventoryStatusServiceClient;
@@ -66,7 +67,9 @@ public class ReturnItemServiceImpl implements ReturnItemService {
 
     @Override
     public ReturnItemResponse getReturnItemById(Long id) {
-        return returnItemMapper.toReturnItemResponse(findReturnItemById(id));
+        var returnItemResponse = returnItemMapper.toReturnItemResponse(findReturnItemById(id));
+        returnItemResponse.getOrderDetail().setProduct(productService.getProductById(returnItemResponse.getOrderDetail().getProductId()).getData());
+        return returnItemResponse;
     }
 
     @Override
@@ -80,9 +83,11 @@ public class ReturnItemServiceImpl implements ReturnItemService {
         if (orderDetailResponse == null) {
             throw new CustomException("Can not find orderDetail with id " + request.getOrderDetailId(), HttpStatus.NOT_FOUND);
         }
+        var order = orderService.findById(orderDetailResponse.getOrderId());
+        var user = userService.getUserById(order.getUserId()).getData();
 
         var returnPeriodDays = productService.getProductById(orderDetailResponse.getProductId()).getData().getReturnPeriodDays();
-        if (orderService.findById(orderDetailResponse.getOrderId()).getDeliveredAt()
+        if (order.getDeliveredAt()
                 .isBefore(LocalDateTime.now().minusDays(returnPeriodDays))) {
             throw new CustomException(String.format("Cannot return item after %d days", returnPeriodDays), HttpStatus.BAD_REQUEST);
         }
@@ -91,6 +96,7 @@ public class ReturnItemServiceImpl implements ReturnItemService {
         }
 
         ReturnItem returnItem = returnItemMapper.ReturnItemRequesttoReturnItem(request);
+        returnItem.setUsername(user.getUsername());
         returnItem.setStatus(ReturnItemStatus.PENDING);
         returnItem.setOrderDetail(orderDetailMapper.INSTANCE.orderDetailResponsetoOrderDetail(orderDetailResponse));
 
@@ -154,7 +160,7 @@ public class ReturnItemServiceImpl implements ReturnItemService {
         ReturnItemStatus currentStatus = returnItem.getStatus();
         ReturnItemStatus newStatus = returnItemStatusRequest.getStatus();
 
-        if (currentStatus.equals(ReturnItemStatus.COMPLETED) || currentStatus.equals(ReturnItemStatus.REJECTED)) {
+        if (currentStatus.equals(ReturnItemStatus.REJECTED)) {
             throw new CustomException("Cannot change status from " + currentStatus + " to " + newStatus, HttpStatus.BAD_REQUEST);
         }
 
@@ -164,7 +170,7 @@ public class ReturnItemServiceImpl implements ReturnItemService {
                 ReturnItemStatus.REJECTED,
                 ReturnItemStatus.REFUNDED,
                 ReturnItemStatus.REPLACEMENT_SHIPPED,
-                ReturnItemStatus.COMPLETED
+//                ReturnItemStatus.COMPLETED
         };
 
         int currentIndex = Arrays.asList(statusOrder).indexOf(currentStatus);
@@ -193,7 +199,7 @@ public class ReturnItemServiceImpl implements ReturnItemService {
         returnItem.setStatusNote(returnItemStatusRequest.getStatusNote());
         returnItemRepository.save(returnItem);
 
-        if (!returnItemStatusRequest.getStatus().equals(ReturnItemStatus.COMPLETED)) {
+//        if (!returnItemStatusRequest.getStatus().equals(ReturnItemStatus.COMPLETED)) {
             kafkaProducer.sendMessageReturnItem(ReturnItemMail.builder()
                     .email(returnItem.getOrderDetail().getOrder().getEmail())
                     .username(returnItem.getOrderDetail().getOrder().getLastName())
@@ -201,7 +207,7 @@ public class ReturnItemServiceImpl implements ReturnItemService {
                     .status(returnItem.getStatus())
                     .statusNote(returnItem.getStatusNote())
                     .build());
-        }
+//        }
 
         notificationClient.sendNotification(NotificationRequest.builder()
                 .userId(returnItem.getOrderDetail().getOrder().getUserId())
@@ -315,4 +321,5 @@ public class ReturnItemServiceImpl implements ReturnItemService {
         }
         return specification;
     }
+
 }

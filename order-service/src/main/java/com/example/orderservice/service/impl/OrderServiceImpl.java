@@ -13,6 +13,7 @@ import com.example.orderservice.mapper.OrderDetailMapper;
 import com.example.orderservice.mapper.OrderMapper;
 import com.example.orderservice.repositories.FeedbackRepository;
 import com.example.orderservice.repositories.OrderRepository;
+import com.example.orderservice.repositories.ReturnItemRepository;
 import com.example.orderservice.repositories.specification.SearchOperation;
 import com.example.orderservice.repositories.specification.SpecSearchCriteria;
 import com.example.orderservice.repositories.specification.SpecificationBuilder;
@@ -35,6 +36,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.util.StringUtils;
 
+import java.math.BigDecimal;
 import java.time.LocalDateTime;
 import java.util.*;
 import java.util.regex.Matcher;
@@ -62,6 +64,7 @@ public class OrderServiceImpl implements OrderService {
     private final AddressOrderClient addressOrderClient;
     private final InventoryServiceClient inventoryServiceClient;
     private final InventoryStatusServiceClient inventoryStatusServiceClient;
+    private final ReturnItemRepository returnItemRepository;
 //    private final NotificationService notificationService;
     private final NotificationClient notificationClient;
     @Value("${redis.pubsub.topic.user}")
@@ -454,6 +457,11 @@ public class OrderServiceImpl implements OrderService {
 
     @Override
     public CountOrderByStatus getCountByStatusOrder() {
+        BigDecimal revenue = orderRepository.sumTotalPriceByStatus(OrderSimpleStatus.COMPLETE);
+        BigDecimal totalReturnItem = returnItemRepository.sumTotalRefund() == null ? BigDecimal.ZERO : returnItemRepository.sumTotalRefund();
+        BigDecimal totalPriceCancel = orderRepository.sumTotalPriceByStatusCancelAndPaymentMethod() == null ? BigDecimal.ZERO : orderRepository.sumTotalPriceByStatusCancelAndPaymentMethod();
+        revenue = (revenue.subtract(totalReturnItem)).subtract(totalPriceCancel);
+
         return CountOrderByStatus.builder()
                 .created(orderRepository.countOrdersByStatus(OrderSimpleStatus.CREATED))
                 .pending(orderRepository.countOrdersByStatus(OrderSimpleStatus.PENDING))
@@ -463,7 +471,7 @@ public class OrderServiceImpl implements OrderService {
                 .complete(orderRepository.countOrdersByStatus(OrderSimpleStatus.COMPLETE))
                 .cancel(orderRepository.countOrdersByStatus(OrderSimpleStatus.CANCEL))
                 .paymentFailed(orderRepository.countOrdersByStatus(OrderSimpleStatus.PAYMENT_FAILED))
-                .revenue(orderRepository.sumTotalPriceByStatus(OrderSimpleStatus.COMPLETE))
+                .revenue(revenue)
                 .build();
     }
 

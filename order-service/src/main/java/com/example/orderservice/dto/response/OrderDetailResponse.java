@@ -1,6 +1,6 @@
 package com.example.orderservice.dto.response;
 
-import com.fasterxml.jackson.annotation.JsonFormat;
+import com.fasterxml.jackson.annotation.JsonInclude;
 import lombok.*;
 
 import java.math.BigDecimal;
@@ -10,6 +10,7 @@ import java.math.BigDecimal;
 @Builder
 @NoArgsConstructor
 @AllArgsConstructor
+//@JsonInclude(JsonInclude.Include.NON_NULL)
 public class OrderDetailResponse {
     private String id;
     private Integer quantity;

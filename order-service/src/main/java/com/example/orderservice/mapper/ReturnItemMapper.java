@@ -13,7 +13,6 @@ import java.util.List;
 public interface ReturnItemMapper {
     ReturnItem ReturnItemRequesttoReturnItem(ReturnItemRequest request);
     @Mapping(source = "images", target = "images", qualifiedByName = "splitImages")
-    @Mapping(source = "orderDetail.id", target = "orderDetailId")
     ReturnItemResponse toReturnItemResponse(ReturnItem returnItem);
     @BeanMapping(nullValuePropertyMappingStrategy = NullValuePropertyMappingStrategy.IGNORE)
     void updateReturnItem(@MappingTarget ReturnItem returnItem, RefundReturnItemRequest request);

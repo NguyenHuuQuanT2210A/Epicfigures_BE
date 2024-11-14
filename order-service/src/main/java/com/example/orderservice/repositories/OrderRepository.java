@@ -22,6 +22,8 @@ public interface OrderRepository extends JpaRepository<Order, String>, JpaSpecif
     Long countOrdersByStatus(OrderSimpleStatus status);
     @Query("SELECT SUM(o.totalPrice) FROM Order o WHERE o.status = ?1")
     BigDecimal sumTotalPriceByStatus(OrderSimpleStatus status);
+    @Query("SELECT SUM(o.totalPrice) FROM Order o WHERE o.status = 7 AND (o.paymentMethod = 'PAYPAL' OR o.paymentMethod = 'VNPAY')")
+    BigDecimal sumTotalPriceByStatusCancelAndPaymentMethod();
     boolean existsByCodeOrder(String codeOrder);
     Order findByCodeOrder(String codeOrder);
 }

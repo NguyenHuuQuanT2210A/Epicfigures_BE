@@ -18,6 +18,7 @@ import java.util.List;
 @AllArgsConstructor
 public class ReturnItemResponse {
     private Long id;
+    private String username;
     private Integer quantityReturned;
 
     private ReasonReturnItemStatus reason;
@@ -31,6 +32,7 @@ public class ReturnItemResponse {
 
     private Integer refundPercentage;
     private BigDecimal refundAmount;
-    private String orderDetailId;
+//    private String orderDetailId;
+    private OrderDetailResponse orderDetail;
     private List<String> images;
 }

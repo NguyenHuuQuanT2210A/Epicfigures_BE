@@ -2,6 +2,7 @@ package com.example.orderservice.repositories;
 
 import com.example.orderservice.entities.Order;
 import com.example.orderservice.entities.ReturnItem;
+import com.example.orderservice.enums.ReturnItemStatus;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
@@ -9,6 +10,7 @@ import org.springframework.data.jpa.repository.JpaSpecificationExecutor;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.stereotype.Repository;
 
+import java.math.BigDecimal;
 import java.util.List;
 import java.util.Set;
 
@@ -21,4 +23,7 @@ public interface ReturnItemRepository extends JpaRepository<ReturnItem, Long>, J
 
     @Query("SELECT r FROM ReturnItem r WHERE r.orderDetail.order.userId = ?1 AND r.deletedAt IS NULL")
     Page<ReturnItem> findByUserIdAndDeletedAtIsNull(Long userId, Pageable pageable);
+
+    @Query("SELECT SUM(ri.refundAmount) FROM ReturnItem ri WHERE ri.status = 'REFUNDED'")
+    BigDecimal sumTotalRefund();
 }

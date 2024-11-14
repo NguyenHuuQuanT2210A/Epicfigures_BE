@@ -11,7 +11,6 @@ import com.example.orderservice.mapper.OrderDetailMapper;
 import com.example.orderservice.mapper.OrderMapper;
 import com.example.orderservice.repositories.OrderDetailRepository;
 import com.example.orderservice.service.ProductServiceClient;
-import com.example.orderservice.util.ParseBigDecimal;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;

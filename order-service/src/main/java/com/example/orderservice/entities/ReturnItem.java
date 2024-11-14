@@ -22,6 +22,7 @@ public class ReturnItem extends BaseEntity {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
+    private String username;
     private Integer quantityReturned;
 
     @Enumerated(EnumType.STRING)
