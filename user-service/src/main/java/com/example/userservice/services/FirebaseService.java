@@ -139,6 +139,6 @@ public class FirebaseService {
     }
 
     private String generateImageUrl(Blob blob, Bucket bucket) {
-        return "https://storage.googleapis.com/" + bucket.getName() + "/" + blob.getName();
+        return imageBaseUrl + blob.getName().replace("/", "%2F") + "?alt=media";
     }
 }
