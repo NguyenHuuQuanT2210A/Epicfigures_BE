@@ -30,7 +30,6 @@ public class ReturnItemResponse {
     private String conditionNote;
 
     private Integer refundPercentage;
-    @JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "#,###.00")
     private BigDecimal refundAmount;
     private String orderDetailId;
     private List<String> images;

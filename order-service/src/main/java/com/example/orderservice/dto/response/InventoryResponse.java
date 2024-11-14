@@ -19,6 +19,5 @@ public class InventoryResponse implements Serializable {
 //    private BigDecimal totalCost;
     private String type;
 
-    @JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "dd-MM-yyyy HH:mm:ss")
     private LocalDateTime date;
 }

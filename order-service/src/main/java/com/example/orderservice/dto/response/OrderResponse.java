@@ -15,7 +15,6 @@ public class OrderResponse {
     private String id;
     private String codeOrder;
     private Long userId;
-    @JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "#,###.00")
     private BigDecimal totalPrice;
     private String firstName;
     private String lastName;
@@ -28,11 +27,8 @@ public class OrderResponse {
     private String paymentMethod;
     private String status;
 
-    @JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "dd-MM-yyyy HH:mm:ss")
     private LocalDateTime deliveredAt;
-    @JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "dd-MM-yyyy HH:mm:ss")
     private LocalDateTime createdAt;
-    @JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "dd-MM-yyyy HH:mm:ss")
     private LocalDateTime updatedAt;
     private UserResponse user;
     private Set<OrderDetailResponse> orderDetails;

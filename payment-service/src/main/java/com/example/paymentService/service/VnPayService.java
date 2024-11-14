@@ -31,7 +31,7 @@ public class VnPayService {
         String orderType = "other";
         String bankCode = "NCB";
 
-        BigDecimal total = convertVNDToUSD(ParseBigDecimal.parseStringToBigDecimal(orderResponse.getTotalPrice()));
+        BigDecimal total = convertVNDToUSD(orderResponse.getTotalPrice());
         Map<String, String> vnp_Params = new HashMap<>();
         vnp_Params.put("vnp_Version", vnp_Version);
         vnp_Params.put("vnp_Command", vnp_Command);

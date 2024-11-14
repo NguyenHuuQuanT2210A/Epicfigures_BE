@@ -70,7 +70,7 @@ public class PaymentService {
         paymentRepository.save(Payment.builder()
                 .userId(orderResponse.getUserId())
                 .paidAt(now())
-                .total(ParseBigDecimal.parseStringToBigDecimal(orderResponse.getTotalPrice()))
+                .total(orderResponse.getTotalPrice())
                 .orderId(orderId)
                 .status(PaymentStatus.PENDING).build());
     }
@@ -92,9 +92,9 @@ public class PaymentService {
 
         if (a){
             if (orderResponse.getEmail() != null){
-                kafkaProducer.sendEmail(new CreateEventToNotification(orderResponse.getUserId(), orderResponse.getEmail(), ParseBigDecimal.parseStringToBigDecimal(orderResponse.getTotalPrice()).intValueExact()));
+                kafkaProducer.sendEmail(new CreateEventToNotification(orderResponse.getUserId(), orderResponse.getEmail(), orderResponse.getTotalPrice().intValueExact()));
             }else {
-                kafkaProducer.sendEmail(new CreateEventToNotification(orderResponse.getUserId(), userResponse.getEmail(), ParseBigDecimal.parseStringToBigDecimal(orderResponse.getTotalPrice()).intValueExact()));
+                kafkaProducer.sendEmail(new CreateEventToNotification(orderResponse.getUserId(), userResponse.getEmail(), orderResponse.getTotalPrice().intValueExact()));
             }
         }
         RequestUpdateStatusOrder requestUpdateStatusOrder = new RequestUpdateStatusOrder();

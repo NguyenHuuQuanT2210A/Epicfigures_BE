@@ -14,9 +14,7 @@ public class OrderDetailResponse {
     private String id;
     private Integer quantity;
     private Integer returnableQuantity;
-    @JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "#,###.00")
     private BigDecimal unitPrice;
-    @JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "#,###.00")
     private BigDecimal totalPrice;
     private ProductResponse product;
     private String orderId;

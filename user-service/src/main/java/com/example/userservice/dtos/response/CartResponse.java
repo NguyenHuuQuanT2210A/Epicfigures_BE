@@ -18,12 +18,10 @@ import java.util.Set;
 public class CartResponse {
     UserAndProductId id;
     Integer quantity;
-    @JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "#,###.00")
     BigDecimal unitPrice;
-    @JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "#,###.00")
     BigDecimal totalPrice;
     String productName;
-    String productPrice;
+    BigDecimal productPrice;
     String description;
     CartStatus status;
     Set<String> productImages;

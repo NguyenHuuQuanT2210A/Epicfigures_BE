@@ -23,7 +23,7 @@ public class PaypalService {
     public String createPayment(String orderId, OrderResponse orderResponse, String urlReturn) throws PayPalRESTException {
         Amount amount = new Amount();
         amount.setCurrency("USD");
-        amount.setTotal(String.format(Locale.forLanguageTag("USD"),"%.2f", ParseBigDecimal.parseStringToBigDecimal(orderResponse.getTotalPrice())));
+        amount.setTotal(String.format(Locale.forLanguageTag("USD"),"%.2f", orderResponse.getTotalPrice()));
 
         Transaction transaction = new Transaction();
         transaction.setAmount(amount);

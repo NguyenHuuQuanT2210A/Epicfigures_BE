@@ -18,7 +18,7 @@ public class ProductResponse {
 
     private String description;
 
-    private String price;
+    private BigDecimal price;
 
 //    private BigDecimal purchasePrice;
 //
@@ -44,13 +44,8 @@ public class ProductResponse {
 
     private Integer returnPeriodDays;
 
-    @JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "dd-MM-yyyy HH:mm:ss")
     private LocalDateTime createdAt;
-
-    @JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "dd-MM-yyyy HH:mm:ss")
     private LocalDateTime updatedAt;
-
-    @JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "dd-MM-yyyy HH:mm:ss")
     private LocalDateTime deletedAt;
     private Set<ProductImageResponse> images;
 }

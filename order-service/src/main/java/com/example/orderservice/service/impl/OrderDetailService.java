@@ -110,8 +110,8 @@ public class OrderDetailService {
         var productDTO = getProductById(orderDetail.getProductId());
         orderDetail.setQuantity(quantity);
         orderDetail.setReturnableQuantity(quantity);
-        orderDetail.setUnitPrice(ParseBigDecimal.parseStringToBigDecimal(productDTO.getPrice()));
-        orderDetail.setTotalPrice(ParseBigDecimal.parseStringToBigDecimal(productDTO.getPrice()).multiply(new BigDecimal(quantity)));
+        orderDetail.setUnitPrice(productDTO.getPrice());
+        orderDetail.setTotalPrice(productDTO.getPrice().multiply(new BigDecimal(quantity)));
         orderDetailRepository.save(orderDetail);
     }
 

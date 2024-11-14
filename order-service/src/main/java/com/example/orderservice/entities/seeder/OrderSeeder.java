@@ -71,14 +71,14 @@ public class OrderSeeder implements CommandLineRunner {
                     continue;
                 }
                 OrderDetail orderDetail = new OrderDetail();
-                ApiResponse<ProductResponse> product = productServiceClient.getProductById((long) productId);
+                ProductResponse product = productServiceClient.getProductById((long) productId).getData();
                 orderDetail.setOrder(order);
-                orderDetail.setProductId(product.getData().getProductId());
+                orderDetail.setProductId(product.getProductId());
                 int quantity = faker.number().numberBetween(1, 5);
                 orderDetail.setOrder(order);
                 orderDetail.setQuantity(quantity);
                 orderDetail.setReturnableQuantity(quantity);
-                long unitPrice = ParseBigDecimal.parseStringToBigDecimal(product.getData().getPrice()).longValue() * quantity;
+                long unitPrice = product.getPrice().longValue() * quantity;
                 orderDetail.setUnitPrice(new BigDecimal(unitPrice));
                 orderDetail.setTotalPrice(new BigDecimal(unitPrice * quantity));
                 total += unitPrice;

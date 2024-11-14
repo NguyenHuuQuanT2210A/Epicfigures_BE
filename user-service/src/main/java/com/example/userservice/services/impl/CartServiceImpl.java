@@ -55,7 +55,7 @@ public class CartServiceImpl implements CartService {
                 cart.setStatus(CartStatus.OUT_OF_STOCK);
             }else if (product.getStockQuantity() < cart.getQuantity()) {
                 cart.setStatus(CartStatus.EXCEEDED_AVAILABLE_STOCK);
-            }else if (ParseBigDecimal.parseStringToBigDecimal(product.getPrice()).compareTo(cart.getTotalPrice().divide(BigDecimal.valueOf(cart.getQuantity()), 2, RoundingMode.HALF_UP)) != 0) {
+            }else if (product.getPrice().compareTo(cart.getTotalPrice().divide(BigDecimal.valueOf(cart.getQuantity()), 2, RoundingMode.HALF_UP)) != 0) {
                 cart.setStatus(CartStatus.PRICE_CHANGED);
             }else {
                 cart.setStatus(CartStatus.AVAILABLE);
@@ -85,8 +85,8 @@ public class CartServiceImpl implements CartService {
         if (cartExist == null) {
             return cartRepository.save(Cart.builder().id(cart.getId())
                     .quantity(cart.getQuantity())
-                    .unitPrice(ParseBigDecimal.parseStringToBigDecimal(product.getPrice()))
-                    .totalPrice(BigDecimal.valueOf(cart.getQuantity()).multiply(ParseBigDecimal.parseStringToBigDecimal(product.getPrice())))
+                    .unitPrice(product.getPrice())
+                    .totalPrice(BigDecimal.valueOf(cart.getQuantity()).multiply(product.getPrice()))
                     .status(CartStatus.AVAILABLE)
                     .build());
 
@@ -96,8 +96,8 @@ public class CartServiceImpl implements CartService {
                 throw new AppException(ErrorCode.EXCEED_PRODUCT_QUANTITY);
             }
             cartExist.setQuantity(cart.getQuantity() + cartExist.getQuantity());
-            cartExist.setUnitPrice(ParseBigDecimal.parseStringToBigDecimal(product.getPrice()));
-            cartExist.setTotalPrice(BigDecimal.valueOf(cartExist.getQuantity()).multiply(ParseBigDecimal.parseStringToBigDecimal(product.getPrice())));
+            cartExist.setUnitPrice(product.getPrice());
+            cartExist.setTotalPrice(BigDecimal.valueOf(cartExist.getQuantity()).multiply(product.getPrice()));
             return cartRepository.save(cartExist);
         }
     }
@@ -114,8 +114,8 @@ public class CartServiceImpl implements CartService {
             throw new AppException(ErrorCode.EXCEED_PRODUCT_QUANTITY);
         }
         cart.setQuantity(quantity);
-        cart.setUnitPrice(ParseBigDecimal.parseStringToBigDecimal(product.getPrice()));
-        cart.setTotalPrice(BigDecimal.valueOf(quantity).multiply(ParseBigDecimal.parseStringToBigDecimal(product.getPrice())));
+        cart.setUnitPrice(product.getPrice());
+        cart.setTotalPrice(BigDecimal.valueOf(quantity).multiply(product.getPrice()));
         return cartRepository.save(cart);
     }
 

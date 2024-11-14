@@ -1,6 +1,9 @@
 package com.example.userservice.dtos.response;
 
 import lombok.*;
+import org.hibernate.annotations.UpdateTimestamp;
+
+import java.time.LocalDateTime;
 
 @Getter
 @Setter
@@ -14,4 +17,7 @@ public class BlogResponse {
     private String author;
     private String imageTitle;
     private UserResponse user;
+    private LocalDateTime createdAt;
+    private LocalDateTime updatedAt;
+    private LocalDateTime deletedAt;
 }
