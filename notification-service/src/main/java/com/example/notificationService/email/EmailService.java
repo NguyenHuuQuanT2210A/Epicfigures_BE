@@ -30,38 +30,29 @@ public class EmailService {
     private String fromMail;
 
     @Async
-    public void sendMail(String email, String subject, List<Object> emailParameters, String template) {
+    public void sendMail(String email, String subject, Object object, String template) {
         try {
             MimeMessage mimeMessage = javaMailSender.createMimeMessage();
             MimeMessageHelper helper = new MimeMessageHelper(mimeMessage, true, "UTF-8");
-
-            //            if (template.equals("thank-you")) {
-//                Context contextOrder = setContextOrder(emailParameters);
-//                html = templateEngine.process(template, contextOrder);
-//            } else if (template.equals("forgot-password")) {
-//                Context contextForgotPassword = setContextForgotPassword(emailParameters);
-//                html = templateEngine.process(template, contextForgotPassword);
-//            }else if (template.equals("contact")){
-//                Context contextContact = setContextContact(emailParameters);
-//                html = templateEngine.process(template, contextContact);
-//            }
+            Context context = new Context();
 
             String html = switch (template) {
                 case "thank-you" -> {
-                    Context contextOrder = setContextOrder(emailParameters);
-                    yield templateEngine.process(template, contextOrder);
+                    context.setVariable("order", object);
+                    yield templateEngine.process(template, context);
                 }
                 case "forgot-password" -> {
-                    Context contextForgotPassword = setContextForgotPassword(emailParameters);
-                    yield templateEngine.process(template, contextForgotPassword);
+                    context.setVariable("forgot_password", object);
+                    yield templateEngine.process(template, context);
                 }
                 case "contact" -> {
-                    Context contextContact = setContextContact(emailParameters);
-                    yield templateEngine.process(template, contextContact);
+                    context.setVariable("contact", object);
+
+                    yield templateEngine.process(template, context);
                 }
                 case "return-item" -> {
-                    Context contextReturnItem = setContextReturnItem(emailParameters);
-                    yield templateEngine.process(template, contextReturnItem);
+                    context.setVariable("return_item", object);
+                    yield templateEngine.process(template, context);
                 }
                 default -> "";
             };
@@ -85,39 +76,5 @@ public class EmailService {
         } catch (UnsupportedEncodingException e) {
             throw new RuntimeException(e);
         }
-    }
-
-    private Context setContextOrder(List<Object> emailParameters){
-        Context context = new Context();
-        context.setVariable("userName", emailParameters.get(0));
-        context.setVariable("total", emailParameters.get(1));
-        return context;
-    }
-
-    private Context setContextForgotPassword(List<Object> emailParameters){
-        Context context = new Context();
-        context.setVariable("userName", emailParameters.get(0));
-        context.setVariable("email", emailParameters.get(1));
-        context.setVariable("linkReset", emailParameters.get(2) + "?secretKey=" + emailParameters.get(3));
-        return context;
-    }
-
-    private Context setContextContact(List<Object> emailParameters){
-        Context context = new Context();
-        context.setVariable("userName", emailParameters.get(0));
-        context.setVariable("email", emailParameters.get(1));
-        context.setVariable("phoneNumber", emailParameters.get(2));
-        context.setVariable("note", emailParameters.get(3));
-        return context;
-    }
-
-    private Context setContextReturnItem(List<Object> emailParameters){
-        Context context = new Context();
-        context.setVariable("userName", emailParameters.get(0));
-        context.setVariable("email", emailParameters.get(1));
-        context.setVariable("orderCode", emailParameters.get(2));
-        context.setVariable("status", emailParameters.get(3));
-        context.setVariable("statusNote", emailParameters.get(3));
-        return context;
     }
 }

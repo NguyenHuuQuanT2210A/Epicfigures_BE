@@ -175,10 +175,15 @@ public class OrderServiceImpl implements OrderService {
                 throw new CustomException("User not found", HttpStatus.BAD_REQUEST);
             }
             if (jwtTokenUtil.getPlatform(token).equals(Platform.MOBILE.name())){
-                if (addressOrderClient.getAddressOrderById(request.getAddressOrderId()) == null) {
+                var addressOrderResponse = addressOrderClient.getAddressOrderById(request.getAddressOrderId()).getData();
+                if (addressOrderResponse == null) {
                     throw new CustomException("Address not found", HttpStatus.BAD_REQUEST);
                 }else {
                     newOrder.setAddressOrderId(request.getAddressOrderId());
+                    newOrder.setAddress(addressOrderResponse.getAddressRegion() + " " + addressOrderResponse.getAddressDetail());
+                    newOrder.setFirstName(addressOrderResponse.getUsername());
+                    newOrder.setPhone(addressOrderResponse.getPhone());
+                    newOrder.setEmail(user.getEmail());
                 }
             }else if (jwtTokenUtil.getPlatform(token).equals(Platform.WEB.name())){
                 newOrder.setAddressOrderId(null);

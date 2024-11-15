@@ -124,7 +124,7 @@ public class ReturnItemServiceImpl implements ReturnItemService {
                 .email(existingReturnItem.getOrderDetail().getOrder().getEmail())
                 .username(existingReturnItem.getOrderDetail().getOrder().getLastName())
                 .orderCode(existingReturnItem.getOrderDetail().getOrder().getCodeOrder())
-                .status(existingReturnItem.getStatus())
+                .status(existingReturnItem.getStatus().toString())
                 .statusNote(existingReturnItem.getStatusNote())
                 .conditionItem(request.getConditionItem())
                 .conditionNote(request.getConditionNote())
@@ -204,7 +204,7 @@ public class ReturnItemServiceImpl implements ReturnItemService {
                     .email(returnItem.getOrderDetail().getOrder().getEmail())
                     .username(returnItem.getOrderDetail().getOrder().getLastName())
                     .orderCode(returnItem.getOrderDetail().getOrder().getCodeOrder())
-                    .status(returnItem.getStatus())
+                    .status(returnItem.getStatus().toString())
                     .statusNote(returnItem.getStatusNote())
                     .build());
 //        }

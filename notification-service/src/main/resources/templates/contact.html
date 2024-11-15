@@ -1,26 +1,75 @@
 <!DOCTYPE html>
-<html xmlns:th="http://www.thymeleaf.org">
+<html>
 <head>
     <meta charset="UTF-8">
-    <title>Contact</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Contact Us</title>
+    <style>
+        body {
+            font-family: sans-serif;
+            margin: 0;
+            padding: 0;
+            background-color: #f4f4f4;
+        }
+
+        .container {
+            max-width: 600px;
+            margin: 50px auto;
+            padding: 30px;
+            background-color: #fff;
+            border-radius: 5px;
+            box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+        }
+
+        h1 {
+            text-align: center;
+            margin-bottom: 30px;
+            color: #333;
+        }
+
+        p {
+            line-height: 1.6;
+            color: #555;
+        }
+
+        .button {
+            display: block;
+            width: 100%;
+            padding: 15px 20px;
+            background-color: #007bff;
+            color: #fff;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            transition: background-color 0.3s ease;
+        }
+
+        .button:hover {
+            background-color: #0056b3;
+        }
+    </style>
 </head>
 <body>
-<div class="container" style="font-family: Arial, sans-serif;
-    background-color: #f4f4f4;
-    margin: 0;
-    padding: 0;">
-    <div style="@media screen and (max-width: 600px) { max-width: 100%; border-radius: 0; }; max-width: 600px;
-    margin: 20px auto;
-    background-color: #fff;
-    padding: 20px;
-    border-radius: 8px;
-    box-shadow: 0 0 10px rgba(0,0,0,0.1); ">
-        <h2 style="color: #333;">Contact</h2>
-        <div class="customer-info">
-            <p>Dear, <span th:text="${userName}"></span></p>
-            <p th:text="${note}"></p>
-        </div>
-    </div>
+<div class="container">
+    <h1>Contact Us</h1>
+
+    <p>Dear [[${contact.username}]] ,</p>
+
+    <p>Thank you for reaching out to Epicgures. We have received your feedback and sincerely appreciate your interest.</p>
+
+    <p>Regarding your question, we would like to respond as follows: [[${contact.note}]] </p>
+
+    <p>If you have any further questions or need additional assistance, please feel free to reach out to us again. Our team is always ready to assist you.</p>
+
+    <p>Once again, thank you for your trust in [Company / Service Name]. We look forward to providing you with the best experience possible.</p>
+
+    <p>Best regards,</p>
+
+    <p><b>Admin</b><br>
+        quannhth2210007@fpt.edu.vn<br>
+        0123456789<br>
+        Epicgures</p>
+
 </div>
 </body>
 </html>

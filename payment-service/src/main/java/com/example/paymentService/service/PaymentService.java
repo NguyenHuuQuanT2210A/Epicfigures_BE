@@ -88,14 +88,9 @@ public class PaymentService {
 
     public void updateStatusOrder(Boolean a, String orderId){
         OrderResponse orderResponse = orderClient.getOrderById(orderId).getData();
-        UserResponse userResponse = userClient.getUserById(orderResponse.getUserId()).getData();
 
         if (a){
-            if (orderResponse.getEmail() != null){
-                kafkaProducer.sendEmail(new CreateEventToNotification(orderResponse.getUserId(), orderResponse.getEmail(), orderResponse.getTotalPrice().intValueExact()));
-            }else {
-                kafkaProducer.sendEmail(new CreateEventToNotification(orderResponse.getUserId(), userResponse.getEmail(), orderResponse.getTotalPrice().intValueExact()));
-            }
+                kafkaProducer.sendEmail(orderResponse);
         }
         RequestUpdateStatusOrder requestUpdateStatusOrder = new RequestUpdateStatusOrder();
         requestUpdateStatusOrder.setStatus(a);

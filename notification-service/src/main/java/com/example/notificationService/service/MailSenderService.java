@@ -4,6 +4,7 @@ import com.example.notificationService.dto.response.UserResponse;
 import com.example.notificationService.email.EmailService;
 import com.example.notificationService.enums.OrderSimpleStatus;
 import com.example.orderservice.dto.request.ReturnItemMail;
+import com.example.paymentService.dto.response.OrderResponse;
 import com.example.paymentService.event.CreateEventToNotification;
 import com.example.paymentService.event.RequestUpdateStatusOrder;
 import com.example.userservice.dtos.request.ContactRequest;
@@ -23,14 +24,8 @@ public class MailSenderService {
     private final OrderClient orderClient;
     private final UserClient userClient;
 
-    public void sendMailOrder(CreateEventToNotification orderSendMail) {
-        UserResponse response = userClient.getUserById(orderSendMail.getUserId()).getData();
-
-        List<Object> emailParameters = new ArrayList<>();
-        emailParameters.add(response.getUsername());
-        emailParameters.add(orderSendMail.getPrice().toString());
-
-        emailService.sendMail(orderSendMail.getEmail(), "Order successfully", emailParameters, "thank-you");
+    public void sendMailOrder(OrderResponse orderSendMail) {
+        emailService.sendMail(orderSendMail.getEmail(), "Order successfully", (Object) orderSendMail, "thank-you");
     }
 
     public void consumerUpdateStatusOrder(RequestUpdateStatusOrder requestUpdateStatusOrder) {
@@ -44,35 +39,14 @@ public class MailSenderService {
     }
 
     public void sendMailForgotPassword(CreateEventToForgotPassword forgotPasswordEvent) {
-        UserResponse response = userClient.getUserById(forgotPasswordEvent.getId()).getData();
-
-        List<Object> emailParameters = new ArrayList<>();
-        emailParameters.add(response.getUsername());
-        emailParameters.add(response.getEmail());
-        emailParameters.add(forgotPasswordEvent.getUrlPlatform());
-        emailParameters.add(forgotPasswordEvent.getSecretKey());
-
-        emailService.sendMail(response.getEmail(), "Forgot Password", emailParameters, "forgot-password");
+        emailService.sendMail(forgotPasswordEvent.getEmail(), "Forgot Password", forgotPasswordEvent, "forgot-password");
     }
 
     public void sendMailContact(ContactRequest contactRequest) {
-        List<Object> emailParameters = new ArrayList<>();
-        emailParameters.add(contactRequest.getUsername());
-        emailParameters.add(contactRequest.getEmail());
-        emailParameters.add(contactRequest.getPhoneNumber());
-        emailParameters.add(contactRequest.getNote());
-
-        emailService.sendMail(contactRequest.getEmail(), "Contact", emailParameters, "contact");
+        emailService.sendMail(contactRequest.getEmail(), "Contact", contactRequest, "contact");
     }
 
     public void sendMailReturnItem(ReturnItemMail returnItemMail) {
-        List<Object> emailParameters = new ArrayList<>();
-        emailParameters.add(returnItemMail.getUsername());
-        emailParameters.add(returnItemMail.getEmail());
-        emailParameters.add(returnItemMail.getOrderCode());
-        emailParameters.add(returnItemMail.getStatus());
-        emailParameters.add(returnItemMail.getStatusNote());
-
-        emailService.sendMail(returnItemMail.getEmail(), "Return Item", emailParameters, "return-item");
+        emailService.sendMail(returnItemMail.getEmail(), "Return Item", returnItemMail, "return-item");
     }
 }

@@ -166,13 +166,13 @@ public class AuthenticationService {
         String resetPasswordLink;
         if (Platform.MOBILE.name().equalsIgnoreCase(request.getPlatform())) {
             // URL for mobile platform
-            resetPasswordLink = "http://localhost:3001/reset-password";
+            resetPasswordLink = "http://localhost:3001/reset-password" + "?secretKey=" + resetToken;
         } else {
             // Default to web platform
-            resetPasswordLink = "http://localhost:3000/reset-password";
+            resetPasswordLink = "http://localhost:3000/reset-password" + "?secretKey=" + resetToken;
         }
 
-        kafkaProducer.sendEmailForgotPassword(new CreateEventToForgotPassword(user.getId(), user.getEmail(), resetToken, resetPasswordLink));
+        kafkaProducer.sendEmailForgotPassword(new CreateEventToForgotPassword(user.getId(), user.getUsername(), user.getEmail(), resetToken, resetPasswordLink));
 
         return resetToken;
     }

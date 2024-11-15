@@ -1,6 +1,7 @@
 package com.example.paymentService.config;
 
 
+import com.example.paymentService.dto.response.OrderResponse;
 import com.example.paymentService.event.CreateEventToNotification;
 import com.example.paymentService.event.RequestUpdateStatusOrder;
 import org.slf4j.Logger;
@@ -33,10 +34,10 @@ public class KafkaProducer {
         kafkaTemplate.send(message);
     }
 
-    public void sendEmail(CreateEventToNotification event){
-        LOGGER.info(String.format("Send email to: ", event.getEmail()));
-        Message<CreateEventToNotification> message = MessageBuilder
-                .withPayload(event)
+    public void sendEmail(OrderResponse orderResponse){
+        LOGGER.info(String.format("Send email to: ", orderResponse.getEmail()));
+        Message<OrderResponse> message = MessageBuilder
+                .withPayload(orderResponse)
                 .setHeader(KafkaHeaders.TOPIC, "notification")
                 .build();
         kafkaTemplate.send(message);

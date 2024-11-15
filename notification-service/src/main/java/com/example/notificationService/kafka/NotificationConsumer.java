@@ -2,6 +2,7 @@ package com.example.notificationService.kafka;
 
 import com.example.notificationService.service.MailSenderService;
 import com.example.orderservice.dto.request.ReturnItemMail;
+import com.example.paymentService.dto.response.OrderResponse;
 import com.example.paymentService.event.CreateEventToNotification;
 import com.example.paymentService.event.RequestUpdateStatusOrder;
 import com.example.userservice.dtos.request.ContactRequest;
@@ -21,7 +22,7 @@ public class NotificationConsumer {
             topics = "notification",
             groupId = "${spring.kafka.consumer.group-id}"
     )
-    public void consume(CreateEventToNotification orderSendMail){
+    public void consume(OrderResponse orderSendMail){
         log.info(String.format("Event message recieved -> %s", orderSendMail.toString()));
         try {
             mailSenderService.sendMailOrder(orderSendMail);

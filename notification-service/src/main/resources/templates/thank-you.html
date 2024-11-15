@@ -1,30 +1,233 @@
-<!DOCTYPE html>
 <html xmlns:th="http://www.thymeleaf.org">
 <head>
-    <meta charset="UTF-8">
-    <title>Thank You</title>
+    <title>
+        Order Confirmation
+    </title>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.3/css/all.min.css" rel="stylesheet"/>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 0;
+            padding: 0;
+            background-color: #f5f5f5;
+        }
+        .container {
+            width: 100%;
+            max-width: 600px;
+            margin: 0 auto;
+            background-color: #ffffff;
+            padding: 20px;
+            box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+        }
+        .header {
+            text-align: center;
+            margin-bottom: 20px;
+        }
+        .header img {
+            width: 100px;
+        }
+        .header h1 {
+            font-size: 24px;
+            color: #333333;
+        }
+        .track-order {
+            text-align: center;
+            margin: 20px 0;
+        }
+        .track-order button {
+            background-color: #007bff;
+            color: #ffffff;
+            border: none;
+            padding: 10px 20px;
+            font-size: 16px;
+            cursor: pointer;
+            border-radius: 5px;
+        }
+        .summary, .items-shipped, .footer {
+            margin-bottom: 20px;
+        }
+        .summary table, .items-shipped table {
+            width: 100%;
+            border-collapse: collapse;
+        }
+        .summary th, .summary td, .items-shipped th, .items-shipped td {
+            border: 1px solid #dddddd;
+            padding: 8px;
+            text-align: left;
+        }
+        .summary th {
+            background-color: #f5f5f5;
+        }
+        .items-shipped th {
+            background-color: #f5f5f5;
+        }
+        .items-shipped img {
+            width: 50px;
+        }
+        .footer {
+            text-align: center;
+            font-size: 14px;
+            color: #007bff;
+        }
+        .footer a {
+            color: #007bff;
+            text-decoration: none;
+        }
+        .footer-icons {
+            display: flex;
+            justify-content: space-around;
+            margin-top: 20px;
+        }
+        .footer-icons div {
+            text-align: center;
+        }
+        .footer-icons i {
+            font-size: 24px;
+            color: #007bff;
+        }
+        .footer-icons p {
+            font-size: 12px;
+            color: #333333;
+        }
+    </style>
 </head>
 <body>
-<div class="container" style="font-family: Arial, sans-serif;
-    background-color: #f4f4f4;
-    margin: 0;
-    padding: 0;">
-    <div style="@media screen and (max-width: 600px) { max-width: 100%; border-radius: 0; }; max-width: 600px;
-    margin: 20px auto;
-    background-color: #fff;
-    padding: 20px;
-    border-radius: 8px;
-    box-shadow: 0 0 10px rgba(0,0,0,0.1); ">
-        <h2 style="color: #333;">Order Successfully</h2>
-        <div class="customer-info">
-            <h3>Customer Information</h3>
-            <p>User : <span th:text="${userName}"></span></p>
-        </div>
-        <div class="product-info">
-            <h3>Product Information</h3>
-            <p><span>Total:</span> <span th:text="${total}" VND></span></p>
-        </div>
-        <div class="total-wrapper" style="margin-top: 20px; text-align: right;">
+<div class="container">
+    <div class="header">
+        <img alt="Chewy Logo" height="50" src="https://firebasestorage.googleapis.com/v0/b/epicgure.appspot.com/o/logo%2Fepic-logo.png?alt=media" width="100"/>
+        <h1>
+            Your order is on its way.
+        </h1>
+    </div>
+<!--    <div class="track-order">-->
+<!--        <button>-->
+<!--            TRACK YOUR ORDER-->
+<!--        </button>-->
+<!--        <p>-->
+<!--            Please allow 24 hours to track your order.-->
+<!--        </p>-->
+<!--    </div>-->
+    <div class="summary">
+        <table>
+            <tr>
+                <th>
+                    SUMMARY:
+                </th>
+                <th>
+                    SHIPPING ADDRESS:
+                </th>
+            </tr>
+            <tr>
+                <td>
+                    Order Code: [[${order.codeOrder}]]
+                    <br/>
+                    Order Date: [[${order.createdAt}]]
+                    <br/>
+                    Order Total: $[[${order.totalPrice}]]
+                </td>
+                <td>
+                    [[${order.address}]]
+                </td>
+            </tr>
+        </table>
+    </div>
+    <div class="items-shipped">
+        <table>
+            <tr>
+                <th>
+                    ITEMS SHIPPED
+                </th>
+                <th>
+                    QTY
+                </th>
+                <th>
+                    PRICE
+                </th>
+            </tr>
+            <tr th:each="item : ${order.orderDetails}">
+                <td>
+
+                    <img alt="Product Image" height="50" th:src="${item.product.images[0].imageUrl}" width="50"/>
+                    <span>[[${item.product.name}]]</span>
+                </td>
+                <td>
+                    [[${item.quantity}]]
+                </td>
+                <td >
+                    $[[${item.unitPrice}]]
+                </td>
+            </tr>
+            <tr>
+                <td colspan="2" style="text-align: right;">
+                    Subtotal ([[${#lists.size(order.orderDetails)}]] Items):
+                </td>
+                <td>
+                    $[[${order.totalPrice}]]
+                </td>
+            </tr>
+            <tr>
+                <td colspan="2" style="text-align: right;">
+                    Flat-Rate Shipping:
+                </td>
+                <td>
+                    $0.0
+                </td>
+            </tr>
+            <tr>
+                <td colspan="2" style="text-align: right;">
+                    Estimated Tax:
+                </td>
+                <td>
+                    $0.0
+                </td>
+            </tr>
+            <tr>
+                <td colspan="2" style="text-align: right; font-weight: bold;">
+                    Order Total:
+                </td>
+                <td style="font-weight: bold;">
+                    <span>$[[${order.totalPrice}]]</span>
+                </td>
+            </tr>
+        </table>
+    </div>
+    <div class="footer">
+        <p>
+            Call us at
+            <a href="tel:1-800-672-4399">
+                0123456789
+            </a>
+            or reply to this email
+        </p>
+        <div class="footer-icons">
+            <div>
+                <i class="fas fa-headset">
+                </i>
+                <p>
+                    CUSTOMER SERVICE
+                </p>
+            </div>
+            <div>
+                <i class="fas fa-shipping-fast">
+                </i>
+                <p>
+                    FREE SHIPPING ORDERS $49+
+                </p>
+            </div>
+            <div>
+                <i class="fas fa-check-circle">
+                </i>
+                <p>
+                    SATISFACTION GUARANTEED
+                </p>
+            </div>
+            <div>
+                <i class="fas fa-undo">
+                </i>
+                <p>
+                    HASSLE-FREE RETURNS
+                </p>
+            </div>
         </div>
     </div>
 </div>

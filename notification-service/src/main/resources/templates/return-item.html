@@ -1,26 +1,114 @@
 <!DOCTYPE html>
 <html xmlns:th="http://www.thymeleaf.org">
 <head>
-    <meta charset="UTF-8">
-    <title>Return Item</title>
+    <title>Return Request Update</title>
+    <style>
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            margin: 0;
+            padding: 0;
+            background-color: #e9ecef;
+        }
+
+        .container {
+            max-width: 600px;
+            margin: 50px auto;
+            background-color: #ffffff;
+            padding: 40px;
+            border-radius: 8px;
+            box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
+        }
+
+        h1 {
+            color: #343a40;
+            text-align: center;
+            margin-bottom: 20px;
+            font-size: 24px;
+        }
+
+        p {
+            line-height: 1.6;
+            color: #495057;
+            margin: 10px 0;
+        }
+
+        .button {
+            display: block;
+            width: 220px;
+            margin: 30px auto;
+            padding: 12px 20px;
+            background-color: #dc3545;
+            color: #ffffff;
+            border: none;
+            border-radius: 5px;
+            font-size: 16px;
+            cursor: pointer;
+            transition: background-color 0.3s;
+        }
+
+        .button:hover {
+            background-color: #c82333;
+        }
+
+        .footer {
+            text-align: center;
+            margin-top: 20px;
+            font-size: 14px;
+            color: #6c757d;
+        }
+    </style>
 </head>
 <body>
-<div class="container" style="font-family: Arial, sans-serif;
-    background-color: #f4f4f4;
-    margin: 0;
-    padding: 0;">
-    <div style="@media screen and (max-width: 600px) { max-width: 100%; border-radius: 0; }; max-width: 600px;
-    margin: 20px auto;
-    background-color: #fff;
-    padding: 20px;
-    border-radius: 8px;
-    box-shadow: 0 0 10px rgba(0,0,0,0.1); ">
-        <h2 style="color: #333;">Return Item</h2>
-        <div class="customer-info">
-            <p>Dear, <span th:text="${userName}"></span></p>
-            <p th:text="${statusNote}"></p>
+<div class="container">
+    <h1>Return Request Update</h1>
+    <span>Dear [[${return_item.username}]] ,</span>
+
+    <div th:switch="${return_item.status}">
+        <!-- Request Submitted -->
+        <!--    <div th:if="${return_item.status == 'PENDING'}">-->
+        <!--        <p>Your return request has been successfully submitted. Please find the details below:</p>-->
+        <!--        <p>Order Code: <strong th:text="${return_item.orderCode}"></strong></p>-->
+        <!--        <p>Item(s) to be returned: <strong th:text="${itemName}"></strong></p>-->
+        <!--        <p>Reason for return: <strong th:text="${returnReason}"></strong></p>-->
+        <!--        <p>We will process your return as soon as we receive the item. If you have any questions, feel free to contact us.</p>-->
+        <!--        <button class="button">Track Return Status</button>-->
+        <!--    </div>-->
+
+        <!-- Request Approved -->
+        <div th:case="'APPROVED'">
+            <p>Your return request has been approved. You may proceed to return the item(s) as instructed below:</p>
+            <p><strong>Return Instructions:</strong> Please pack the item securely and send it back to us at the address provided.</p>
+            <p>Order Code: <strong th:text="${return_item.orderCode}"></strong></p>
+            <button class="button">Track Return Status</button>
         </div>
+
+        <!-- Request Rejected -->
+        <div th:case="'REJECTED'">
+            <p>We regret to inform you that your return request has been rejected for the following reason:</p>
+            <p><strong th:text="${return_item.statusNote}"></strong></p>
+            <p>If you have any questions or believe this is a mistake, please contact our support team.</p>
+        </div>
+
+        <!-- Item Refunded -->
+        <div th:case="'REFUNDED'">
+            <p>We have received your returned item and processed your refund. Here are the details:</p>
+            <p>Order Code: <strong >[[${return_item.orderCode}]]</strong></p>
+            <p>Condition: <strong >[[${return_item.conditionItem}]]</strong></p>
+            <p>Condition Detail: <strong >[[${return_item.conditionNote}]]</strong></p>
+            <p>Refund Percentage: <strong>[[${return_item.refundPercentage}]]%</strong></p>
+            <p>Refund Amount: <strong>$[[${return_item.refundAmount}]]</strong></p>
+            <p>Your refund has been credited to your original payment method.</p>
+        </div>
+
+        <!-- Replacement Shipped -->
+        <!--    <div th:if="${status == 'REPLACEMENT_SHIPPED'}">-->
+        <!--        <p>Your replacement item has been shipped and is on its way to you!</p>-->
+        <!--        <p>Order Number: <strong th:text="${orderNumber}"></strong></p>-->
+        <!--        <button class="button">Track Replacement</button>-->
+        <!--    </div>-->
     </div>
+
+<!--    <div class="footer">Thank you for shopping with us!</div>-->
 </div>
 </body>
 </html>

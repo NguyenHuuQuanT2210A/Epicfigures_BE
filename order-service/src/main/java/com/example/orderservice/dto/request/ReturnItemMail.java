@@ -15,7 +15,7 @@ public class ReturnItemMail {
     private String email;
     private String username;
     private String orderCode;
-    private ReturnItemStatus status;
+    private String status;
     private String statusNote;
     private ConditionItemStatus conditionItem;
     private String conditionNote;
