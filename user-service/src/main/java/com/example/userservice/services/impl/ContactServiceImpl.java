@@ -135,10 +135,6 @@ public class ContactServiceImpl implements ContactService {
             parseCriteriaBuilder(builder, contact, pattern, false, null);
         }
 
-        if (builder.params.isEmpty()) {
-            return contactRepository.findAll(pageableSorted).map(contactMapper::toContactResponse);
-        }
-
         Page<Contact> contacts = contactRepository.findAll(build(builder.params), pageableSorted);
         return contacts.map(contactMapper::toContactResponse);
     }
@@ -173,6 +169,13 @@ public class ContactServiceImpl implements ContactService {
     }
 
     private Specification<Contact> build(List<SpecSearchCriteria> params){
+
+        Specification<Contact> specificationContactReplyNull = (root, query, criteriaBuilder) ->
+                criteriaBuilder.isNull(root.get("contactReply"));
+
+        if (params.isEmpty()){
+            return Specification.where(specificationContactReplyNull);
+        }
         Specification<Contact> specification = new ContactSpecification(params.get(0));
 
         for (int i = 1; i < params.size(); i++) {
@@ -180,6 +183,8 @@ public class ContactServiceImpl implements ContactService {
                     ? Specification.where(specification).or(new ContactSpecification(params.get(i)))
                     : Specification.where(specification).and(new ContactSpecification(params.get(i)));
         }
+
+        specification = Specification.where(specification).and(specificationContactReplyNull);
         return specification;
     }
 }
