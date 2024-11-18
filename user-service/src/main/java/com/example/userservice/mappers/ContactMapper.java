@@ -8,7 +8,7 @@ import org.mapstruct.Mapping;
 
 @Mapper(componentModel = "spring")
 public interface ContactMapper {
-    @Mapping(target = "contactReplyId", source = "contactReply.id")
+//    @Mapping(target = "contactReplyId", source = "contactReply.id")
     ContactResponse toContactResponse(Contact contact);
     Contact toContact(ContactRequest request);
 }

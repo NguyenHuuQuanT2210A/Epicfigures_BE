@@ -86,8 +86,15 @@ public class ContactServiceImpl implements ContactService {
         }
         Contact contact = contactMapper.toContact(contactRequest);
         if (contactRequest.getContactReplyId() != null){
-            contact.setContactReply(findContactById(contactRequest.getContactReplyId()));
-            kafkaProducer.sendReplyContact(contactRequest);
+            var contactReply = findContactById(contactRequest.getContactReplyId());
+            contact.setContactReply(contactReply);
+            kafkaProducer.sendReplyContact(ContactRequest.builder()
+                    .username(contactReply.getUsername())
+                    .phoneNumber(contactReply.getPhoneNumber())
+                    .email(contactReply.getEmail())
+                    .note(contact.getNote())
+                    .contactReplyId(contactReply.getId())
+                    .build());
         }
         return contactMapper.toContactResponse(contactRepository.save(contact));
     }

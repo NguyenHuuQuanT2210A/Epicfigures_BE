@@ -18,5 +18,6 @@ public class ContactResponse {
     private boolean isRead;
     private boolean isImportant;
     private boolean isSpam;
-    private Long contactReplyId;
+//    private Long contactReplyId;
+    private ContactResponse contactReply;
 }
