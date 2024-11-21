@@ -48,7 +48,7 @@ public class PaymentController {
                 // Giao dịch không thành công
                 paymentService.updateStatusPayment(false,orderId);
                 paymentService.updateStatusOrder(false,orderId);
-                return ResponseEntity.status(HttpStatus.BAD_REQUEST).body("Payment Failed!");
+                return ResponseEntity.ok("Payment Failed!");
             }
     }
 
@@ -84,9 +84,14 @@ public class PaymentController {
                 .build();
     }
 
-    @GetMapping("/executePaypal")
+    @PostMapping("/executePaypal")
     public ResponseEntity<String> executePaymentPaypal(@RequestBody PaypalExecute paypalExecute) {
         try {
+            if (paypalExecute.getIsSuccess().equals("false")) {
+                paymentService.updateStatusPayment(false, paypalExecute.getOrderId());
+                paymentService.updateStatusOrder(false, paypalExecute.getOrderId());
+                return ResponseEntity.ok("Payment Failed!");
+            }
             var payment = paypalService.executePayment(paypalExecute.getPaymentId(), paypalExecute.getPayerId());
             if (paypalExecute.getIsSuccess().equals("true") && payment.getState().equals("approved")) {
                 paymentService.updateStatusPayment(true, paypalExecute.getOrderId());
@@ -95,7 +100,7 @@ public class PaymentController {
             } else {
                 paymentService.updateStatusPayment(false, paypalExecute.getOrderId());
                 paymentService.updateStatusOrder(false, paypalExecute.getOrderId());
-                return ResponseEntity.status(HttpStatus.BAD_REQUEST).body("Payment Failed!");
+                return ResponseEntity.ok("Payment Failed!");
             }
 
         } catch (Exception e) {
