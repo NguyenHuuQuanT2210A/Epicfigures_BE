@@ -31,6 +31,7 @@ import java.time.LocalDateTime;
 import java.util.*;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
+import java.util.stream.Collectors;
 
 import static com.example.productservice.constant.CommonDefine.*;
 import static com.example.productservice.repositories.specification.SearchOperation.OR_PREDICATE_FLAG;
@@ -250,13 +251,18 @@ public class ProductServiceImpl implements ProductService {
 
         productRepository.save(existingProduct);
 
-        List<Long> productImageIds = new ArrayList<>();
         List<ProductImageResponse> productImageDTOs = productImageService.getProductImages(existingProduct.getProductId());
-        for (ProductImageResponse productImageDTO : productImageDTOs) {
-            if (!request.getImages().contains(productImageDTO)) {
-                productImageIds.add(productImageDTO.getImageId());
-            }
-        }
+        List<Long> productImageIds = productImageDTOs.stream()
+                .filter(productImageDTO ->
+                        request.getImages().stream()
+                                .noneMatch(prdImg ->
+                                        prdImg.getImageId() != null &&
+                                                prdImg.getImageId().equals(productImageDTO.getImageId())
+                                )
+                )
+                .map(ProductImageResponse::getImageId)
+                .collect(Collectors.toList());
+
         productImageService.updateProductImage(existingProduct.getProductId(), productImageIds , imageFiles);
 
         //redis
