@@ -166,10 +166,10 @@ public class AuthenticationService {
         String resetPasswordLink;
         if (Platform.MOBILE.name().equalsIgnoreCase(request.getPlatform())) {
             // URL for mobile platform
-            resetPasswordLink = "http://localhost:3001/reset-password" + "?secretKey=" + resetToken;
+            resetPasswordLink = "https://epic-figures-user.vercel.app/reset-password" + "?secretKey=" + resetToken;
         } else {
             // Default to web platform
-            resetPasswordLink = "http://localhost:3000/reset-password" + "?secretKey=" + resetToken;
+            resetPasswordLink = "https://epic-figures-user.vercel.app/reset-password" + "?secretKey=" + resetToken;
         }
 
         kafkaProducer.sendEmailForgotPassword(new CreateEventToForgotPassword(user.getId(), user.getUsername(), user.getEmail(), resetToken, resetPasswordLink));

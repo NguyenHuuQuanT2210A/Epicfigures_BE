@@ -71,7 +71,7 @@ public class SecurityConfig {
                 .route(r -> r.path("/ws/customer/**")
                         .filters(f -> f
                                         .setResponseHeader("Access-Control-Allow-Credentials", "true")
-                                        .setResponseHeader("Access-Control-Allow-Origin", "http://localhost:3000")  // Địa chỉ của ReactJS
+                                        .setResponseHeader("Access-Control-Allow-Origin", "https://epic-figures-user.vercel.app")  // Địa chỉ của ReactJS
 //                                .setResponseHeader("Access-Control-Allow-Headers", "Authorization, Content-Type")
 //                                .setResponseHeader("Access-Control-Allow-Methods", "GET, POST, OPTIONS")
                         )
@@ -79,7 +79,7 @@ public class SecurityConfig {
                 .route(r -> r.path("/ws/admin/**")
                         .filters(f -> f
                                 .setResponseHeader("Access-Control-Allow-Credentials", "true")
-                                .setResponseHeader("Access-Control-Allow-Origin", "http://localhost:3001")  // Địa chỉ của ReactJS
+                                .setResponseHeader("Access-Control-Allow-Origin", "https://epic-figures-admin.vercel.app")  // Địa chỉ của ReactJS
 //                                .setResponseHeader("Access-Control-Allow-Headers", "Authorization, Content-Type")
 //                                .setResponseHeader("Access-Control-Allow-Methods", "GET, POST, OPTIONS")
                         )

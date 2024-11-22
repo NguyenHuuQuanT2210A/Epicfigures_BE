@@ -24,11 +24,11 @@ public class PaymentController {
     private final PaymentService paymentService;
     private final PaypalService paypalService;
 
-//    public static final String BASE_URL = "http://localhost:3000/thankyou";
+//    public static final String BASE_URL = "https://epic-figures-user.vercel.app/thankyou";
 
     @PostMapping("/create_payment")
     String creatPayment(@RequestBody PaymentRequest request) throws UnsupportedEncodingException, PayPalRESTException {
-        String url = "http://localhost:3000/thankyou";
+        String url = "https://epic-figures-user.vercel.app/thankyou";
         return paymentService.creatPayment(request, url);
     }
 
